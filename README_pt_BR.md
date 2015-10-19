@@ -67,7 +67,7 @@ Como utilizar
 
 ```
 Este README está em desenvolvimento, por enquanto, consulte os exemplos da biblioteca.
-````
+```
 
 Contribuições
 =============
