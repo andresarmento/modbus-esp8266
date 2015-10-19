@@ -9,7 +9,7 @@ O Modbus geralmente utiliza como meio físico as interfaces seriais RS-232 ou RS
 (quando é chamado Modbus Serial) e TCP/IP via Ethernet ou WiFi (Modbus IP).
 
 Na versão atual a biblioteca permite que o arduino opere como escravo, suportando
-tando Modbus IP via rede wireless. Para mais informações sobre o Modbus consulte:
+o Modbus IP via rede wireless. Para mais informações sobre o Modbus consulte:
 
 http://pt.wikipedia.org/wiki/Modbus
 http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
@@ -65,6 +65,9 @@ Dessa forma, somente as seguintes funções são suportadas:
 Como utilizar
 =============
 
+```
+Este README está em desenvolvimento, por enquanto, consulte os exemplos da biblioteca.
+````
 
 Contribuições
 =============
