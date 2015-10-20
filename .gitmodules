@@ -1,0 +1,3 @@
+[submodule "arduinoIDE/Modbus"]
+	path = arduinoIDE/Modbus
+	url = git://github.com/andresarmento/modbus.git
