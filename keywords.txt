@@ -1,3 +1,15 @@
+# Syntax Coloring Map For ModbusIP
+
+# Datatypes (KEYWORD1)
+ModbusIP	 KEYWORD1
+ModbusIP_ESP8266 KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+config          KEYWORD2
+task            KEYWORD2
+
+# Constants (LITERAL1)
+
 # Syntax Coloring Map For Modbus
 
 # Datatypes (KEYWORD1)

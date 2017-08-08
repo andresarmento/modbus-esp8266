@@ -16,8 +16,9 @@ class ModbusIP : public Modbus {
     private:
         byte _MBAP[7];
     public:
-        ModbusIP();
+//        ModbusIP();
         void config(const char* ssid, const char* password);
+        void config();
         void task();
 };
 

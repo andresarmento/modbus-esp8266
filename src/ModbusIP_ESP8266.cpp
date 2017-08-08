@@ -6,12 +6,16 @@
 
 WiFiServer server(MODBUSIP_PORT);
 
-ModbusIP::ModbusIP() {
-
-}
+//ModbusIP::ModbusIP() {
+//
+//}
 
 void ModbusIP::config(const char* ssid, const char* password) {
 	WiFi.begin(ssid, password);
+	server.begin();
+}
+
+void ModbusIP::config() {
 	server.begin();
 }
 
