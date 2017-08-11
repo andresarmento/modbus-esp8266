@@ -7,8 +7,13 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#define MAX_REGS     32
+#define MAX_REGS      32
 #define MAX_FRAME   128
+#define COIL_BASE     1
+#define ISTS_BASE 10001
+#define IREG_BASE 30001
+#define HREG_BASE 40001
+
 //#define USE_HOLDING_REGISTERS_ONLY
 
 typedef unsigned int u_int;
@@ -40,10 +45,17 @@ enum {
     MB_REPLY_NORMAL = 0x03,
 };
 
+typedef struct TRegister;
+
+typedef uint32_t (*cbModbus)(TRegister* reg, word val);
+
 typedef struct TRegister {
     word address;
     word value;
+    word index;
     struct TRegister* next;
+    cbModbus get;
+    cbModbus set;
 } TRegister;
 
 class Modbus {

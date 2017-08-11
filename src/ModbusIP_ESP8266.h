@@ -14,13 +14,19 @@
 
 #define TCP_KEEP_ALIVE
 
-class ModbusIP : public Modbus {
+class ModbusIP : public Modbus, public WiFiServer {
     private:
         byte _MBAP[7];
+	#ifdef TCP_KEEP_ALIVE
+	WiFiClient client;
+	#endif
     public:
 //        ModbusIP();
-        void config(const char* ssid, const char* password);
+//        void config(const char* ssid, const char* password);
+	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
+	}
         void config();
+	void begin();
         void task();
 };
 

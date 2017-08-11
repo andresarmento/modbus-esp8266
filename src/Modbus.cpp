@@ -4,6 +4,10 @@
 */
 #include "Modbus.h"
 
+word cbDefault(TRegister* reg, word val) {
+	return val;
+}
+
 Modbus::Modbus() {
     _regs_head = 0;
     _regs_last = 0;
@@ -28,6 +32,8 @@ void Modbus::addReg(word address, word value) {
 	newreg = (TRegister *) malloc(sizeof(TRegister));
 	newreg->address = address;
 	newreg->value		= value;
+	newreg->get = cbDefault;
+	newreg->set = cbDefault;
 	newreg->next		= 0;
 
 	if(_regs_head == 0) {
@@ -47,7 +53,7 @@ bool Modbus::Reg(word address, word value) {
     reg = this->searchRegister(address);
     //if found then assign the register value to the new value.
     if (reg) {
-        reg->value = value;
+        reg->value = reg->set(reg, value);
         return true;
     } else
         return false;
@@ -57,62 +63,62 @@ word Modbus::Reg(word address) {
     TRegister *reg;
     reg = this->searchRegister(address);
     if(reg)
-        return(reg->value);
+        return(reg->get(reg, reg->value));
     else
         return(0);
 }
 
 void Modbus::addHreg(word offset, word value) {
-    this->addReg(offset + 40001, value);
+    this->addReg(offset + HREG_BASE, value);
 }
 
 bool Modbus::Hreg(word offset, word value) {
-    return Reg(offset + 40001, value);
+    return Reg(offset + HREG_BASE, value);
 }
 
 word Modbus::Hreg(word offset) {
-    return Reg(offset + 40001);
+    return Reg(offset + HREG_BASE);
 }
 
 #ifndef USE_HOLDING_REGISTERS_ONLY
     void Modbus::addCoil(word offset, bool value) {
-        this->addReg(offset + 1, value?0xFF00:0x0000);
+        this->addReg(offset + COIL_BASE, value?0xFF00:0x0000);
     }
 
     void Modbus::addIsts(word offset, bool value) {
-        this->addReg(offset + 10001, value?0xFF00:0x0000);
+        this->addReg(offset + ISTS_BASE, value?0xFF00:0x0000);
     }
 
     void Modbus::addIreg(word offset, word value) {
-        this->addReg(offset + 30001, value);
+        this->addReg(offset + IREG_BASE, value);
     }
 
     bool Modbus::Coil(word offset, bool value) {
-        return Reg(offset + 1, value?0xFF00:0x0000);
+        return Reg(offset + COIL_BASE, value?0xFF00:0x0000);
     }
 
     bool Modbus::Ists(word offset, bool value) {
-        return Reg(offset + 10001, value?0xFF00:0x0000);
+        return Reg(offset + ISTS_BASE, value?0xFF00:0x0000);
     }
 
     bool Modbus::Ireg(word offset, word value) {
-        return Reg(offset + 30001, value);
+        return Reg(offset + IREG_BASE, value);
     }
 
     bool Modbus::Coil(word offset) {
-        if (Reg(offset + 1) == 0xFF00) {
+        if (Reg(offset + COIL_BASE) == 0xFF00) {
             return true;
         } else return false;
     }
 
     bool Modbus::Ists(word offset) {
-        if (Reg(offset + 10001) == 0xFF00) {
+        if (Reg(offset + ISTS_BASE) == 0xFF00) {
             return true;
         } else return false;
     }
 
     word Modbus::Ireg(word offset) {
-        return Reg(offset + 30001);
+        return Reg(offset + IREG_BASE);
     }
 #endif
 
