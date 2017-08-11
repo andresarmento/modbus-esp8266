@@ -12,6 +12,8 @@
 #define MODBUSIP_MAXFRAME 200
 #define MODBUSIP_TIMEOUT   10
 
+#define TCP_KEEP_ALIVE
+
 class ModbusIP : public Modbus {
     private:
         byte _MBAP[7];

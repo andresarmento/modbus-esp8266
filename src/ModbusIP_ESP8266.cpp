@@ -18,10 +18,19 @@ void ModbusIP::config(const char* ssid, const char* password) {
 void ModbusIP::config() {
 	server.begin();
 }
-	WiFiClient client;
+#ifdef TCP_KEEP_ALIVE
+WiFiClient client;
+#endif
 void ModbusIP::task() {
-if (client == NULL || !client.connected())
-	client = server.available();
+#ifdef TCP_KEEP_ALIVE
+	if (!client || !client.connected()) {
+	//	if (client)
+	//		delete client;
+		client = server.available();
+	}
+#else
+	WiFiClient client;
+#endif
 
 	int raw_len = 0;
 	
@@ -67,8 +76,9 @@ if (client == NULL || !client.connected())
 
 				client.write(sbuf, send_len);
 			}
-
-			//client.stop();
+		#ifndef TCP_KEEPALIVE
+			client.stop();
+		#endif
 			free(_frame);
 			_len = 0;
 		}
