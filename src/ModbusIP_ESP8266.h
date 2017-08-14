@@ -21,11 +21,8 @@ class ModbusIP : public Modbus, public WiFiServer {
 	WiFiClient client;
 	#endif
     public:
-//        ModbusIP();
-//        void config(const char* ssid, const char* password);
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
 	}
-        void config();
 	void begin();
         void task();
 };

@@ -4,33 +4,17 @@
 */
 #include "ModbusIP_ESP8266.h"
 
-//WiFiServer server(MODBUSIP_PORT);
-
 //ModbusIP::ModbusIP() {
 //
 //}
 
-//void ModbusIP::config(const char* ssid, const char* password) {
-//	WiFi.begin(ssid, password);
-//	server.begin();
-//}
-
-void ModbusIP::config() {
-	//server.begin();
-	begin();
-}
-
 void ModbusIP::begin() {
-	//server.begin();
 	WiFiServer::begin();
 }
 
-//#ifdef TCP_KEEP_ALIVE
-//WiFiClient client;
-//#endif
 void ModbusIP::task() {
 #ifdef TCP_KEEP_ALIVE
-	if (!client || !client.connected()) {
+	if (client == NULL || !client.connected()) {
 	//	if (client)
 	//		delete client;
 	//	

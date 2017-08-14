@@ -4,7 +4,7 @@
 */
 #include "Modbus.h"
 
-word cbDefault(TRegister* reg, word val) {
+uint16_t cbDefault(TRegister* reg, uint16_t val) {
 	return val;
 }
 
@@ -13,7 +13,7 @@ Modbus::Modbus() {
     _regs_last = 0;
 }
 
-TRegister* Modbus::searchRegister(word address) {
+TRegister* Modbus::searchRegister(uint16_t address) {
     TRegister *reg = _regs_head;
     //if there is no register configured, bail
     if(reg == 0) return(0);
@@ -26,7 +26,7 @@ TRegister* Modbus::searchRegister(word address) {
 	return(0);
 }
 
-void Modbus::addReg(word address, word value) {
+void Modbus::addReg(uint16_t address, uint16_t value) {
     TRegister *newreg;
 
 	newreg = (TRegister *) malloc(sizeof(TRegister));
@@ -47,7 +47,7 @@ void Modbus::addReg(word address, word value) {
     }
 }
 
-bool Modbus::Reg(word address, word value) {
+bool Modbus::Reg(uint16_t address, uint16_t value) {
     TRegister *reg;
     //search for the register address
     reg = this->searchRegister(address);
@@ -59,7 +59,7 @@ bool Modbus::Reg(word address, word value) {
         return false;
 }
 
-word Modbus::Reg(word address) {
+uint16_t Modbus::Reg(uint16_t address) {
     TRegister *reg;
     reg = this->searchRegister(address);
     if(reg)
@@ -68,56 +68,56 @@ word Modbus::Reg(word address) {
         return(0);
 }
 
-void Modbus::addHreg(word offset, word value) {
+void Modbus::addHreg(uint16_t offset, uint16_t value) {
     this->addReg(offset + HREG_BASE, value);
 }
 
-bool Modbus::Hreg(word offset, word value) {
+bool Modbus::Hreg(uint16_t offset, uint16_t value) {
     return Reg(offset + HREG_BASE, value);
 }
 
-word Modbus::Hreg(word offset) {
+uint16_t Modbus::Hreg(uint16_t offset) {
     return Reg(offset + HREG_BASE);
 }
 
 #ifndef USE_HOLDING_REGISTERS_ONLY
-    void Modbus::addCoil(word offset, bool value) {
+    void Modbus::addCoil(uint16_t offset, bool value) {
         this->addReg(offset + COIL_BASE, value?0xFF00:0x0000);
     }
 
-    void Modbus::addIsts(word offset, bool value) {
+    void Modbus::addIsts(uint16_t offset, bool value) {
         this->addReg(offset + ISTS_BASE, value?0xFF00:0x0000);
     }
 
-    void Modbus::addIreg(word offset, word value) {
+    void Modbus::addIreg(uint16_t offset, uint16_t value) {
         this->addReg(offset + IREG_BASE, value);
     }
 
-    bool Modbus::Coil(word offset, bool value) {
+    bool Modbus::Coil(uint16_t offset, bool value) {
         return Reg(offset + COIL_BASE, value?0xFF00:0x0000);
     }
 
-    bool Modbus::Ists(word offset, bool value) {
+    bool Modbus::Ists(uint16_t offset, bool value) {
         return Reg(offset + ISTS_BASE, value?0xFF00:0x0000);
     }
 
-    bool Modbus::Ireg(word offset, word value) {
+    bool Modbus::Ireg(uint16_t offset, uint16_t value) {
         return Reg(offset + IREG_BASE, value);
     }
 
-    bool Modbus::Coil(word offset) {
+    bool Modbus::Coil(uint16_t offset) {
         if (Reg(offset + COIL_BASE) == 0xFF00) {
             return true;
         } else return false;
     }
 
-    bool Modbus::Ists(word offset) {
+    bool Modbus::Ists(uint16_t offset) {
         if (Reg(offset + ISTS_BASE) == 0xFF00) {
             return true;
         } else return false;
     }
 
-    word Modbus::Ireg(word offset) {
+    uint16_t Modbus::Ireg(uint16_t offset) {
         return Reg(offset + IREG_BASE);
     }
 #endif
@@ -125,8 +125,8 @@ word Modbus::Hreg(word offset) {
 
 void Modbus::receivePDU(byte* frame) {
     byte fcode  = frame[0];
-    word field1 = (word)frame[1] << 8 | (word)frame[2];
-    word field2 = (word)frame[3] << 8 | (word)frame[4];
+    uint16_t field1 = (word)frame[1] << 8 | (word)frame[2];
+    uint16_t field2 = (word)frame[3] << 8 | (word)frame[4];
 
     switch (fcode) {
 
@@ -188,7 +188,7 @@ void Modbus::exceptionResponse(byte fcode, byte excode) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readRegisters(word startreg, word numregs) {
+void Modbus::readRegisters(uint16_t startreg, uint16_t numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_VALUE);
@@ -220,8 +220,8 @@ void Modbus::readRegisters(word startreg, word numregs) {
     _frame[0] = MB_FC_READ_REGS;
     _frame[1] = _len - 2;   //byte count
 
-    word val;
-    word i = 0;
+    uint16_t val;
+    uint16_t i = 0;
 	while(numregs--) {
         //retrieve the value from the register bank for the current register
         val = this->Hreg(startreg + i);
@@ -235,8 +235,8 @@ void Modbus::readRegisters(word startreg, word numregs) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::writeSingleRegister(word reg, word value) {
-    //No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using word (0x0000 - 0x0FFFF)
+void Modbus::writeSingleRegister(uint16_t reg, uint16_t value) {
+    //No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using uint16_t (0x0000 - 0x0FFFF)
     //Check Address and execute (reg exists?)
     if (!this->Hreg(reg, value)) {
         this->exceptionResponse(MB_FC_WRITE_REG, MB_EX_ILLEGAL_ADDRESS);
@@ -252,7 +252,7 @@ void Modbus::writeSingleRegister(word reg, word value) {
     _reply = MB_REPLY_ECHO;
 }
 
-void Modbus::writeMultipleRegisters(byte* frame,word startreg, word numoutputs, byte bytecount) {
+void Modbus::writeMultipleRegisters(byte* frame,uint16_t startreg, uint16_t numoutputs, byte bytecount) {
     //Check value
     if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
         this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_VALUE);
@@ -282,8 +282,8 @@ void Modbus::writeMultipleRegisters(byte* frame,word startreg, word numoutputs, 
     _frame[3] = numoutputs >> 8;
     _frame[4] = numoutputs & 0x00FF;
 
-    word val;
-    word i = 0;
+    uint16_t val;
+    uint16_t i = 0;
 	while(numoutputs--) {
         val = (word)frame[6+i*2] << 8 | (word)frame[7+i*2];
         this->Hreg(startreg + i, val);
@@ -294,7 +294,7 @@ void Modbus::writeMultipleRegisters(byte* frame,word startreg, word numoutputs, 
 }
 
 #ifndef USE_HOLDING_REGISTERS_ONLY
-void Modbus::readCoils(word startreg, word numregs) {
+void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x07D0) {
         this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_VALUE);
@@ -330,8 +330,8 @@ void Modbus::readCoils(word startreg, word numregs) {
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    uint16_t totregs = numregs;
+    uint16_t i;
 	while (numregs--) {
         i = (totregs - numregs) / 8;
 		if (this->Coil(startreg))
@@ -348,7 +348,7 @@ void Modbus::readCoils(word startreg, word numregs) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readInputStatus(word startreg, word numregs) {
+void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x07D0) {
         this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_VALUE);
@@ -381,8 +381,8 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     _frame[1] = _len - 2;
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    uint16_t totregs = numregs;
+    uint16_t i;
 	while (numregs--) {
         i = (totregs - numregs) / 8;
 		if (this->Ists(startreg))
@@ -399,7 +399,7 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readInputRegisters(word startreg, word numregs) {
+void Modbus::readInputRegisters(uint16_t startreg, uint16_t numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         this->exceptionResponse(MB_FC_READ_INPUT_REGS, MB_EX_ILLEGAL_VALUE);
@@ -430,8 +430,8 @@ void Modbus::readInputRegisters(word startreg, word numregs) {
     _frame[0] = MB_FC_READ_INPUT_REGS;
     _frame[1] = _len - 2;
 
-    word val;
-    word i = 0;
+    uint16_t val;
+    uint16_t i = 0;
 	while(numregs--) {
         //retrieve the value from the register bank for the current register
         val = this->Ireg(startreg + i);
@@ -445,7 +445,7 @@ void Modbus::readInputRegisters(word startreg, word numregs) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::writeSingleCoil(word reg, word status) {
+void Modbus::writeSingleCoil(uint16_t reg, uint16_t status) {
     //Check value (status)
     if (status != 0xFF00 && status != 0x0000) {
         this->exceptionResponse(MB_FC_WRITE_COIL, MB_EX_ILLEGAL_VALUE);
@@ -467,9 +467,9 @@ void Modbus::writeSingleCoil(word reg, word status) {
     _reply = MB_REPLY_ECHO;
 }
 
-void Modbus::writeMultipleCoils(byte* frame,word startreg, word numoutputs, byte bytecount) {
+void Modbus::writeMultipleCoils(byte* frame,uint16_t startreg, uint16_t numoutputs, byte bytecount) {
     //Check value
-    word bytecount_calc = numoutputs / 8;
+    uint16_t bytecount_calc = numoutputs / 8;
     if (numoutputs%8) bytecount_calc++;
     if (numoutputs < 0x0001 || numoutputs > 0x07B0 || bytecount != bytecount_calc) {
         this->exceptionResponse(MB_FC_WRITE_COILS, MB_EX_ILLEGAL_VALUE);
@@ -500,8 +500,8 @@ void Modbus::writeMultipleCoils(byte* frame,word startreg, word numoutputs, byte
     _frame[4] = numoutputs & 0x00FF;
 
     byte bitn = 0;
-    word totoutputs = numoutputs;
-    word i;
+    uint16_t totoutputs = numoutputs;
+    uint16_t i;
 	while (numoutputs--) {
         i = (totoutputs - numoutputs) / 8;
         this->Coil(startreg, bitRead(frame[6+i], bitn));
