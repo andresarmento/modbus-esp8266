@@ -30,7 +30,7 @@ void ModbusIP::begin() {
 //#endif
 void ModbusIP::task() {
 #ifdef TCP_KEEP_ALIVE
-	if (!client || !client.connected()) {
+	if (client == NULL || !client.connected()) {
 	//	if (client)
 	//		delete client;
 	//	
@@ -84,7 +84,7 @@ void ModbusIP::task() {
 
 				client.write(sbuf, send_len);
 			}
-		#ifndef TCP_KEEPALIVE
+		#ifndef TCP_KEEP_ALIVE
 			client.stop();
 		#endif
 			free(_frame);
