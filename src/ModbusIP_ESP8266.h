@@ -1,6 +1,7 @@
 /*
-    ModbusIP_ESP8266.h - Header for Modbus IP ESP8266 Library
-    Copyright (C) 2015 André Sarmento Barbosa
+    Modbus.h - Header for Modbus Base Library
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <Modbus.h>
 #include <ESP8266WiFi.h>

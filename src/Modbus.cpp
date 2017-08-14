@@ -1,6 +1,7 @@
 /*
-    Modbus.cpp - Source for Modbus Base Library
+    Modbus.h - Header for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
 
@@ -197,7 +198,7 @@ void Modbus::readRegisters(uint16_t startreg, uint16_t numregs) {
 
     //Check Address
     //*** See comments on readCoils method.
-    if (!this->searchRegister(startreg + 40001)) {
+    if (!this->searchRegister(startreg + HREG_BASE)) {
         this->exceptionResponse(MB_FC_READ_REGS, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
@@ -261,7 +262,7 @@ void Modbus::writeMultipleRegisters(byte* frame,uint16_t startreg, uint16_t numo
 
     //Check Address (startreg...startreg + numregs)
     for (int k = 0; k < numoutputs; k++) {
-        if (!this->searchRegister(startreg + 40001 + k)) {
+        if (!this->searchRegister(startreg + HREG_BASE + k)) {
             this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_ADDRESS);
             return;
         }

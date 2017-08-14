@@ -5,7 +5,7 @@ ModbusIP	 KEYWORD1
 ModbusIP_ESP8266 KEYWORD1
 
 # Methods and Functions (KEYWORD2)
-config          KEYWORD2
+begin          KEYWORD2
 task            KEYWORD2
 
 # Constants (LITERAL1)
@@ -14,7 +14,6 @@ task            KEYWORD2
 
 # Datatypes (KEYWORD1)
 Modbus	    KEYWORD1
-u_int       KEYWORD1
 TRegister   KEYWORD1
 
 # Methods and Functions (KEYWORD2)

@@ -1,12 +1,16 @@
 /*
   Modbus-Arduino Example - Test Holding Register (Modbus IP ESP8266)
   Read Analog sensor on Pin ADC (ADC input between 0 ... 1V)
+  Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
+
+  Current version
+  (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+  https://github.com/emelianov/modbus-esp8266
 */
 
 #include <ESP8266WiFi.h>
-#include <Modbus.h>
 #include <ModbusIP_ESP8266.h>
 
 //Modbus Registers Offsets (0-9999)
@@ -18,21 +22,20 @@ ModbusIP mb;
 long ts;
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(74880);
  
-    //Config Modbus IP
-    mb.config("your_ssid", "your_password");
-  
+    WiFi.begin("your_ssid", "your_password");
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
- 
+
     Serial.println("");
     Serial.println("WiFi connected");  
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
+    mb.begin();		//Sart Modbus IP
     // Add SENSOR_IREG register - Use addIreg() for analog Inputs
     mb.addIreg(SENSOR_IREG);
 

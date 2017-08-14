@@ -1,12 +1,16 @@
 /*
   Modbus-Arduino Example - Test Led (Modbus IP ESP8266)
   Control a Led on GPIO0 pin using Write Single Coil Modbus Function 
+  Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
+
+  Current version
+  (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+  https://github.com/emelianov/modbus-esp8266
 */
 
 #include <ESP8266WiFi.h>
-#include <Modbus.h>
 #include <ModbusIP_ESP8266.h>
 
 //Modbus Registers Offsets (0-9999)
@@ -18,9 +22,9 @@ const int ledPin = 0; //GPIO0
 ModbusIP mb;
   
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(74880);
  
-  mb.config("your_ssid", "your_password");
+  WiFi.begin("your_ssid", "your_password");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -31,6 +35,8 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  mb.begin();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);
