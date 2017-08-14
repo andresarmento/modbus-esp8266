@@ -1,7 +1,6 @@
-Modbus Library for ESP8266
-==========================
+# Modbus Library for ESP8266/ESP32
 
-This library allows your ESP8266 to communicate via Modbus protocol. The Modbus is a master-slave protocol
+This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
@@ -11,12 +10,13 @@ In the current version the library allows the ESP8266 operate as a slave, suppor
 http://pt.wikipedia.org/wiki/Modbus http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
 http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 
-Features
-========
+## Features
+
+Keep alive and ESP32 support added to original library. This features is under testing.
 
 <ul>
 <li>Operates as a slave</li>
-<li>Supports Modbus IP (TCP, not keep-alive)</li>
+<li>Supports Modbus IP (TCP)</li>
 <li>Reply exception messages for all supported functions</li>
 <li>Modbus functions supported:</li>
 <ul>
@@ -33,7 +33,7 @@ Features
 
 <b>Notes:</b>
 
-1. When using Modbus IP the transport protocol is TCP (port 502) and the connection is terminated to each transmitted message, that is, is not a keep-alive type connection.
+1. When using Modbus IP the transport protocol is TCP (port 502).
 
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in ScadaBR (http://www.scadabr.com.br)
 offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the CAS Modbus Scanner
@@ -54,19 +54,23 @@ Thus, only the following functions are supported:
 </ul>
 
 
-How to
-======
+## How to
 
 ```
 This README is under development, for now, see the examples of the library.
 ```
 
-Contributions
-=============
+## Contributions
+
+https://github.com/emelinov/modbus-esp8266
+
+a.m.emelianov@gmail.com
+
+Original version:
 http://github.com/andresarmento/modbus-esp8266<br>
 prof (at) andresarmento (dot) com
 
-License
-=======
+## License
+
 The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.
 

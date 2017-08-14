@@ -1,33 +1,18 @@
 /*
-    ModbusIP_ESP8266.cpp - Source for Modbus IP ESP8266 Library
-    Copyright (C) 2015 André Sarmento Barbosa
+    Modbus.h - Header for Modbus Base Library
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "ModbusIP_ESP8266.h"
-
-//WiFiServer server(MODBUSIP_PORT);
 
 //ModbusIP::ModbusIP() {
 //
 //}
 
-//void ModbusIP::config(const char* ssid, const char* password) {
-//	WiFi.begin(ssid, password);
-//	server.begin();
-//}
-
-void ModbusIP::config() {
-	//server.begin();
-	begin();
-}
-
 void ModbusIP::begin() {
-	//server.begin();
 	WiFiServer::begin();
 }
 
-//#ifdef TCP_KEEP_ALIVE
-//WiFiClient client;
-//#endif
 void ModbusIP::task() {
 #ifdef TCP_KEEP_ALIVE
 	if (client == NULL || !client.connected()) {

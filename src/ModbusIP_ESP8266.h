@@ -1,9 +1,14 @@
 /*
-    ModbusIP_ESP8266.h - Header for Modbus IP ESP8266 Library
-    Copyright (C) 2015 André Sarmento Barbosa
+    Modbus.h - Header for Modbus Base Library
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <Modbus.h>
-#include <ESP8266WiFi.h>
+#ifdef ESP8266
+ #include <ESP8266WiFi.h>
+#else
+ #include <WiFi.h>
+#endif
 
 #ifndef MODBUSIP_ESP8266_H
 #define MODBUSIP_ESP8266_H
@@ -21,11 +26,8 @@ class ModbusIP : public Modbus, public WiFiServer {
 	WiFiClient client;
 	#endif
     public:
-//        ModbusIP();
-//        void config(const char* ssid, const char* password);
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
 	}
-        void config();
 	void begin();
         void task();
 };
