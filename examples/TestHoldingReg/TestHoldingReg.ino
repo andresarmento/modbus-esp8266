@@ -11,7 +11,11 @@
   https://github.com/emelianov/modbus-esp8266
 */
 
-#include <ESP8266WiFi.h>
+#ifdef ESP8266
+ #include <ESP8266WiFi.h>
+#else
+ #include <WiFi.h>
+#endif
 #include <ModbusIP_ESP8266.h>
 
 // Modbus Registers Offsets (0-9999)

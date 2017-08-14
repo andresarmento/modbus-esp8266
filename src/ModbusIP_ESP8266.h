@@ -4,7 +4,11 @@
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <Modbus.h>
-#include <ESP8266WiFi.h>
+#ifdef ESP8266
+ #include <ESP8266WiFi.h>
+#else
+ #include <WiFi.h>
+#endif
 
 #ifndef MODBUSIP_ESP8266_H
 #define MODBUSIP_ESP8266_H
