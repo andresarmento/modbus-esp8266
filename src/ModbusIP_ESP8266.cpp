@@ -11,28 +11,34 @@
 
 void ModbusIP::begin() {
 	WiFiServer::begin();
+	for (uint8_t i = 0; i < TCP_MAX_CLIENTS; i++) {
+		client[i] = WiFiClient();
+	}
 }
 
 void ModbusIP::task() {
 	for (uint8_t n = 0; n < TCP_MAX_CLIENTS; n++) {
 		if (!client[n] || !client[n].connected()) {
 			client[n] = available();
+			//if (client[n] && client[n].connected()) {
+			//	Serial.println(client[n].remoteIP());
+			//}
 		}
 
 	int raw_len = 0;
 	
-    	if (client[n]) {
-		if (client[n].connected()) {
-		    for (int x = 0; x < 300; x++) { // Time to have data available
-				if (client[n].available()) {
-					while (client[n].available() > raw_len) {  //Computes data length
+    	//if (client[n]) {
+		if (client[n] && client[n].connected()) {
+//		    for (int x = 0; x < 300; x++) { // Time to have data available
+//				if (client[n].available()) {
+//					while (client[n].available() > raw_len) {  //Computes data length
 						raw_len = client[n].available();
-						delay(1);
-					}
-					break;
-				}
-				delay(10);				
-			}
+//						delay(1);
+//					}
+//					break;
+//				}
+//				delay(10);				
+//			}
 		}
 				
 		if (raw_len > 7) {
@@ -40,8 +46,8 @@ void ModbusIP::task() {
 
 			_len = _MBAP[4] << 8 | _MBAP[5];
 			_len--; // Do not count with last byte from MBAP
-			if (_MBAP[2] !=0 || _MBAP[3] !=0) return;   //Not a MODBUSIP packet
-			if (_len > MODBUSIP_MAXFRAME) return;      //Length is over MODBUSIP_MAXFRAME
+			if (_MBAP[2] !=0 || _MBAP[3] !=0) continue;   //Not a MODBUSIP packet
+			if (_len > MODBUSIP_MAXFRAME) continue;      //Length is over MODBUSIP_MAXFRAME
 			_frame = (byte*) malloc(_len);
 			
 			raw_len = raw_len - 7;
@@ -69,6 +75,6 @@ void ModbusIP::task() {
 			free(_frame);
 			_len = 0;
 		}
-	}
+	//}
 }
 }
