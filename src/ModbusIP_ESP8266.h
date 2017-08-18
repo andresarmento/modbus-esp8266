@@ -18,12 +18,13 @@
 #define MODBUSIP_TIMEOUT   10
 
 #define TCP_KEEP_ALIVE
+#define TCP_MAX_CLIENTS	    4
 
 class ModbusIP : public Modbus, public WiFiServer {
     private:
         byte _MBAP[7];
 	#ifdef TCP_KEEP_ALIVE
-	WiFiClient client;
+	WiFiClient client[TCP_MAX_CLIENTS];
 	#endif
     public:
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {

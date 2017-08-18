@@ -5,7 +5,7 @@ used in industrial automation and can be used in other areas, such as home autom
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
 
-In the current version the library allows the ESP8266 operate as a slave, supporting Modbus IP via wireless network. For more information about Modbus see:
+In the current version the library allows the ESP8266/ESP32 operate as a slave, supporting Modbus IP via wireless network. For more information about Modbus see:
 
 http://pt.wikipedia.org/wiki/Modbus http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
 http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
@@ -62,8 +62,7 @@ This README is under development, for now, see the examples of the library.
 
 ## Contributions
 
-https://github.com/emelinov/modbus-esp8266
-
+https://github.com/emelinov/modbus-esp8266<br>
 a.m.emelianov@gmail.com
 
 Original version:
