@@ -1,6 +1,7 @@
 /*
     Modbus.h - Header for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
 
@@ -515,6 +516,23 @@ void Modbus::writeMultipleCoils(byte* frame,uint16_t startreg, uint16_t numoutpu
     _reply = MB_REPLY_NORMAL;
 }
 #endif
+bool Modbus::onGet(uint16_t address, cbModbus cb) {
+	TRegister* reg = this->searchRegister(address);
+	if (reg) {
+		reg->get = cb;
+		return true;
+	}
+	return false;
+}
+bool Modbus::onSet(uint16_t address, cbModbus cb) {
+	TRegister* reg = this->searchRegister(address);
+	if (reg) {
+		reg->set = cb;
+		return true;
+	}
+	return false;
+}
+
 
 
 

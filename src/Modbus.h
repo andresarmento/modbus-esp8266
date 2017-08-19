@@ -1,18 +1,23 @@
 /*
     Modbus.h - Header for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
+                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Arduino.h"
 
 #ifndef MODBUS_H
 #define MODBUS_H
 
-#define MAX_REGS      32
+#define MAX_REGS     32
 #define MAX_FRAME   128
 #define COIL_BASE     1
 #define ISTS_BASE 10001
 #define IREG_BASE 30001
 #define HREG_BASE 40001
+#define COIL(n) (n + COIL_BASE)
+#define ISTS(n) (n + ISTS_BASE)
+#define IREG(n) (n + IREG_BASE)
+#define HERG(n) (n + HREG_BASE)
 
 //#define USE_HOLDING_REGISTERS_ONLY
 
@@ -56,6 +61,8 @@ typedef struct TRegister {
     cbModbus get;
     cbModbus set;
 } TRegister;
+
+uint16_t cbDefault(TRegister* reg, uint16_t val);
 
 class Modbus {
     private:
@@ -106,6 +113,9 @@ class Modbus {
             bool Ists(uint16_t offset);
             uint16_t Ireg(uint16_t offset);
         #endif
+        
+        bool onGet(uint16_t address, cbModbus cb = cbDefault);
+        bool onSet(uint16_t address, cbModbus cb = cbDefault);
 };
 
 #endif //MODBUS_H
