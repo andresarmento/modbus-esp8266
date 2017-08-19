@@ -62,7 +62,7 @@ This README is under development, for now, see the examples of the library.
 
 ## Contributions
 
-https://github.com/emelinov/modbus-esp8266<br>
+https://github.com/emelianov/modbus-esp8266<br>
 a.m.emelianov@gmail.com
 
 Original version:
