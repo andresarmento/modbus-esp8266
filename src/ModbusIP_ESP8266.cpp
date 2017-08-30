@@ -5,42 +5,29 @@
 */
 #include "ModbusIP_ESP8266.h"
 
-//ModbusIP::ModbusIP() {
-//
-//}
-
 void ModbusIP::begin() {
 	WiFiServer::begin();
-	for (uint8_t i = 0; i < TCP_MAX_CLIENTS; i++) {
+	for (uint8_t i = 0; i < TCP_MAX_CLIENTS; i++)
 		client[i] = WiFiClient();
-	}
 }
 
 void ModbusIP::task() {
 	for (uint8_t n = 0; n < TCP_MAX_CLIENTS; n++) {
 		if (!client[n] || !client[n].connected()) {
 			client[n] = available();
-			//if (client[n] && client[n].connected()) {
-			//	Serial.println(client[n].remoteIP());
-			//}
+			if (client[n] && client[n].connected()) {
+				if (cbConnect && !cbConnect(client[n].remoteIP())) {
+					client[n].stop();		// If callback returns false immediate close connection
+					continue;
+				}
+			}
 		}
 
-	int raw_len = 0;
+		int raw_len = 0;
 	
-    	//if (client[n]) {
-		if (client[n] && client[n].connected()) {
-//		    for (int x = 0; x < 300; x++) { // Time to have data available
-//				if (client[n].available()) {
-//					while (client[n].available() > raw_len) {  //Computes data length
-						raw_len = client[n].available();
-//						delay(1);
-//					}
-//					break;
-//				}
-//				delay(10);				
-//			}
-		}
-				
+		if (client[n] && client[n].connected())
+			raw_len = client[n].available();
+
 		if (raw_len > 7) {
 			for (int i=0; i<7; i++)	_MBAP[i] = client[n].read(); //Get MBAP
 
@@ -69,12 +56,15 @@ void ModbusIP::task() {
 
 				client[n].write(sbuf, send_len);
 			}
-		#ifndef TCP_KEEP_ALIVE
+			#ifndef TCP_KEEP_ALIVE
 			client[n].stop();
-		#endif
+			#endif
 			free(_frame);
 			_len = 0;
 		}
-	//}
+	}
 }
+
+void ModbusIP::onConnect(cbModbusConnect cb = NULL) {
+	cbConnect = cb;
 }

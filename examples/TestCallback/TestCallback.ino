@@ -25,17 +25,23 @@ const int ledPin = D4; // Builtin ESP8266 LED
 //ModbusIP object
 ModbusIP mb;
 
-// Callback function
+// Callback function for write (set) Coil. Returns value to store.
 uint16_t cbLed(TRegister* reg, uint16_t val) {
   //Attach ledPin to LED_COIL register
   digitalWrite(ledPin, (val == 0xFF00));
   return val;
 }
+
+// Callback function for client connect. Returns true to allow connection.
+bool cbConn(IPAddress ip) {
+  Serial.println(ip);
+  return true;
+}
  
 void setup() {
   Serial.begin(74880);
  
-  WiFi.begin("ssid", "pass");
+  WiFi.begin("ssid", "password");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -46,7 +52,8 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-
+  
+  mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
   pinMode(ledPin, OUTPUT);
@@ -57,4 +64,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
+   yield();
 }
