@@ -12,8 +12,6 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 
 ## Features
 
-Keep alive and ESP32 support added to original library. This features is under testing.
-
 <ul>
 <li>Operates as a slave</li>
 <li>Supports Modbus IP (TCP)</li>
@@ -54,18 +52,90 @@ Thus, only the following functions are supported:
 </ul>
 
 
-## How to
+## API
+
+### Add regs
+```
+void addHreg(uint16_t offset, uint16_t value = 0)
+void addCoil(uint16_t offset, bool value = false)
+void addIsts(uint16_t offset, bool value = false)
+void addIreg(uint16_t offset, uint16_t value = 0)
+```
+### Write regs
+```
+bool Hreg(uint16_t offset, uint16_t value)
+bool Coil(uint16_t offset, bool value)
+bool Ists(uint16_t offset, bool value)
+bool Ireg(uint16_t offset, uint16_t value)
+```
+### Read regs
+```
+uint16_t Hreg(uint16_t offset)
+bool Coil(uint16_t offset)
+bool Ists(uint16_t offset)
+uint16_t Ireg(uint16_t offset)
+```
+### Callbacks
 
 ```
-This README is under development, for now, see the examples of the library.
+bool onGet(uint16_t address, cbModbus cb = cbDefault)
+bool onSet(uint16_t address, cbModbus cb = cbDefault)
+void onConnect(cbModbusConnect cb)
+typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
+typedef bool (*cbModbusConnect)(IPAddress ip)
+#define COIL(n)
+#define ISTS(n)
+#define IREG(n)
+#define HERG(n)
+#define COIL_VAL(v)
+#define COIL_BOOL(v)
 ```
+###ModBus IP specific
+
+```
+void begin()
+void task()
+```
+
+### Callback example
+
+```
+bool coil = false;
+uint16_t cbCoilSet(TRegister* reg, uint16_t val) {
+  coil = COIL_BOOL(val);
+  return val;	// Returns value to be saved to TRegister structure
+}
+uint16_t cbCoilGet(TRegister* reg, uint16_t val) {
+  return COIL_VAL(coil);	// Returns value to be returned to ModBus master as reply for current request
+}
+bool cbConn(IPAddress ip) {
+	Serial.println(ip);
+	return true;
+}
+ModbusIP mb;	//ModbusIP object
+void setup() {
+...
+  mb.onConnect(cbConn);   // Add callback on connection event
+  mb.begin();
+  mb.addCoil(COIL_NR);     // Add Coil
+  mb.onSet(COIL(COIL_NR), cbCoilSet); // Add callback on Coil COIL_NR value set
+  mb.onGet(COIL(COIL_NR), cbCoilGet); // Add callback on Coil COIL_NR value get
+...
+}
+void loop() {
+...
+	mb.task();
+...
+}
+```
+
 
 ## Contributions
 
 https://github.com/emelianov/modbus-esp8266<br>
 a.m.emelianov@gmail.com
 
-Original version:
+Original version:<br>
 http://github.com/andresarmento/modbus-esp8266<br>
 prof (at) andresarmento (dot) com
 

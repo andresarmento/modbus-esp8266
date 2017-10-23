@@ -18,6 +18,8 @@
 #define ISTS(n) (n + ISTS_BASE)
 #define IREG(n) (n + IREG_BASE)
 #define HERG(n) (n + HREG_BASE)
+#define COIL_VAL(v) (v?0xFF00:0x0000)
+#define COIL_BOOL(v) (v==0xFF00)
 
 //#define USE_HOLDING_REGISTERS_ONLY
 
@@ -56,7 +58,7 @@ typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
 typedef struct TRegister {
     uint16_t address;
     uint16_t value;
-    uint16_t index;
+    //uint16_t index;
     struct TRegister* next;
     cbModbus get;
     cbModbus set;
@@ -88,9 +90,9 @@ class Modbus {
         uint16_t Reg(uint16_t address);
 
     protected:
-        byte *_frame;
-        byte  _len;
-        byte  _reply;
+        uint8_t *_frame;
+        uint8_t  _len;
+        uint8_t  _reply;
         void receivePDU(byte* frame);
 
     public:

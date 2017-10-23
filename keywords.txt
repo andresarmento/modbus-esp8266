@@ -9,6 +9,7 @@ begin          	KEYWORD2
 task            KEYWORD2
 onGet			KEYWORD2
 onSet			KEYWORD2
+onConnect		KEYWORD2
 
 # Constants (LITERAL1)
 
