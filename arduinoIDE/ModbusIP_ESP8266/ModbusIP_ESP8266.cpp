@@ -44,7 +44,7 @@ void ModbusIP::task() {
 			_frame = (byte*) malloc(_len);
 			
 			raw_len = raw_len - 7;
-			for (int i=0; i< raw_len; i++)	_frame[i] = client.read(); //Get Modbus PDU
+			for (int i=0; i< _len; i++)	_frame[i] = client.read(); //Get Modbus PDU
 			
 			this->receivePDU(_frame);
 			client.flush();
