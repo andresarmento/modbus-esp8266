@@ -86,7 +86,7 @@ class Modbus {
 
         TRegister* searchRegister(uint16_t addr);
 
-        bool addReg(uint16_t address, uint16_t value = 0, uint16_t count = 1);
+        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
 
@@ -98,14 +98,14 @@ class Modbus {
 
     public:
 
-        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1);
+        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
         bool Hreg(uint16_t offset, uint16_t value);
         uint16_t Hreg(uint16_t offset);
 
         #ifndef USE_HOLDING_REGISTERS_ONLY
-            bool addCoil(uint16_t offset, bool value = false, uint16_t count = 1);
-            bool addIsts(uint16_t offset, bool value = false, uint16_t count = 1);
-            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1);
+            bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
+            bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
+            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
 
             bool Coil(uint16_t offset, bool value);
             bool Ists(uint16_t offset, bool value);
@@ -116,8 +116,8 @@ class Modbus {
             uint16_t Ireg(uint16_t offset);
         #endif
         
-        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1);
-        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1);
+        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
 };
 
 #endif //MODBUS_H

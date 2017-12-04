@@ -21,10 +21,10 @@ TRegister* Modbus::searchRegister(uint16_t address) {
     return NULL;
 }
 
-bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t count) {
+bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     TRegister *newreg;
     TRegister *root = NULL;
-	while (count > 0) {
+	while (numregs > 0) {
 		newreg = (TRegister*) malloc(sizeof(TRegister));
 		if (!newreg) {
 			newreg = root;
@@ -40,7 +40,7 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t count) {
 		newreg->set	= cbDefault;
 		newreg->next	= root;
 		root = newreg;
-		count--;
+		numregs--;
 		address++;
 	}
         _regs_head = root;
@@ -68,8 +68,8 @@ uint16_t Modbus::Reg(uint16_t address) {
         return 0;
 }
 
-bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t count) {
-    return this->addReg(HREG(offset), value);
+bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
+    return this->addReg(HREG(offset), value, numregs);
 }
 
 bool Modbus::Hreg(uint16_t offset, uint16_t value) {
@@ -81,16 +81,16 @@ uint16_t Modbus::Hreg(uint16_t offset) {
 }
 
 #ifndef USE_HOLDING_REGISTERS_ONLY
-    bool Modbus::addCoil(uint16_t offset, bool value, uint16_t count) {
-        return this->addReg(COIL(offset), COIL_VAL(value));
+    bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
+        return this->addReg(COIL(offset), COIL_VAL(value), numregs);
     }
 
-    bool Modbus::addIsts(uint16_t offset, bool value, uint16_t count) {
-        return this->addReg(ISTS(offset), ISTS_VAL(value));
+    bool Modbus::addIsts(uint16_t offset, bool value, uint16_t numregs) {
+        return this->addReg(ISTS(offset), ISTS_VAL(value), numregs);
     }
 
-    bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t count) {
-        return this->addReg(IREG(offset), value);
+    bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t numregs) {
+        return this->addReg(IREG(offset), value, numregs);
     }
 
     bool Modbus::Coil(uint16_t offset, bool value) {
@@ -516,23 +516,29 @@ void Modbus::writeMultipleCoils(uint8_t* frame,uint16_t startreg, uint16_t numou
     _reply = MB_REPLY_NORMAL;
 }
 #endif
-bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t count) {
-	TRegister* reg = this->searchRegister(address);
-	if (reg) {
-		reg->get = cb;
-		return true;
+bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
+	TRegister* reg;
+	bool atLeastOne = false;
+	while (numregs > 0) {
+		numregs--;
+		reg = this->searchRegister(address + numregs);
+		if (reg) {
+			reg->get = cb;
+			atLeastOne = true;
+		}
 	}
-	return false;
+	return atLeastOne;
 }
-bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t count) {
-	TRegister* reg = this->searchRegister(address);
-	if (reg) {
-		reg->set = cb;
-		return true;
+bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
+	TRegister* reg;
+	bool atLeastOne = false;
+	while (numregs > 0) {
+		numregs--;
+		reg = this->searchRegister(address + numregs);
+		if (reg) {
+			reg->set = cb;
+			atLeastOne = true;
+		}
 	}
-	return false;
+	return atLeastOne;
 }
-
-
-
-
