@@ -13,8 +13,11 @@ void ModbusIP::begin() {
 
 void ModbusIP::task() {
 	uint8_t n, i;
+	Serial.println("-1-");
 	while (hasClient()) {
+	Serial.println("-2-");
 		WiFiClient* currentClient = new WiFiClient(available());
+		Serial.println("-3-");
 		if (currentClient != NULL && currentClient->connected()) {
 			if (cbConnect == NULL || cbConnect(currentClient->remoteIP())) {
 				for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
@@ -53,7 +56,6 @@ void ModbusIP::task() {
 			
 			raw_len = raw_len - 7;
 			for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
-//			for (i = 0; i < raw_len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
 			
 			this->receivePDU(_frame);
 			client[n]->flush();

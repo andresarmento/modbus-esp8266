@@ -20,8 +20,11 @@
 //Modbus Registers Offsets (0-9999)
 const int LED_COIL = 100;
 //Used Pins
-const int ledPin = D4; // Builtin ESP8266 LED
-
+#ifdef ESP8266
+ const int ledPin = D4; // Builtin ESP8266 LED
+#else
+ const int ledPin = TX; // ESP32 TX LED
+#endif
 //ModbusIP object
 ModbusIP mb;
 
