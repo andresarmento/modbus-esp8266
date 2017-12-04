@@ -27,6 +27,12 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
     <li>0x0F - Write Multiple Coils</li>
     <li>0x10 - Write Multiple Registers</li>
 </ul>
+<li>Callbacks for</li>
+<ul>
+    <li> - Incoming IP connection</li>
+    <li> - Read specific Register</li>
+    <li> - Write specific Register</li>
+</ul>
 </ul>
 
 <b>Notes:</b>
@@ -112,7 +118,7 @@ bool cbConn(IPAddress ip) {
 	Serial.println(ip);
 	return true;
 }
-ModbusIP mb;	//ModbusIP object
+ModbusIP mb;	// ModbusIP object
 void setup() {
 ...
   mb.onConnect(cbConn);   // Add callback on connection event
