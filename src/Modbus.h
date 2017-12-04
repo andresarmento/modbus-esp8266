@@ -17,7 +17,7 @@
 #define COIL(n) (n + COIL_BASE)
 #define ISTS(n) (n + ISTS_BASE)
 #define IREG(n) (n + IREG_BASE)
-#define HERG(n) (n + HREG_BASE)
+#define HREG(n) (n + HREG_BASE)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
 #define COIL_BOOL(v) (v==0xFF00)
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
@@ -70,7 +70,7 @@ uint16_t cbDefault(TRegister* reg, uint16_t val);
 
 class Modbus {
     private:
-        TRegister* _regs_head;
+        TRegister* _regs_head = NULL;
 
         void readRegisters(uint16_t startreg, uint16_t numregs);
         void writeSingleRegister(uint16_t reg, uint16_t value);
@@ -86,7 +86,7 @@ class Modbus {
 
         TRegister* searchRegister(uint16_t addr);
 
-        bool addReg(uint16_t address, uint16_t value = 0, uint8_t count = 1);
+        bool addReg(uint16_t address, uint16_t value = 0, uint16_t count = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
 
@@ -97,16 +97,15 @@ class Modbus {
         void receivePDU(uint8_t* frame);
 
     public:
-        Modbus();
 
-        bool addHreg(uint16_t offset, uint16_t value = 0, uint8_t count = 1);
+        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1);
         bool Hreg(uint16_t offset, uint16_t value);
         uint16_t Hreg(uint16_t offset);
 
         #ifndef USE_HOLDING_REGISTERS_ONLY
-            bool addCoil(uint16_t offset, bool value = false, uint8_t count = 1);
-            bool addIsts(uint16_t offset, bool value = false, uint8_t count = 1);
-            bool addIreg(uint16_t offset, uint16_t value = 0, uint8_t count = 1);
+            bool addCoil(uint16_t offset, bool value = false, uint16_t count = 1);
+            bool addIsts(uint16_t offset, bool value = false, uint16_t count = 1);
+            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1);
 
             bool Coil(uint16_t offset, bool value);
             bool Ists(uint16_t offset, bool value);
@@ -117,8 +116,8 @@ class Modbus {
             uint16_t Ireg(uint16_t offset);
         #endif
         
-        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint8_t count = 1);
-        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint8_t count = 1);
+        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1);
+        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1);
 };
 
 #endif //MODBUS_H

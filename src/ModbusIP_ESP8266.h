@@ -24,7 +24,7 @@ typedef bool (*cbModbusConnect)(IPAddress ip);
 
 class ModbusIP : public Modbus, public WiFiServer {
     private:
-    uint_8t _MBAP[7];
+    uint8_t _MBAP[7];
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	cbModbusConnect cbConnect = NULL;
     public:

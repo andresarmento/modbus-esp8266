@@ -54,12 +54,12 @@ Thus, only the following functions are supported:
 
 ## API
 
-### Add regs
+### Add multiple regs
 ```
-void addHreg(uint16_t offset, uint16_t value = 0)
-void addCoil(uint16_t offset, bool value = false)
-void addIsts(uint16_t offset, bool value = false)
-void addIreg(uint16_t offset, uint16_t value = 0)
+void addHreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1)
+void addCoil(uint16_t offset, bool value = false, uint16_t count = 1)
+void addIsts(uint16_t offset, bool value = false, uint16_t count = 1)
+void addIreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1)
 ```
 ### Write regs
 ```
@@ -78,15 +78,15 @@ uint16_t Ireg(uint16_t offset)
 ### Callbacks
 
 ```
-bool onGet(uint16_t address, cbModbus cb = cbDefault)
-bool onSet(uint16_t address, cbModbus cb = cbDefault)
+bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1)
+bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1)
 void onConnect(cbModbusConnect cb)
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 typedef bool (*cbModbusConnect)(IPAddress ip)
 #define COIL(n)
 #define ISTS(n)
 #define IREG(n)
-#define HERG(n)
+#define HREG(n)
 #define COIL_VAL(v)
 #define COIL_BOOL(v)
 ```
@@ -100,7 +100,7 @@ void task()
 ### Callback example
 
 ```
-bool coil = false;
+bool coil = false; // Define external variable to get/set value
 uint16_t cbCoilSet(TRegister* reg, uint16_t val) {
   coil = COIL_BOOL(val);
   return val;	// Returns value to be saved to TRegister structure
