@@ -6,15 +6,15 @@
 #include "Modbus.h"
 
 uint16_t cbDefault(TRegister* reg, uint16_t val) {
+Serial.println(val);
 	return val;
 }
 
 TRegister* Modbus::searchRegister(uint16_t address) {
     TRegister *reg = _regs_head;
-
     //scan through the linked list until the end of the list or the register is found.
     //return the pointer.
-    while (reg) {
+    while (reg != NULL) {
         if (reg->address == address) return reg;
         reg = reg->next;
     }
@@ -26,10 +26,10 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     TRegister *root = NULL;
 	while (numregs > 0) {
 		newreg = (TRegister*) malloc(sizeof(TRegister));
-		if (!newreg) {
-			newreg = root;
-			while (newreg) {
-				root = newreg->next;
+		if (newreg == NULL) {		//Cleanup if unable to add all regs
+			while (root != NULL) {
+				newreg = root;
+				root = root->next;
 				free(newreg);
 			}
 			return false;
@@ -40,10 +40,18 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
 		newreg->set	= cbDefault;
 		newreg->next	= root;
 		root = newreg;
-		numregs--;
 		address++;
+		numregs--;
 	}
-        _regs_head = root;
+	if (_regs_head == NULL) {
+    	_regs_head = root;
+    } else {
+    	newreg = _regs_head;
+    	while (newreg->next != NULL) {
+        	newreg = newreg->next;
+        }
+        newreg->next = root;
+    }
     return true;
 }
 
@@ -326,7 +334,7 @@ void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
         this->exceptionResponse(MB_FC_READ_COILS, MB_EX_SLAVE_FAILURE);
         return;
     }
-
+	_frame[_len - 1] = 0;  //Clean last probably partial byte
     _frame[0] = MB_FC_READ_COILS;
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
 
@@ -520,12 +528,13 @@ bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
 	while (numregs > 0) {
-		numregs--;
-		reg = this->searchRegister(address + numregs);
+		reg = this->searchRegister(address);
 		if (reg) {
 			reg->get = cb;
 			atLeastOne = true;
 		}
+		address++;
+		numregs--;
 	}
 	return atLeastOne;
 }
@@ -533,12 +542,13 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
 	while (numregs > 0) {
-		numregs--;
-		reg = this->searchRegister(address + numregs);
+		reg = this->searchRegister(address);
 		if (reg) {
 			reg->set = cb;
 			atLeastOne = true;
 		}
+		address++;
+		numregs--;
 	}
 	return atLeastOne;
 }

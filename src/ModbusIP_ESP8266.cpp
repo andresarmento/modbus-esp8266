@@ -13,11 +13,11 @@ void ModbusIP::begin() {
 
 void ModbusIP::task() {
 	uint8_t n, i;
-	Serial.println("-1-");
+	//Serial.println("-1-");
 	while (hasClient()) {
-	Serial.println("-2-");
+	//Serial.println("-2-");
 		WiFiClient* currentClient = new WiFiClient(available());
-		Serial.println("-3-");
+		//Serial.println("-3-");
 		if (currentClient != NULL && currentClient->connected()) {
 			if (cbConnect == NULL || cbConnect(currentClient->remoteIP())) {
 				for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {

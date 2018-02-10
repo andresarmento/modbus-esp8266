@@ -60,12 +60,12 @@ Thus, only the following functions are supported:
 
 ## API
 
-### Add multiple regs
+### Add [multiple] regs
 ```
-void addHreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1)
-void addCoil(uint16_t offset, bool value = false, uint16_t count = 1)
-void addIsts(uint16_t offset, bool value = false, uint16_t count = 1)
-void addIreg(uint16_t offset, uint16_t value = 0, uint16_t count = 1)
+void addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
+void addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
+void addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
+void addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
 ```
 ### Write regs
 ```
@@ -84,8 +84,8 @@ uint16_t Ireg(uint16_t offset)
 ### Callbacks
 
 ```
-bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1)
-bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t count = 1)
+bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
 void onConnect(cbModbusConnect cb)
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 typedef bool (*cbModbusConnect)(IPAddress ip)
