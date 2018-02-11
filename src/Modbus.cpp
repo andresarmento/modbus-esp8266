@@ -6,7 +6,6 @@
 #include "Modbus.h"
 
 uint16_t cbDefault(TRegister* reg, uint16_t val) {
-Serial.println(val);
 	return val;
 }
 
@@ -14,7 +13,7 @@ TRegister* Modbus::searchRegister(uint16_t address) {
     TRegister *reg = _regs_head;
     //scan through the linked list until the end of the list or the register is found.
     //return the pointer.
-    while (reg != NULL) {
+    while (reg) {
         if (reg->address == address) return reg;
         reg = reg->next;
     }
@@ -26,8 +25,8 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     TRegister *root = NULL;
 	while (numregs > 0) {
 		newreg = (TRegister*) malloc(sizeof(TRegister));
-		if (newreg == NULL) {		//Cleanup if unable to add all regs
-			while (root != NULL) {
+		if (!newreg) {		//Cleanup if unable to add all regs
+			while (root) {
 				newreg = root;
 				root = root->next;
 				free(newreg);
@@ -43,11 +42,11 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
 		address++;
 		numregs--;
 	}
-	if (_regs_head == NULL) {
+	if (!_regs_head) {
     	_regs_head = root;
     } else {
     	newreg = _regs_head;
-    	while (newreg->next != NULL) {
+    	while (newreg->next) {
         	newreg = newreg->next;
         }
         newreg->next = root;
