@@ -82,7 +82,6 @@ bool Ists(uint16_t offset)
 uint16_t Ireg(uint16_t offset)
 ```
 ### Callbacks
-
 ```
 bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
 bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
@@ -107,7 +106,7 @@ void task()
 
 ```
 bool coil = false; // Define external variable to get/set value
-uint16_t cbCoilSet(TRegister* reg, uint16_t val) {
+uint16_t cbCoilSet(TRegister* reg, uint16_t val) {	// 'reg' is pointer to reg to modify, 'val' is new register value
   coil = COIL_BOOL(val);
   return val;	// Returns value to be saved to TRegister structure
 }
@@ -116,7 +115,7 @@ uint16_t cbCoilGet(TRegister* reg, uint16_t val) {
 }
 bool cbConn(IPAddress ip) {
 	Serial.println(ip);
-	return true;
+	return true;		// Return 'true' to allow connection or 'false' to drop connection
 }
 ModbusIP mb;	// ModbusIP object
 void setup() {
