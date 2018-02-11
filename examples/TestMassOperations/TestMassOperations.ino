@@ -69,7 +69,7 @@ void setup() {
   mb.begin();
 
   mb.addCoil(COIL_BASE, false, LEN);     		// Add Coils
-  mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coil LED_COIL value set
+  mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coils value get
   mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
 }
 
