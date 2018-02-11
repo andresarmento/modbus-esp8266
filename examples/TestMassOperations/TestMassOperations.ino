@@ -35,6 +35,7 @@ uint16_t cbRead(TRegister* reg, uint16_t val) {
   uint8_t offset = reg->address - COIL_BASE;
   if(offset >= LEN)
     return 0; 
+    Serial.println(COIL_VAL(digitalRead(pinList[offset])));
   return COIL_VAL(digitalRead(pinList[offset]));
 }
 // Callback function to write-protect DI
@@ -60,13 +61,14 @@ void setup() {
  
   Serial.println("");
   Serial.println("WiFi connected");  
-  Serial.println("IP address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-  
+  for (uint8_t i = 0; i < LEN; i++)
+    pinMode(pinList[i], INPUT);
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  mb.addCoil(COIL_BASE, LEN);     		// Add Coils
+  mb.addCoil(COIL_BASE, false, LEN);     		// Add Coils
   mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coil LED_COIL value set
   mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
 }
