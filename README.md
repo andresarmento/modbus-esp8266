@@ -62,13 +62,15 @@ Thus, only the following functions are supported:
 
 ### Add [multiple] regs
 ```
-void addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
-void addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
-void addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
-void addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
+bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1)
+bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
+bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
+bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
+bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
 ```
 ### Write regs
 ```
+bool Reg(uint16_t address, uint16_t value)
 bool Hreg(uint16_t offset, uint16_t value)
 bool Coil(uint16_t offset, bool value)
 bool Ists(uint16_t offset, bool value)
@@ -76,6 +78,7 @@ bool Ireg(uint16_t offset, uint16_t value)
 ```
 ### Read regs
 ```
+uint16_t Reg(uint16_t address)
 uint16_t Hreg(uint16_t offset)
 bool Coil(uint16_t offset)
 bool Ists(uint16_t offset)
@@ -88,6 +91,9 @@ bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
 void onConnect(cbModbusConnect cb)
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 typedef bool (*cbModbusConnect)(IPAddress ip)
+```
+### Macros
+```
 #define COIL(n)
 #define ISTS(n)
 #define IREG(n)
@@ -95,8 +101,7 @@ typedef bool (*cbModbusConnect)(IPAddress ip)
 #define COIL_VAL(v)
 #define COIL_BOOL(v)
 ```
-###ModBus IP specific
-
+### ModBus IP specific
 ```
 void begin()
 void task()

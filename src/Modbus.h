@@ -86,10 +86,6 @@ class Modbus {
 
         TRegister* searchRegister(uint16_t addr);
 
-        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
-        bool Reg(uint16_t address, uint16_t value);
-        uint16_t Reg(uint16_t address);
-
     protected:
         uint8_t* _frame;
         uint8_t  _len;
@@ -97,6 +93,10 @@ class Modbus {
         void receivePDU(uint8_t* frame);
 
     public:
+
+        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
+        bool Reg(uint16_t address, uint16_t value);
+        uint16_t Reg(uint16_t address);
 
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
         bool Hreg(uint16_t offset, uint16_t value);
