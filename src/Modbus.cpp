@@ -186,9 +186,9 @@ void Modbus::exceptionResponse(uint8_t fcode, uint8_t excode) {
     _len = 2;
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
-	// Don't send reply if can't build frame
-	_reply = MB_REPLY_OFF;
-	return;
+		// Don't send reply if can't build frame
+		_reply = MB_REPLY_OFF;
+		return;
     }
     _frame[0] = fcode + 0x80;
     _frame[1] = excode;

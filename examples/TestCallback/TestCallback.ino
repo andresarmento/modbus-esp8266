@@ -53,14 +53,14 @@ void setup() {
  
   Serial.println("");
   Serial.println("WiFi connected");  
-  Serial.println("IP address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
   pinMode(ledPin, OUTPUT);
-  mb.addCoil(LED_COIL);     // Add Coil
+  mb.addReg(COIL(LED_COIL));       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
   mb.onSet(COIL(LED_COIL), cbLed); // Add callback on Coil LED_COIL value set
 }
 
