@@ -20,6 +20,8 @@
 #define HERG(n) (n + HREG_BASE)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
 #define COIL_BOOL(v) (v==0xFF00)
+#define ISTS_VAL(v) (v?0xFF00:0x0000)
+#define ISTS_BOOL(v) (v==0xFF00)
 
 //#define USE_HOLDING_REGISTERS_ONLY
 

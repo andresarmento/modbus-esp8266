@@ -76,21 +76,25 @@ bool Ists(uint16_t offset)
 uint16_t Ireg(uint16_t offset)
 ```
 ### Callbacks
-
 ```
 bool onGet(uint16_t address, cbModbus cb = cbDefault)
 bool onSet(uint16_t address, cbModbus cb = cbDefault)
 void onConnect(cbModbusConnect cb)
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 typedef bool (*cbModbusConnect)(IPAddress ip)
+```
+### Macros
+```
 #define COIL(n)
 #define ISTS(n)
 #define IREG(n)
 #define HERG(n)
 #define COIL_VAL(v)
 #define COIL_BOOL(v)
+#define ISTS_VAL(v)
+#define ISTS_BOOL(v)
 ```
-###ModBus IP specific
+### ModBus IP specific
 
 ```
 void begin()
