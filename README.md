@@ -100,6 +100,8 @@ typedef bool (*cbModbusConnect)(IPAddress ip)
 #define HREG(n)
 #define COIL_VAL(v)
 #define COIL_BOOL(v)
+#define ISTS_VAL(v)
+#define ISTS_BOOL(v)
 ```
 ### ModBus IP specific
 ```
