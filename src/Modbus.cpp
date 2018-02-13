@@ -333,9 +333,9 @@ void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
         this->exceptionResponse(MB_FC_READ_COILS, MB_EX_SLAVE_FAILURE);
         return;
     }
-	_frame[_len - 1] = 0;  //Clean last probably partial byte
     _frame[0] = MB_FC_READ_COILS;
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
+	_frame[_len - 1] = 0;  //Clean last probably partial byte
 
     uint8_t bitn = 0;
     uint16_t totregs = numregs;
@@ -366,7 +366,7 @@ void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(ISTS(startreg))) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -387,6 +387,7 @@ void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
 
     _frame[0] = MB_FC_READ_INPUT_STAT;
     _frame[1] = _len - 2;
+    _frame[_len - 1] = 0;  //Clean last probably partial byte
 
     uint8_t bitn = 0;
     uint16_t totregs = numregs;
@@ -417,7 +418,7 @@ void Modbus::readInputRegisters(uint16_t startreg, uint16_t numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(IREG(startreg))) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_REGS, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
