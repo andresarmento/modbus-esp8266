@@ -21,7 +21,7 @@
 #ifdef ESP8266
  uint8_t pinList[] = {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 #else	//ESP32
-  uint8_t pinList[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+  uint8_t pinList[] = {12, 13, 14, 14, 16, 17, 18, 21, 22, 23};
 #endif
 #define LEN sizeof(pinList)/sizeof(uint8_t)
 
@@ -35,7 +35,6 @@ uint16_t cbRead(TRegister* reg, uint16_t val) {
   uint8_t offset = reg->address - COIL_BASE;
   if(offset >= LEN)
     return 0; 
-    Serial.println(COIL_VAL(digitalRead(pinList[offset])));
   return COIL_VAL(digitalRead(pinList[offset]));
 }
 // Callback function to write-protect DI
@@ -68,7 +67,7 @@ void setup() {
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  mb.addReg(COIL(COIL_BASE), false, LEN); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
+  mb.addReg(COIL(COIL_BASE), COIL_VAL(false), LEN); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
   mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coils value get
   mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
 }
