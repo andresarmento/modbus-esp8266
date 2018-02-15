@@ -1,6 +1,6 @@
 /*
     Modbus.cpp - Source for Modbus Base Library
-    Copyright (C) 2014 André Sarmento Barbosa
+    Copyright (C) 2014 AndrÃ© Sarmento Barbosa
 */
 #include "Modbus.h"
 
@@ -352,7 +352,7 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(startreg + 10001)) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -403,7 +403,7 @@ void Modbus::readInputRegisters(word startreg, word numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(startreg + 30001)) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_REGS, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
