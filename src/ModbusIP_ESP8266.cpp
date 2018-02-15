@@ -5,10 +5,64 @@
 */
 #include "ModbusIP_ESP8266.h"
 
-void ModbusIP::begin() {
+void ModbusIP::begin(uint8_t mode) {
 	WiFiServer::begin();
-	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
+	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		client[i] = NULL;
+		server[i] = NULL;
+		pull[i] = NULL;
+		pullMs[i] = MODBUSIP_PULL_MS;
+		pullStatus[i] = 0;
+	}
+}
+TRegister* ModbusIP::searchRegister(uint16_t address, IPAddress from) {
+	int8_t i = getSlaveConnection(from);
+	if (i == -1) return NULL;
+	TRegisterList* root = pull[i];
+	while (root) {
+		if (root->reg->address == address) return root->reg;
+		root = root->next;
+	}
+	return NULL;
+}
+// Add ONE register
+bool ModbusIP::pullReg(uint16_t address, IPAddress from, uint32_t interval = MODBUSIP_PULL_MS) {
+	TRegisterList* reg;
+	reg = searchReg(address);
+	if (!reg) return false;
+	int8_t i = getSlaveConnection(from);
+	if (i == -1) {	
+		for (i = 0; i < MODBUSIP_MAX_CLIENTS && server[i]; i++) {}
+		if (i >= MODBEUSIP_MAX_CLIENTS) return false;	// No free entries
+		server[i] = new WiFiClient();
+		if (!server[i]) return false;
+		status[i] = MODBUSIP_SLAVE_DISCONNECTED;
+	}
+	if (!pull[i]) {
+		pull[i] = malloc(sizeof(TRegisterList));
+		if (!pull[i]) return false;
+		pull[i]->reg = reg;
+		pull[i]->next = NULL;
+	}
+	TRegisterList* root = pull[i];
+	while (root->next) root = root->next;
+	if (searchRegister(address, from)) return true;
+	root->next = malloc(sizeof(TRegisterList));
+	if (!root->next) {
+		return false;	//Need to implement cleanup later
+	}
+	root->reg = reg;
+	return true;
+}
+
+bool ModbusIP::unpullReg(uint16_t address, IPAddress from);
+bool ModbusIP::setPullMs(IPAddress from, uint32_t interval = MODBUSIP_PULL_MS);
+uint8_t ModbusIP::getPoolStatus(IPAddress from);
+int8_t ModbusIP::getSlaveConnection(IPAddress address) {
+	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
+		if (server[i].remoteAddress == address) return i;
+	}
+	return -1;
 }
 
 void ModbusIP::task() {

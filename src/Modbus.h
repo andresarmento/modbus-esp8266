@@ -18,6 +18,8 @@
 #define ISTS(n) (n + ISTS_BASE)
 #define IREG(n) (n + IREG_BASE)
 #define HREG(n) (n + HREG_BASE)
+#define BIT_VAL(v) (v?0xFF00:0x0000)
+#define BIT_BOOL(v) (v==0xFF00)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
 #define COIL_BOOL(v) (v==0xFF00)
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
@@ -39,10 +41,12 @@ enum {
 
 //Exception Codes
 enum {
-    MB_EX_ILLEGAL_FUNCTION = 0x01, // Function Code not Supported
-    MB_EX_ILLEGAL_ADDRESS  = 0x02, // Output Address not exists
-    MB_EX_ILLEGAL_VALUE    = 0x03, // Output Value not in Range
-    MB_EX_SLAVE_FAILURE    = 0x04, // Slave Deive Fails to process request
+    MB_EX_ILLEGAL_FUNCTION  = 0x01, // Function Code not Supported
+    MB_EX_ILLEGAL_ADDRESS   = 0x02, // Output Address not exists
+    MB_EX_ILLEGAL_VALUE     = 0x03, // Output Value not in Range
+    MB_EX_SLAVE_FAILURE     = 0x04, // Slave Deive Fails to process request
+    MB_EX_ACKNOWLEDGE       = 0x05,
+    MB_EX_SLAVE_DEVICE_BUSY = 0x06
 };
 
 //Reply Types
@@ -50,6 +54,7 @@ enum {
     MB_REPLY_OFF    = 0x01,
     MB_REPLY_ECHO   = 0x02,
     MB_REPLY_NORMAL = 0x03,
+    MB_REPLY_ERROR  = 0x04
 };
 
 typedef struct TRegister;
@@ -84,7 +89,8 @@ class Modbus {
         #endif
 
         TRegister* searchRegister(uint16_t addr);
-
+	void getSlaveRegisters(uint16_t startreg, uint16_t numregs);
+	//void setSlaveregister
     protected:
         uint8_t* _frame;
         uint8_t  _len;

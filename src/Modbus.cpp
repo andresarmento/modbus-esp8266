@@ -87,7 +87,6 @@ uint16_t Modbus::Hreg(uint16_t offset) {
     return Reg(HREG(offset));
 }
 
-#ifndef USE_HOLDING_REGISTERS_ONLY
     bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
         return this->addReg(COIL(offset), COIL_VAL(value), numregs);
     }
@@ -123,13 +122,12 @@ uint16_t Modbus::Hreg(uint16_t offset) {
     uint16_t Modbus::Ireg(uint16_t offset) {
         return Reg(IREG(offset));
     }
-#endif
 
 
 void Modbus::receivePDU(uint8_t* frame) {
     uint8_t fcode  = frame[0];
-    uint16_t field1 = (word)frame[1] << 8 | (word)frame[2];
-    uint16_t field2 = (word)frame[3] << 8 | (word)frame[4];
+    uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
+    uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
 
     switch (fcode) {
 
@@ -148,7 +146,6 @@ void Modbus::receivePDU(uint8_t* frame) {
             this->writeMultipleRegisters(frame,field1, field2, frame[5]);
         break;
 
-        #ifndef USE_HOLDING_REGISTERS_ONLY
         case MB_FC_READ_COILS:
             //field1 = startreg, field2 = numregs
             this->readCoils(field1, field2);
@@ -174,7 +171,6 @@ void Modbus::receivePDU(uint8_t* frame) {
             this->writeMultipleCoils(frame,field1, field2, frame[5]);
         break;
 
-        #endif
         default:
             this->exceptionResponse(fcode, MB_EX_ILLEGAL_FUNCTION);
     }
@@ -301,113 +297,6 @@ void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t n
     _reply = MB_REPLY_NORMAL;
 }
 
-#ifndef USE_HOLDING_REGISTERS_ONLY
-void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
-    //Check value (numregs)
-    if (numregs < 0x0001 || numregs > 0x07D0) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_VALUE);
-        return;
-    }
-
-    //Check Address
-    //Check only startreg. Is this correct?
-    //When I check all registers in range I got errors in ScadaBR
-    //I think that ScadaBR request more than one in the single request
-    //when you have more then one datapoint configured from same type.
-    if (!this->searchRegister(COIL(startreg))) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
-        return;
-    }
-
-    //Clean frame buffer
-    free(_frame);
-	_len = 0;
-
-    //Determine the message length = function type, byte count and
-	//for each group of 8 registers the message length increases by 1
-	_len = 2 + numregs/8;
-	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
-
-    _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_SLAVE_FAILURE);
-        return;
-    }
-    _frame[0] = MB_FC_READ_COILS;
-    _frame[1] = _len - 2; //byte count (_len - function code and byte count)
-	_frame[_len - 1] = 0;  //Clean last probably partial byte
-
-    uint8_t bitn = 0;
-    uint16_t totregs = numregs;
-    uint16_t i;
-	while (numregs--) {
-        i = (totregs - numregs) / 8;
-		if (this->Coil(startreg))
-			bitSet(_frame[2+i], bitn);
-		else
-			bitClear(_frame[2+i], bitn);
-		//increment the bit index
-		bitn++;
-		if (bitn == 8) bitn = 0;
-		//increment the register
-		startreg++;
-	}
-
-    _reply = MB_REPLY_NORMAL;
-}
-
-void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
-    //Check value (numregs)
-    if (numregs < 0x0001 || numregs > 0x07D0) {
-        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_VALUE);
-        return;
-    }
-
-    //Check Address
-    //*** See comments on readCoils method.
-    if (!this->searchRegister(ISTS(startreg))) {
-        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_ADDRESS);
-        return;
-    }
-
-    //Clean frame buffer
-    free(_frame);
-	_len = 0;
-
-    //Determine the message length = function type, byte count and
-	//for each group of 8 registers the message length increases by 1
-	_len = 2 + numregs/8;
-	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
-
-    _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {
-        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_SLAVE_FAILURE);
-        return;
-    }
-
-    _frame[0] = MB_FC_READ_INPUT_STAT;
-    _frame[1] = _len - 2;
-    _frame[_len - 1] = 0;  //Clean last probably partial byte
-
-    uint8_t bitn = 0;
-    uint16_t totregs = numregs;
-    uint16_t i;
-	while (numregs--) {
-        i = (totregs - numregs) / 8;
-		if (this->Ists(startreg))
-			bitSet(_frame[2+i], bitn);
-		else
-			bitClear(_frame[2+i], bitn);
-		//increment the bit index
-		bitn++;
-		if (bitn == 8) bitn = 0;
-		//increment the register
-		startreg++;
-	}
-
-    _reply = MB_REPLY_NORMAL;
-}
-
 void Modbus::readInputRegisters(uint16_t startreg, uint16_t numregs) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
@@ -523,7 +412,7 @@ void Modbus::writeMultipleCoils(uint8_t* frame,uint16_t startreg, uint16_t numou
 
     _reply = MB_REPLY_NORMAL;
 }
-#endif
+
 bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
@@ -551,4 +440,116 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 		numregs--;
 	}
 	return atLeastOne;
+}
+bool Modbus::getSlaveRegisters(uint16_t startreg, uint16_t numregs) {
+	free(_frame);
+	_len = 5;
+	_frame = (uint8_t*) malloc(length);
+	if (!_frame) return false;
+	_frame[0] = MB_FC_READ_REGS;
+	_frame[1] = startreg >> 8;     //0x00;
+	_frame[2] = startreg & 0x00FF; //0x00;
+	_frame[3] = numregs >> 8;       //0x00;
+	_frame[4] = numregs & 0x00FF;   //0x01;
+	return true;
+}
+
+void Modbus::responcePDU(uint8_t* frame) {
+    uint8_t fcode  = frame[0];
+    if (fcode & 0x80h) {
+	_reply = MB_REPLY_ERROR;
+	return;
+    }
+    uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
+    uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
+
+    switch (fcode) {
+        case MB_FC_WRITE_REG:
+		_reply = MB_REPLY_ECHO;
+        break;
+        case MB_FC_READ_REGS:
+            //field1 = startreg, field2 = status
+            this->writeMultipleRegisters(frame,field1, field2, frame[5]);
+        break;
+        case MB_FC_WRITE_REGS:
+		_reply = MB_REPLY_ECHO;
+        break;
+        case MB_FC_READ_COILS:
+            //field1 = startreg, field2 = numoutputs
+            this->writeMultipleCoils(frame,field1, field2, frame[5]);
+        break;
+        case MB_FC_READ_INPUT_STAT:
+        break;
+        case MB_FC_READ_INPUT_REGS:
+        break;
+        case MB_FC_WRITE_COIL:
+		_reply = MB_REPLY_ECHO;
+        break;
+        case MB_FC_WRITE_COILS:
+		_reply = MB_REPLY_ECHO;
+        break;
+        default:
+		_reply = MB_REPLY_ERROR;
+    }
+}
+
+void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_COILS) {
+    //Check value (numregs)
+    if (numregs < 0x0001 || numregs > 0x07D0) {
+        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
+        return;
+    }
+
+    //Check Address
+    //Check only startreg. Is this correct?
+    //When I check all registers in range I got errors in ScadaBR
+    //I think that ScadaBR request more than one in the single request
+    //when you have more then one datapoint configured from same type.
+    if (!this->searchRegister(startreg)) {
+        this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
+        return;
+    }
+
+    //Clean frame buffer
+    free(_frame);
+	_len = 0;
+
+    //Determine the message length = function type, byte count and
+	//for each group of 8 registers the message length increases by 1
+	_len = 2 + numregs/8;
+	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
+
+    _frame = (uint8_t*) malloc(_len);
+    if (!_frame) {
+        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
+        return;
+    }
+    _frame[0] = fn;
+    _frame[1] = _len - 2; //byte count (_len - function code and byte count)
+	_frame[_len - 1] = 0;  //Clean last probably partial byte
+
+    uint8_t bitn = 0;
+    uint16_t totregs = numregs;
+    uint16_t i;
+	while (numregs--) {
+        i = (totregs - numregs) / 8;
+		if (BIT_BOOL(this->Reg(startreg)))
+			bitSet(_frame[2+i], bitn);
+		else
+			bitClear(_frame[2+i], bitn);
+		//increment the bit index
+		bitn++;
+		if (bitn == 8) bitn = 0;
+		//increment the register
+		startreg++;
+	}
+
+    _reply = MB_REPLY_NORMAL;
+}
+
+void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
+	this->readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
+}
+void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
+	this->readBits(ISTS(startreg), numreg, MB_FC_READ_INPUT_STAT);
 }
