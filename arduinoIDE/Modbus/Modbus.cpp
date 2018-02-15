@@ -26,6 +26,7 @@ void Modbus::addReg(word address, word value) {
     TRegister *newreg;
 
 	newreg = (TRegister *) malloc(sizeof(TRegister));
+	if (!newreg) return;
 	newreg->address = address;
 	newreg->value		= value;
 	newreg->next		= 0;
@@ -176,6 +177,10 @@ void Modbus::exceptionResponse(byte fcode, byte excode) {
     free(_frame);
     _len = 2;
     _frame = (byte *) malloc(_len);
+    if (!_frame) {
+	_reply = MB_REPLY_OFF;
+	return;
+    }
     _frame[0] = fcode + 0x80;
     _frame[1] = excode;
 
