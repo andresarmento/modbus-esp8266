@@ -17,7 +17,6 @@ onConnect		KEYWORD2
 
 # Datatypes (KEYWORD1)
 Modbus	    KEYWORD1
-TRegister   KEYWORD1
 
 # Methods and Functions (KEYWORD2)
 readCoils               KEYWORD2
@@ -28,8 +27,6 @@ writeSingleCoil         KEYWORD2
 writeSingleRegister     KEYWORD2
 writeMultipleCoils      KEYWORD2
 writeMultipleRegisters  KEYWORD2
-searchRegister          KEYWORD2
-receivePDU              KEYWORD2
 addReg                  KEYWORD2
 addCoil                 KEYWORD2
 addIsts                 KEYWORD2
@@ -42,21 +39,6 @@ Ireg                    KEYWORD2
 Hreg                    KEYWORD2
 
 # Constants (LITERAL1)
-MB_FC_READ_COILS       	   LITERAL1
-MB_FC_READ_INPUTS          LITERAL1
-MB_FC_READ_REGS            LITERAL1
-MB_FC_READ_INPUT_STAT      LITERAL1
-MB_FC_WRITE_COIL           LITERAL1
-MB_FC_WRITE_REG            LITERAL1
-MB_FC_WRITE_COILS          LITERAL1
-MB_FC_WRITE_REGS           LITERAL1
-MB_REPLY_OFF               LITERAL1
-MB_REPLY_ECHO              LITERAL1
-MB_REPLY_NORMAL            LITERAL1
-COIL_BASE				LITERAL1
-ISTS_BASE				LITERAL1
-IREG_BASE				LITERAL1
-HREG_BASE				LITERAL1
 COIL					LITERAL1
 ISTS					LITERAL1
 IREG					LITERAL1

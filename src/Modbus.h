@@ -25,8 +25,6 @@
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
 #define ISTS_BOOL(v) (v==0xFF00)
 
-//#define USE_HOLDING_REGISTERS_ONLY
-
 //Function Codes
 enum {
     MB_FC_READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
@@ -75,30 +73,29 @@ uint16_t cbDefault(TRegister* reg, uint16_t val);
 class Modbus {
     private:
         TRegister* _regs_head = NULL;
-
+		void readBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_COILS);
+		void readWords(uint16_t startreg, uint16_t numregs, uint32_t fn = MB_FC_READ_REGS);
         void readRegisters(uint16_t startreg, uint16_t numregs);
         void writeSingleRegister(uint16_t reg, uint16_t value);
         void writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
         void exceptionResponse(uint8_t fcode, uint8_t excode);
-        #ifndef USE_HOLDING_REGISTERS_ONLY
-            void readCoils(uint16_t startreg, uint16_t numregs);
-            void readInputStatus(uint16_t startreg, uint16_t numregs);
-            void readInputRegisters(uint16_t startreg, uint16_t numregs);
-            void writeSingleCoil(uint16_t reg, uint16_t status);
-            void writeMultipleCoils(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
-        #endif
+        void readCoils(uint16_t startreg, uint16_t numregs);
+        void readInputStatus(uint16_t startreg, uint16_t numregs);
+        void readInputRegisters(uint16_t startreg, uint16_t numregs);
+        void writeSingleCoil(uint16_t reg, uint16_t status);
+        void writeMultipleCoils(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
 
         TRegister* searchRegister(uint16_t addr);
-	void getSlaveRegisters(uint16_t startreg, uint16_t numregs);
-	//void setSlaveregister
+		void getSlaveRegisters(uint16_t startreg, uint16_t numregs);
+
     protected:
         uint8_t* _frame;
         uint8_t  _len;
         uint8_t  _reply;
         void receivePDU(uint8_t* frame);
+        void responcePDU(uint8_t* frame);
 
     public:
-
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
@@ -106,20 +103,17 @@ class Modbus {
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
         bool Hreg(uint16_t offset, uint16_t value);
         uint16_t Hreg(uint16_t offset);
+        bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
+        bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
+        bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
 
-        #ifndef USE_HOLDING_REGISTERS_ONLY
-            bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
-            bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
-            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
+        bool Coil(uint16_t offset, bool value);
+        bool Ists(uint16_t offset, bool value);
+        bool Ireg(uint16_t offset, uint16_t value);
 
-            bool Coil(uint16_t offset, bool value);
-            bool Ists(uint16_t offset, bool value);
-            bool Ireg(uint16_t offset, uint16_t value);
-
-            bool Coil(uint16_t offset);
-            bool Ists(uint16_t offset);
-            uint16_t Ireg(uint16_t offset);
-        #endif
+        bool Coil(uint16_t offset);
+        bool Ists(uint16_t offset);
+        uint16_t Ireg(uint16_t offset);
         
         bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
