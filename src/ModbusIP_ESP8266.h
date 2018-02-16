@@ -22,10 +22,12 @@
 #define MODBUSIP_SLAVE  1
 #define MODBUSIP_MASTER 2
 #define MODBUSIP_PULL_MS 100
-
+#define MODBUSIP_PUSH 3
+#define MODBUSIP_PULL 4
 typedef struct TRegisterList {
 	TRegister* reg;
 	TRegisterList* next;
+	uint8_t way;
 } TRegisterList;
 
 // Callback function Type
@@ -51,7 +53,9 @@ class ModbusIP : public Modbus, public WiFiServer {
 	}
 	void begin(uint8_t mode = MODBUSIP_SLAVE);
 	bool pullReg(uint16_t address, IPAddress from, uint32_t interval = MODBUSIP_PULL_MS);
-	bool unpullReg(uint16_t address, IPAddress from);
+	bool pushReg(uint16_t address, IPAddress to, uint32_t interval = MODBUSIP_PULL_MS);
+	bool connectReg(uint16_t address, IPAddress to, uint32_t interval = MODBUSIP_PULL_MS, uint8_t way = MODBUSIP_PULL);
+	bool diconnectReg(uint16_t address, IPAddress from);
 	bool setPullMs(IPAddress from, uint32_t interval = MODBUSIP_PULL_MS);
 	uint8_t getPoolStatus(IPAddress from);
     void task();
