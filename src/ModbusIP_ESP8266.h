@@ -47,7 +47,7 @@ class ModbusIP : public Modbus, public WiFiServer {
 	uint8_t	    pullStatus[MODBUSIP_MAX_CLIENTS];
 	cbModbusConnect cbConnect = NULL;
 	WiFiClient* getSlaveConnection(IPAddress address);
-	TRegister* searchRegister(uint16_t address, IPAddress from);
+	TRegister* searchRegister(uint16_t address, IPAddress from, uint8_t way = MODBUSIP_PULL) {
     public:
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
 	}

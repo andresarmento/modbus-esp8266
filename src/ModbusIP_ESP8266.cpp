@@ -15,7 +15,7 @@ void ModbusIP::begin(uint8_t mode) {
 		pullStatus[i] = 0;
 	}
 }
-TRegister* ModbusIP::searchRegister(uint16_t address, IPAddress from) {
+TRegister* ModbusIP::searchRegister(uint16_t address, IPAddress from, uint8_t way = MODBUSIP_PULL) {
 	int8_t i = getSlaveConnection(from);
 	if (i == -1) return NULL;
 	TRegisterList* root = pull[i];
