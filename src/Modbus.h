@@ -75,20 +75,20 @@ uint16_t cbDefault(TRegister* reg, uint16_t val);
 class Modbus {
     private:
         TRegister* _regs_head = NULL;
-		void readBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_COILS);
-		void readWords(uint16_t startreg, uint16_t numregs, uint32_t fn = MB_FC_READ_REGS);
+	void readBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_COILS);
+	void readWords(uint16_t startreg, uint16_t numregs, uint32_t fn = MB_FC_READ_REGS);
         void readRegisters(uint16_t startreg, uint16_t numregs);
         void writeSingleRegister(uint16_t reg, uint16_t value);
-        void writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
+        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
         void exceptionResponse(uint8_t fcode, uint8_t excode);
         void readCoils(uint16_t startreg, uint16_t numregs);
         void readInputStatus(uint16_t startreg, uint16_t numregs);
         void readInputRegisters(uint16_t startreg, uint16_t numregs);
         void writeSingleCoil(uint16_t reg, uint16_t status);
-        void writeMultipleCoils(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
+        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
 
         TRegister* searchRegister(uint16_t addr);
-		void getSlaveRegisters(uint16_t startreg, uint16_t numregs);
+	void getSlaveRegisters(uint16_t startreg, uint16_t numregs);
 
     protected:
         uint8_t* _frame;
