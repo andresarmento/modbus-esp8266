@@ -60,6 +60,7 @@ class ModbusIP : public Modbus, public WiFiServer {
 	uint8_t getPoolStatus(IPAddress from);
     void task();
     void onConnect(cbModbusConnect cb);
+    IPAddreess eventSource();
 };
 
 #endif //MODBUSIP_ESP8266_H
