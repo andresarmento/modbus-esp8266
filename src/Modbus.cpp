@@ -1,6 +1,6 @@
 /*
-    Modbus.h - Header for Modbus Base Library
-    Copyright (C) 2014 André Sarmento Barbosa
+    Modbus.cpp - Modbus Base Library Implementation
+    Copyright (C) 2014 Andrï¿½ Sarmento Barbosa
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
@@ -73,54 +73,6 @@ uint16_t Modbus::Reg(uint16_t address) {
         return reg->get(reg, reg->value);
     else
         return 0;
-}
-
-bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-    return this->addReg(HREG(offset), value, numregs);
-}
-
-bool Modbus::Hreg(uint16_t offset, uint16_t value) {
-    return Reg(HREG(offset), value);
-}
-
-uint16_t Modbus::Hreg(uint16_t offset) {
-    return Reg(HREG(offset));
-}
-
-bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
-    return this->addReg(COIL(offset), COIL_VAL(value), numregs);
-}
-
-bool Modbus::addIsts(uint16_t offset, bool value, uint16_t numregs) {
-    return this->addReg(ISTS(offset), ISTS_VAL(value), numregs);
-}
-
-bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-    return this->addReg(IREG(offset), value, numregs);
-}
-
-bool Modbus::Coil(uint16_t offset, bool value) {
-    return Reg(COIL(offset), COIL_VAL(value));
-}
-
-bool Modbus::Ists(uint16_t offset, bool value) {
-    return Reg(ISTS(offset), ISTS_VAL(value));
-}
-
-bool Modbus::Ireg(uint16_t offset, uint16_t value) {
-    return Reg(IREG(offset), value);
-}
-
-bool Modbus::Coil(uint16_t offset) {
-    return COIL_BOOL(Reg(COIL(offset)));
-}
-
-bool Modbus::Ists(uint16_t offset) {
-    return ISTS_BOOL(Reg(ISTS(offset)));
-}
-
-uint16_t Modbus::Ireg(uint16_t offset) {
-    return Reg(IREG(offset));
 }
 
 void Modbus::receivePDU(uint8_t* frame) {
@@ -245,13 +197,6 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readCoils(uint16_t startreg, uint16_t numregs) {
-	this->readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
-}
-void Modbus::readInputStatus(uint16_t startreg, uint16_t numregs) {
-	this->readBits(ISTS(startreg), numreg, MB_FC_READ_INPUT_STAT);
-}
-
 void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint32_t fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
@@ -296,12 +241,6 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint32_t fn) {
 	}
 
     _reply = MB_REPLY_NORMAL;
-}
-void Modbus::readRegisters(uint16_t startreg, uint16_t numregs) {
-        this->readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
-}
-void Modbus::readInputRegisters(uint16_t startreg, uint16_t numregs) {
-        this->readWords(IREG(startreg), numreg, MB_FC_READ_INPUT_REGS);
 }
 
 void Modbus::writeSingleRegister(uint16_t reg, uint16_t value) {
@@ -460,55 +399,56 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	}
 	return atLeastOne;
 }
-bool Modbus::getSlaveRegisters(uint16_t startreg, uint16_t numregs) {
+bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(length);
 	if (!_frame) return false;
-	_frame[0] = MB_FC_READ_REGS;
-	_frame[1] = startreg >> 8;     //0x00;
-	_frame[2] = startreg & 0x00FF; //0x00;
-	_frame[3] = numregs >> 8;       //0x00;
-	_frame[4] = numregs & 0x00FF;   //0x01;
+	_frame[0] = fn;
+	_frame[1] = startreg >> 8;
+	_frame[2] = startreg & 0x00FF;
+	_frame[3] = numregs >> 8;
+	_frame[4] = numregs & 0x00FF;
 	return true;
 }
 
 void Modbus::responcePDU(uint8_t* frame) {
     uint8_t fcode  = frame[0];
     if (fcode & 0x80h) {
-	_reply = MB_REPLY_ERROR;
-	return;
+	    _reply = MB_REPLY_ERROR;
+	    return;
     }
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
 
     switch (fcode) {
-        case MB_FC_WRITE_REG:
-		_reply = MB_REPLY_ECHO;
-        break;
         case MB_FC_READ_REGS:
             //field1 = startreg, field2 = status
             this->writeMultipleRegisters(frame,field1, field2, frame[5]);
-        break;
-        case MB_FC_WRITE_REGS:
-		_reply = MB_REPLY_ECHO;
+            _reply = MB_REPLY_OFF;
         break;
         case MB_FC_READ_COILS:
             //field1 = startreg, field2 = numoutputs
-            this->writeMultipleCoils(frame,field1, field2, frame[5]);
+            //this->writeMultipleCoils(frame,field1, field2, frame[5]);
+            //_reply = MB_REPLY_OFF;
         break;
         case MB_FC_READ_INPUT_STAT:
+            _reply = MB_REPLY_OFF;
         break;
         case MB_FC_READ_INPUT_REGS:
+            _reply = MB_REPLY_OFF;
+        break;
+        case MB_FC_WRITE_REG:
+        break;
+        case MB_FC_WRITE_REGS:
         break;
         case MB_FC_WRITE_COIL:
-		_reply = MB_REPLY_ECHO;
         break;
         case MB_FC_WRITE_COILS:
-		_reply = MB_REPLY_ECHO;
         break;
         default:
 		_reply = MB_REPLY_ERROR;
     }
+    _reply = MB_REPLY_OFF;
 }
 

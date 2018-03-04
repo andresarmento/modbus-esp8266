@@ -72,11 +72,19 @@ uint16_t Ireg(uint16_t offset)
 ```
 ### Callbacks
 ```
-bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
 void onConnect(cbModbusConnect cb)
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 typedef bool (*cbModbusConnect)(IPAddress ip)
+bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onGetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onGetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
 ```
 ### Macros
 ```

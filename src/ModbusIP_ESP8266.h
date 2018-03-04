@@ -1,6 +1,6 @@
 /*
-    Modbus.h - Header for Modbus Base Library
-    Copyright (C) 2014 André Sarmento Barbosa
+    ModbusIP.h - Header for ModbusIP Library
+    Copyright (C) 2014 Andrï¿½ Sarmento Barbosa
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <Modbus.h>
@@ -24,6 +24,7 @@
 #define MODBUSIP_PULL_MS 100
 #define MODBUSIP_PUSH 3
 #define MODBUSIP_PULL 4
+#define MODBUSIP_IDLE 5
 typedef struct TRegisterList {
 	TRegister* reg;
 	TRegisterList* next;
@@ -42,12 +43,15 @@ class ModbusIP : public Modbus, public WiFiServer {
     uint8_t _MBAP[7];
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	WiFiClient* server[MODBUSIP_MAX_CLIENTS];
-	TRegisterList* pull[MODBUSIP_MAX_CLIENTS];
+	TRegisterList* _regs[MODBUSIP_MAX_CLIENTS];
+	IPAddress _ip[MODBUSIP_MAX_CLIENTS];
 	uint32_t    pullMs[MODBUSIP_MAX_CLIENTS];
-	uint8_t	    pullStatus[MODBUSIP_MAX_CLIENTS];
+	uint8_t		status[MODBUSIP_MAX_CLIENTS];
+	uint32_t	lastChange[MODBUSIP_MAX_CLIENTS];
 	cbModbusConnect cbConnect = NULL;
 	WiFiClient* getSlaveConnection(IPAddress address);
-	TRegister* searchRegister(uint16_t address, IPAddress from, uint8_t way = MODBUSIP_PULL) {
+	TRegister* searchRegister(uint16_t address, IPAddress from, uint8_t way = MODBUSIP_PULL);
+	int8_t n = -1;
     public:
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
 	}
