@@ -12,7 +12,7 @@ void ModbusIP::begin(uint8_t mode) {
 		server[i] = NULL;
 		pull[i] = NULL;
 		pullMs[i] = MODBUSIP_PULL_MS;
-		pullStatus[i] = 0;
+		status[i] = MODBUSIP_IDLE;
 	}
 }
 TRegister* ModbusIP::searchRegister(uint16_t address, IPAddress from, uint8_t way = MODBUSIP_PULL) {

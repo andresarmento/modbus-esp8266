@@ -33,10 +33,31 @@ typedef struct TRegisterList {
 
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
-class ModbusMaster : public WiFiClient {
-	TRegister* reg;
+class ModbusMasterIP : public Modbus, public WiFiClient {
+	private:
+	TRegisterList* reg;
 	uint32_t   interval;
 	uint8_t	   status;
+	IPAddress	ip;
+	uint32_t	lastChange;
+	void connect(IPAddress address);
+	public:
+	ModbusMasterIP() : WiFiClient() {
+
+	}
+	void task();
+	void pushBits(uint16_t address, uint16_t numregs);
+	void pullBits(uint16_t address, uint16_t numregs;
+	void pushWords(uint16_t address, uint16_t numregs);
+	void pullWords(uint16_t address, uint16_t numregs;
+	void pushCoil();
+	void pullCoil();
+	void pushIsts();
+	void pullIsts();
+	void pushHreg();
+	void pullHreg();
+	void pushIreg();
+	void pullIreg();
 }
 class ModbusIP : public Modbus, public WiFiServer {
     private:
