@@ -97,9 +97,10 @@ class Modbus {
         void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
 
         TRegister* searchRegister(uint16_t addr);
-        void readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_REGS);
-        //void writeSlave(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_REGS);
-
+        bool readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_REGS);
+        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_COILS);
+        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_REGS);
+        bool cbEnabled = true;
     protected:
         uint8_t* _frame;
         uint8_t  _len;
@@ -148,14 +149,17 @@ class Modbus {
         uint16_t Ireg(uint16_t offset) {
             return Reg(IREG(offset));
         }
-        
+        void cbEnable(bool state = TRUE);
+        void cbDisable() {
+            cbEnable(FALSE);
+        }
         bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onGet(COIL(address), cb, numregs);
+        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            onGet(COIL(offset), cb, numregs);
         }
-        bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onSet(COIL(address), cb, numresg);
+        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            onSet(COIL(offset), cb, numresg);
         }
         bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             onGet(HREG(address), cb, numregs);

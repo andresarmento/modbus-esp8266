@@ -1,7 +1,9 @@
-# Syntax Coloring Map For ModbusIP
+# Syntax Coloring Map For ModbusIP_ESP8266
 
 # Datatypes (KEYWORD1)
-ModbusIP	 KEYWORD1
+Modbus          KEYWORD1
+ModbusIP        KEYWORD1
+ModbusMasterIP  KEYWORD1
 ModbusIP_ESP8266 KEYWORD1
 
 # Methods and Functions (KEYWORD2)
@@ -10,36 +12,35 @@ task            KEYWORD2
 onGet			KEYWORD2
 onSet			KEYWORD2
 onConnect		KEYWORD2
+cbEnable        KEYWORD2
+cbDisable       KEYWORD2
+onGetCoil		KEYWORD2
+onSetCoil		KEYWORD2
+onGetHreg		KEYWORD2
+onSetHreg		KEYWORD2
+onGetIreg		KEYWORD2
+onSetIreg		KEYWORD2
+onGetIsts		KEYWORD2
+onSetIsts		KEYWORD2
+addReg          KEYWORD2
+addCoil         KEYWORD2
+addIsts         KEYWORD2
+addIreg         KEYWORD2
+addHreg         KEYWORD2
+Reg             KEYWORD2
+Coil            KEYWORD2
+Ists            KEYWORD2
+Ireg            KEYWORD2
+Hreg            KEYWORD2
 
-# Constants (LITERAL1)
-
-# Syntax Coloring Map For Modbus
-
-# Datatypes (KEYWORD1)
-Modbus	    KEYWORD1
-
-# Methods and Functions (KEYWORD2)
-readCoils               KEYWORD2
-readInputStatus         KEYWORD2
-readRegisters           KEYWORD2
-readInputRegisters      KEYWORD2
-writeSingleCoil         KEYWORD2
-writeSingleRegister     KEYWORD2
-writeMultipleCoils      KEYWORD2
-writeMultipleRegisters  KEYWORD2
-addReg                  KEYWORD2
-addCoil                 KEYWORD2
-addIsts                 KEYWORD2
-addIreg                 KEYWORD2
-addHreg                 KEYWORD2
-Reg                     KEYWORD2
-Coil                    KEYWORD2
-Ists                    KEYWORD2
-Ireg                    KEYWORD2
-Hreg                    KEYWORD2
-
-# Constants (LITERAL1)
-COIL					LITERAL1
-ISTS					LITERAL1
-IREG					LITERAL1
-HERG					LITERAL1
+# Constants and Macros (LITERAL1)
+COIL			LITERAL1
+ISTS			LITERAL1
+IREG			LITERAL1
+HERG			LITERAL1
+BIT_VAL			LITERAL1
+BIT_BOOL		LITERAL1
+COIL_VAL		LITERAL1
+COIL_BOOL		LITERAL1
+ISTS_VAL		LITERAL1
+ISTS_BOOL		LITERAL1
