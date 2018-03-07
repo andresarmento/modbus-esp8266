@@ -22,22 +22,22 @@ TRegister* Modbus::searchRegister(uint16_t address) {
 
 bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     TRegister *newreg;
-    TRegister *root = NULL;
+    TRegister *root     = NULL;
 	while (numregs > 0) {
 		newreg = (TRegister*) malloc(sizeof(TRegister));
 		if (!newreg) {		//Cleanup if unable to add all regs
 			while (root) {
-				newreg = root;
-				root = root->next;
+				newreg  = root;
+				root    = root->next;
 				free(newreg);
 			}
 			return false;
 		}
 		newreg->address = address;
-		newreg->value	= value;
-		newreg->get	= cbDefault;
-		newreg->set	= cbDefault;
-		newreg->next	= root;
+		newreg->value   = value;
+		newreg->get     = cbDefault;
+		newreg->set     = cbDefault;
+		newreg->next    = root;
 		root = newreg;
 		address++;
 		numregs--;
@@ -66,7 +66,7 @@ bool Modbus::Reg(uint16_t address, uint16_t value) {
             reg->value = value;
         }
         return true;
-    } else
+    } else 
         return false;
 }
 
@@ -76,7 +76,7 @@ uint16_t Modbus::Reg(uint16_t address) {
     if(reg)
         if (cbEnabled) {
             return reg->get(reg, reg->value);
-        } esle {
+        } else {
             return reg->value;
         }
     else
@@ -170,7 +170,6 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 
     //Clean frame buffer
     free(_frame);
-	_len = 0;
 
     //Determine the message length = function type, byte count and
 	//for each group of 8 registers the message length increases by 1
@@ -221,7 +220,6 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint32_t fn) {
 
     //Clean frame buffer
     free(_frame);
-	_len = 0;
 
 	//calculate the query reply message length
 	//for each register queried add 2 bytes
@@ -309,29 +307,29 @@ void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t n
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::writeSingleCoil(uint16_t reg, uint16_t status) {
+void Modbus::writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn) {
     //Check value (status)
     if (status != 0xFF00 && status != 0x0000) {
-        this->exceptionResponse(MB_FC_WRITE_COIL, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
         return;
     }
 
     //Check Address and execute (reg exists?)
     if (!this->Coil(reg, (bool)status)) {
-        this->exceptionResponse(MB_FC_WRITE_COIL, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
     //Check for failure
     if (this->Coil(reg) != (bool)status) {
-        this->exceptionResponse(MB_FC_WRITE_COIL, MB_EX_SLAVE_FAILURE);
+        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
         return;
     }
 
     _reply = MB_REPLY_ECHO;
 }
 
-void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, uint8_t fh = MB_FC_WRITE_COILS) {
+void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, uint8_t fh) {
     //Check value
     uint16_t bytecount_calc = numoutputs / 8;
     if (numoutputs%8) bytecount_calc++;

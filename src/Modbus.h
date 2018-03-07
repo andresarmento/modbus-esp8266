@@ -26,7 +26,7 @@
 #define ISTS_BOOL(v) (v==0xFF00)
 
 //Function Codes
-enum {
+enum modbusFunctionCode {
     MB_FC_READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
     MB_FC_READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs) 1xxxx
     MB_FC_READ_REGS        = 0x03, // Read Holding Registers 4xxxx
@@ -40,7 +40,7 @@ enum {
 };
 
 //Exception Codes
-enum {
+enum modbusResultCode {
     MB_EX_ILLEGAL_FUNCTION  = 0x01, // Function Code not Supported
     MB_EX_ILLEGAL_ADDRESS   = 0x02, // Output Address not exists
     MB_EX_ILLEGAL_VALUE     = 0x03, // Output Value not in Range
@@ -50,12 +50,12 @@ enum {
 };
 
 //Reply Types
-enum {
-    MB_REPLY_OFF        = 0x01,
-    MB_REPLY_ECHO       = 0x02,
-    MB_REPLY_NORMAL     = 0x03,
-    MB_REPLY_ERROR      = 0x04,
-    MB_REPLY_UNEXPECTED = 0x05
+enum modbusReplyCode {
+    MB_REPLY_OFF            = 0x01,
+    MB_REPLY_ECHO           = 0x02,
+    MB_REPLY_NORMAL         = 0x03,
+    MB_REPLY_ERROR          = 0x04,
+    MB_REPLY_UNEXPECTED     = 0x05
 };
 
 typedef struct TRegister;
@@ -69,7 +69,7 @@ typedef struct TRegister {
     struct TRegister* next;
     cbModbus get;
     cbModbus set;
-} TRegister;
+};
 
 uint16_t cbDefault(TRegister* reg, uint16_t val);
 
@@ -81,8 +81,8 @@ class Modbus {
         void readRegisters(uint16_t startreg, uint16_t numregs) {
             readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
         }
-        void writeSingleRegister(uint16_t reg, uint16_t value);
-        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
+        void writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn = MB_FC_WRITE_REG);
+        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_REGS);
         void exceptionResponse(uint8_t fcode, uint8_t excode);
         void readCoils(uint16_t startreg, uint16_t numregs) {
             readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
@@ -93,10 +93,11 @@ class Modbus {
         void readInputRegisters(uint16_t startreg, uint16_t numregs) {
             this->readWords(IREG(startreg), numreg, MB_FC_READ_INPUT_REGS);
         }
-        void writeSingleCoil(uint16_t reg, uint16_t status);
-        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount);
+        void writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn = MB_FC_WRITE_COIL);
+        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_COILS);
 
         TRegister* searchRegister(uint16_t addr);
+
         bool readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_REGS);
         bool writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_COILS);
         bool writeSlaveWords(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_REGS);
@@ -149,35 +150,37 @@ class Modbus {
         uint16_t Ireg(uint16_t offset) {
             return Reg(IREG(offset));
         }
+        
         void cbEnable(bool state = TRUE);
         void cbDisable() {
             cbEnable(FALSE);
         }
         bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+
         bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onGet(COIL(offset), cb, numregs);
+            return onGet(COIL(offset), cb, numregs);
         }
         bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onSet(COIL(offset), cb, numresg);
+            return onSet(COIL(offset), cb, numresg);
         }
-        bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onGet(HREG(address), cb, numregs);
+        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(HREG(offset), cb, numregs);
         }
-        bool onSetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onSet(HREG(address), cb, numresg);
+        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(HREG(offset), cb, numresg);
         }
-        bool onGetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onGet(ISTS(address), cb, numregs);
+        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(ISTS(offset), cb, numregs);
         }
-        bool onSetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onSet(ISTS(address), cb, numresg);
+        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(ISTS(offset), cb, numresg);
         }
-        bool onGetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onGet(IREG(address), cb, numregs);
+        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(IREG(offset), cb, numregs);
         }
-        bool onSetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            onSet(IREG(address), cb, numresg);
+        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(IREG(offset), cb, numresg);
         }
 };
 
