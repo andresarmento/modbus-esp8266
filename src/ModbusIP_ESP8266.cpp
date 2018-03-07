@@ -1,5 +1,5 @@
 /*
-    Modbus.h - Header for Modbus Base Library
+    ModbusIP_ESP8266.cpp - ModbusIP Library Implementation
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
@@ -84,6 +84,27 @@ void ModbusIP::task() {
 	n = -1;
 }
 
-void ModbusIP::onConnect(cbModbusConnect cb = NULL) {
+//void ModbusIP::onConnect(cbModbusConnect cb = NULL) {
+//	cbConnect = cb;
+//}
+
+void ModbusMasterIP::connect(IPAddress address) {
+}
+void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, uint8_t fn){
+}
+void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, uint8_t fn) {
+}
+void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, uint8_t fn) {
+}
+void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, uint8_t fn) {
+}
+void ModbusMasterIP::task() {
+}
+uint16_t ModbusMasterIP::regGroupsCount() {
+}
+IPAddreess ModbusMasterIP::eventSource() {
+}
+
+void ModbusCoreIP::onConnect(cbModbusConnect cb = NULL) {
 	cbConnect = cb;
 }

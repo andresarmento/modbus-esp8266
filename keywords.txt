@@ -14,6 +14,7 @@ onSet			KEYWORD2
 onConnect		KEYWORD2
 cbEnable        KEYWORD2
 cbDisable       KEYWORD2
+eventSource     KEYWORD2
 onGetCoil		KEYWORD2
 onSetCoil		KEYWORD2
 onGetHreg		KEYWORD2

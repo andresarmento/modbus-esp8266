@@ -3,10 +3,9 @@
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
-#include "Arduino.h"
+#pragma once
 
-#ifndef MODBUS_H
-#define MODBUS_H
+#include "Arduino.h"
 
 #define MAX_REGS     32
 #define MAX_FRAME   128
@@ -183,5 +182,3 @@ class Modbus {
             return onSet(IREG(offset), cb, numresg);
         }
 };
-
-#endif //MODBUS_H

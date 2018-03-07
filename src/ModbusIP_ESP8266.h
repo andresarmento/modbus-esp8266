@@ -1,17 +1,16 @@
 /*
-    ModbusIP.h - Header for ModbusIP Library
+    ModbusIP_ESP8266.h - Header for ModbusIP Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
+#pragma once
+
 #include <Modbus.h>
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
 #else
  #include <WiFi.h>
 #endif
-
-#ifndef MODBUSIP_ESP8266_H
-#define MODBUSIP_ESP8266_H
 
 #define MODBUSIP_PORT 	  502
 #define MODBUSIP_MAXFRAME 200
@@ -29,7 +28,16 @@
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
-class ModbusMasterIP : public Modbus, public WiFiClient {
+class ModbusCoreIP : public Modbus {
+    private:
+    uint8_t _MBAP[7];
+	cbModbusConnect cbConnect = NULL;
+    public:
+    void onConnect(cbModbusConnect cb);
+    virtual IPAddreess eventSource();
+}
+
+class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
 	TRegister* reg;
 	TRegister* next;
@@ -45,32 +53,39 @@ class ModbusMasterIP : public Modbus, public WiFiClient {
 	void pullBits(uint16_t address, uint16_t numregs, uint8_t fn);
 	void pushWords(uint16_t address, uint16_t numregs, uint8_t fn);
 	void pullWords(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pushCoil();
-	void pullCoil();
-	void pushIsts();
-	void pullIsts();
-	void pushHreg();
-	void pullHreg();
-	void pushIreg();
-	void pullIreg();
+	void pushCoil() {
+	}
+	void pullCoil() {
+	}
+	void pushIsts() {
+	}
+	void pullIsts() {
+	}
+	void pushHreg() {
+	}
+	void pullHreg() {
+	}
+	void pushIreg() {
+	}
+	void pullIreg() {
+	}
 	public:
 	void task();
 	uint16_t regGroupsCount();
+	IPAddreess eventSource();
 }
 
-class ModbusIP : public Modbus, public WiFiServer {
+class ModbusIP : public ModbusCoreIP, public WiFiServer {
     private:
-    uint8_t _MBAP[7];
+    //uint8_t _MBAP[7];
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
-	cbModbusConnect cbConnect = NULL;
+	//cbModbusConnect cbConnect = NULL;
 	int8_t n = -1;
     public:
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
 	}
 	void begin();
     void task();
-    void onConnect(cbModbusConnect cb);
+    //void onConnect(cbModbusConnect cb);
     IPAddreess eventSource();
 };
-
-#endif //MODBUSIP_ESP8266_H
