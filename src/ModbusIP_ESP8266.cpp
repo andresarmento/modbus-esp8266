@@ -12,7 +12,7 @@ void ModbusIP::begin() {
 	}
 }
 
-IPAddreess ModbusIP::eventSource() {		// Returns IP of current processing client query
+IPAddress ModbusIP::eventSource() {		// Returns IP of current processing client query
 	if (n >= 0 && n < MODBUSIP_MAX_CLIENTS && client[n])
 		return client[n]->remoteIP();
 	return INADDR_NONE;
@@ -102,7 +102,7 @@ void ModbusMasterIP::task() {
 }
 uint16_t ModbusMasterIP::regGroupsCount() {
 }
-IPAddreess ModbusMasterIP::eventSource() {
+IPAddress ModbusMasterIP::eventSource() {
 }
 
 void ModbusCoreIP::onConnect(cbModbusConnect cb = NULL) {

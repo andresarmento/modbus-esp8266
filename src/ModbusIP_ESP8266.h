@@ -27,15 +27,25 @@
 
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
-
+typedef union MBAP {
+	struct {
+	uint16_t transactionId;
+	uint16_t protocolId;
+	uint16_t length;
+	uint8_t	unitId;
+	};
+	uint8_t raw[7];
+};
 class ModbusCoreIP : public Modbus {
-    private:
+    protected:
     uint8_t _MBAP[7];
 	cbModbusConnect cbConnect = NULL;
     public:
     void onConnect(cbModbusConnect cb);
-    virtual IPAddreess eventSource();
-}
+    virtual IPAddress eventSource() {
+		
+	}
+};
 
 class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
@@ -53,9 +63,47 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pullBits(uint16_t address, uint16_t numregs, uint8_t fn);
 	void pushWords(uint16_t address, uint16_t numregs, uint8_t fn);
 	void pullWords(uint16_t address, uint16_t numregs, uint8_t fn);
+	void send() {
+		uint16_t i;
+		//MBAP
+		_MBAP[0] = 0;
+		_MBAP[1] = 1;
+		_MBAP[2] = 0;
+		_MBAP[3] = 0;	
+		_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
+		_MBAP[5] = (_len+1) & 0x00FF;
+				
+		size_t send_len = (uint16_t)_len + 7;
+		uint8_t sbuf[send_len];
+				
+		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
+		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+			write(sbuf, send_len);
+	}
+	void get() {
+		uint8_t i;
+		if (!connected()) return;
+		uint16_t raw_len = 0;
+		raw_len = available();
+		if (raw_len > 7) {
+			for (i = 0; i < 7; i++)	_MBAP[i] = read(); //Get MBAP
+			_len = _MBAP[4] << 8 | _MBAP[5];
+			_len--; // Do not count with last byte from MBAP
+			if (_MBAP[2] == 0 && _MBAP[3] == 0 && _len < MODBUSIP_MAXFRAME) {
+				_frame = (uint8_t*) malloc(_len);
+				raw_len = raw_len - 7;
+				for (i = 0; i < _len; i++)
+					_frame[i] = read(); //Get Modbus PDU
+				responcePDU(_frame);
+			}
+			flush();
+		}
+	}
 	void pushCoil() {
 	}
 	void pullCoil() {
+	//	readSlave(COIL(offset), numregs, MB_FC_READ_COILS);
+	//	send();
 	}
 	void pushIsts() {
 	}
@@ -70,10 +118,16 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pullIreg() {
 	}
 	public:
+	void begin() {
+	}
 	void task();
 	uint16_t regGroupsCount();
-	IPAddreess eventSource();
-}
+	IPAddress eventSource();
+	bool pullReg(uint16_t address, uint16_t numregs) {
+		addReg(address, numregs);
+	}
+	bool pushReg(uint16_t address, uint16_t numregs);
+};
 
 class ModbusIP : public ModbusCoreIP, public WiFiServer {
     private:
@@ -87,5 +141,5 @@ class ModbusIP : public ModbusCoreIP, public WiFiServer {
 	void begin();
     void task();
     //void onConnect(cbModbusConnect cb);
-    IPAddreess eventSource();
+    IPAddress eventSource();
 };

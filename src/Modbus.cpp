@@ -204,7 +204,7 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint32_t fn) {
+void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint8_t fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
@@ -249,7 +249,7 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint32_t fn) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::writeSingleRegister(uint16_t reg, uint16_t value) {
+void Modbus::writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn) {
     //No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using uint16_t (0x0000 - 0x0FFFF)
     //Check Address and execute (reg exists?)
     if (!this->Hreg(reg, value)) {
@@ -266,7 +266,7 @@ void Modbus::writeSingleRegister(uint16_t reg, uint16_t value) {
     _reply = MB_REPLY_ECHO;
 }
 
-void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount) {
+void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn) {
     //Check value
     if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
         this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_VALUE);
@@ -329,7 +329,7 @@ void Modbus::writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode f
     _reply = MB_REPLY_ECHO;
 }
 
-void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, uint8_t fh) {
+void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn) {
     //Check value
     uint16_t bytecount_calc = numoutputs / 8;
     if (numoutputs%8) bytecount_calc++;
@@ -422,7 +422,7 @@ bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 	free(_frame);
 	_len = 5;
-	_frame = (uint8_t*) malloc(_len;
+	_frame = (uint8_t*) malloc(_len);
 	if (!_frame) return false;
 	_frame[0] = fn;
 	_frame[1] = startreg >> 8;
@@ -447,7 +447,7 @@ bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 
 void Modbus::responcePDU(uint8_t* frame) {
     uint8_t fcode  = frame[0];
-    if (fcode & 0x80h) {
+    if ((fcode & 0x80) != 0) {
 	    _reply = MB_REPLY_ERROR;
 	    return;
     }
@@ -485,6 +485,6 @@ void Modbus::responcePDU(uint8_t* frame) {
     _reply = MB_REPLY_OFF;
 }
 
-void Modbus::cbEnable(bool state = TRUE) {
+void Modbus::cbEnable(bool state) {
     cbEnabled = state;
 }
