@@ -41,6 +41,7 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);
+  mb.connect()
   mb.readSlave(COIL(LED_COIL), 1, MB_FC_READ_COILS);
   mb.send();
 }

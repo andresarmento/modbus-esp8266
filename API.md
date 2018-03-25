@@ -6,9 +6,21 @@
 
 ```c
 bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1)
+```
+
+```c
 bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
+```
+
+```c
 bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
+```
+
+```c
 bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
+```
+
+```c
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
 ```
 
@@ -34,35 +46,51 @@ uint16_t Ireg(uint16_t offset)
 
 ### Callbacks
 
-`void cbEnable(bool state = TRUE)`
+```c
+void cbEnable(bool state = TRUE)
+```
 
 Callback generation control. Callback generation is enabled by default.
 
-`void cbDisable()`
+```c
+void cbDisable()
+```
 
 Disable callback generation.
 
-`void onConnect(cbModbusConnect cb)`
+```c
+void onConnect(cbModbusConnect cb)
+```
 
 Assign callback function on new incoming connection event.
 
-`typedef bool (*cbModbusConnect)(IPAddress ip)`
+```c
+typedef bool (*cbModbusConnect)(IPAddress ip)
+```
 
 Connect event callback function definition. Client IP address is passed as argument.
 
-`typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)`
+```c
+typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
+```
 
 Get/Set register callback function definition. Pointer to TRegister structure of the register and new value are passed as arguments.
 
-`bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)`
+```c
+bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+```
 
 Assign register get value callback.
 
-`bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)`
+```c
+bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+```
 
 Assign callback function on register modify event.
 
-`bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)`
+```c
+bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+```
 
 Assign callback function on register modify event.
 
