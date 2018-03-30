@@ -151,7 +151,7 @@ void Modbus::exceptionResponse(uint8_t fcode, uint8_t excode) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
+void Modbus::readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x07D0) {
         this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
@@ -204,7 +204,7 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
     _reply = MB_REPLY_NORMAL;
 }
 
-void Modbus::readWords(uint16_t startreg, uint16_t numregs, uint8_t fn) {
+void Modbus::readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
@@ -406,7 +406,7 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn) {
+bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
@@ -419,7 +419,7 @@ bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 	return true;
 }
 
-bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
+bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
@@ -432,7 +432,7 @@ bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn) {
 	return true;
 }
 
-bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, uint8_t fn) {
+bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);

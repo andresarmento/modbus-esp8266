@@ -55,15 +55,15 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	IPAddress	ip;
 	uint32_t	queryStart;
 	uint32_t	timeout;
-	void connect(IPAddress address);
 	public:
 	ModbusMasterIP() : WiFiClient() {
 	}
-	void pushBits(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pullBits(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pushWords(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pullWords(uint16_t address, uint16_t numregs, uint8_t fn);
-	void send() {
+	void connect(IPAddress address);
+	void pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pullBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pushWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	bool send() {
 		uint16_t i;
 		//MBAP
 		_MBAP[0] = 0;
@@ -80,9 +80,9 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
 			write(sbuf, send_len);
 	}
-	void get() {
+	bool get() {
 		uint8_t i;
-		if (!connected()) return;
+		if (!connected()) return false;
 		uint16_t raw_len = 0;
 		raw_len = available();
 		if (raw_len > 7) {
@@ -95,9 +95,11 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 				for (i = 0; i < _len; i++)
 					_frame[i] = read(); //Get Modbus PDU
 				responcePDU(_frame);
+				return send();
 			}
 			flush();
 		}
+		return false;
 	}
 	void pushCoil() {
 	}

@@ -89,14 +89,15 @@ void ModbusIP::task() {
 //}
 
 void ModbusMasterIP::connect(IPAddress address) {
+	this->connect(adderss, MODBUSIP_PORT);
 }
-void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, uint8_t fn){
+void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn){
 }
-void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, uint8_t fn) {
+void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
 }
-void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, uint8_t fn) {
+void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
 }
-void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, uint8_t fn) {
+void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
 }
 void ModbusMasterIP::task() {
 }

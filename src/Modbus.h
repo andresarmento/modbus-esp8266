@@ -75,8 +75,8 @@ uint16_t cbDefault(TRegister* reg, uint16_t val);
 class Modbus {
     private:
         TRegister* _regs_head = NULL;
-	    void readBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_COILS);
-	    void readWords(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_REGS);
+	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_COILS);
+	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_REGS);
         void readRegisters(uint16_t startreg, uint16_t numregs) {
             readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
         }
@@ -106,9 +106,9 @@ class Modbus {
         void responcePDU(uint8_t* frame);
 
     public:
-        bool readSlave(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_READ_REGS);
-        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_COILS);
-        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, uint8_t fn = MB_FC_WRITE_REGS);
+        bool readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_REGS);
+        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_COILS);
+        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_REGS);
 
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
