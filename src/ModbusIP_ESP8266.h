@@ -78,13 +78,15 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 				
 		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
 		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
-			write(sbuf, send_len);
+		write(sbuf, send_len);
+		//Serial.println(_frame[0]);
 	}
 	bool get() {
 		uint8_t i;
 		if (!connected()) return false;
 		uint16_t raw_len = 0;
 		raw_len = available();
+		//Serial.println(raw_len);
 		if (raw_len > 7) {
 			for (i = 0; i < 7; i++)	_MBAP[i] = read(); //Get MBAP
 			_len = _MBAP[4] << 8 | _MBAP[5];
@@ -95,7 +97,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 				for (i = 0; i < _len; i++)
 					_frame[i] = read(); //Get Modbus PDU
 				responcePDU(_frame);
-				return send();
+				return true;
 			}
 			flush();
 		}
@@ -103,9 +105,9 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	}
 	void pushCoil() {
 	}
-	void pullCoil() {
-	//	readSlave(COIL(offset), numregs, MB_FC_READ_COILS);
-	//	send();
+	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
+		readSlave(COIL(offset), numregs, MB_FC_READ_COILS);
+		send();
 	}
 	void pushIsts() {
 	}

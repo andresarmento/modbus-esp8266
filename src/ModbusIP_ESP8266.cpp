@@ -89,7 +89,7 @@ void ModbusIP::task() {
 //}
 
 void ModbusMasterIP::connect(IPAddress address) {
-	this->connect(adderss, MODBUSIP_PORT);
+	WiFiClient::connect(address, MODBUSIP_PORT);
 }
 void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn){
 }

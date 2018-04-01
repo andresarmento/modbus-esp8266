@@ -84,7 +84,7 @@ uint16_t Modbus::Reg(uint16_t address) {
 }
 
 void Modbus::receivePDU(uint8_t* frame) {
-    uint8_t fcode  = frame[0];
+    modbusFunctionCode fcode  = (modbusFunctionCode)frame[0];
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
 
@@ -135,7 +135,7 @@ void Modbus::receivePDU(uint8_t* frame) {
     }
 }
 
-void Modbus::exceptionResponse(uint8_t fcode, uint8_t excode) {
+void Modbus::exceptionResponse(modbusFunctionCode fn, modbusResultCode excode) {
     //Clean frame buffer
     free(_frame);
     _len = 2;
@@ -145,7 +145,7 @@ void Modbus::exceptionResponse(uint8_t fcode, uint8_t excode) {
 		_reply = MB_REPLY_OFF;
 		return;
     }
-    _frame[0] = fcode + 0x80;
+    _frame[0] = fn + 0x80;
     _frame[1] = excode;
 
     _reply = MB_REPLY_NORMAL;
@@ -416,6 +416,8 @@ bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode f
 	_frame[2] = startreg & 0x00FF;
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
+    Serial.print("_frame[2] = ");
+   Serial.println(_frame[2]);
 	return true;
 }
 
@@ -448,6 +450,8 @@ bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunction
 void Modbus::responcePDU(uint8_t* frame) {
     uint8_t fcode  = frame[0];
     if ((fcode & 0x80) != 0) {
+        Serial.print("Error: ");
+        Serial.println(_frame[1]);
 	    _reply = MB_REPLY_ERROR;
 	    return;
     }

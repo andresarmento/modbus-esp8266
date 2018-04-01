@@ -75,6 +75,9 @@ uint16_t cbDefault(TRegister* reg, uint16_t val);
 class Modbus {
     private:
         TRegister* _regs_head = NULL;
+        // All function assuming to process Modbus frame from Slave perspective
+        // I.e. readRegisters fill frame with local regisers vales
+        // writeRegisters sets local registers according to frame values
 	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_COILS);
 	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_REGS);
         void readRegisters(uint16_t startreg, uint16_t numregs) {
@@ -82,7 +85,7 @@ class Modbus {
         }
         void writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn = MB_FC_WRITE_REG);
         void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_REGS);
-        void exceptionResponse(uint8_t fcode, uint8_t excode);
+        void exceptionResponse(modbusFunctionCode fn, modbusResultCode excode);
         void readCoils(uint16_t startreg, uint16_t numregs) {
             readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
         }
@@ -90,7 +93,7 @@ class Modbus {
             readBits(ISTS(startreg), numregs, MB_FC_READ_INPUT_STAT);
         }
         void readInputRegisters(uint16_t startreg, uint16_t numregs) {
-            this->readWords(IREG(startreg), numregs, MB_FC_READ_INPUT_REGS);
+            readWords(IREG(startreg), numregs, MB_FC_READ_INPUT_REGS);
         }
         void writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn = MB_FC_WRITE_COIL);
         void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_COILS);
