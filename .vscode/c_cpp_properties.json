@@ -3,22 +3,68 @@
         {
             "name": "Mac",
             "includePath": [
-                "/Users/aem/Library/Arduino15/packages/esp8266/hardware/esp8266/2.4.1/cores/esp8266"
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceRoot}"
             ],
-            "browse": {
-                "limitSymbolsToIncludedHeaders": false,
-                "path": [
-                    "/Users/aem/Library/Arduino15/packages/esp8266/hardware/esp8266/2.4.1/cores/esp8266"
-                ]
-            },
+            "defines": [],
             "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
             "macFrameworkPath": [
                 "/System/Library/Frameworks",
                 "/Library/Frameworks"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceRoot}"
             ],
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c11",
-            "cppStandard": "c++17"
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr\\avr\\include",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\4.9.2\\include",
+                "C:\\Documents and Settings\\Alex\\Documents\\Arduino\\hardware\\espressif\\esp32\\libraries\\WiFi\\src",
+                "C:\\Documents and Settings\\Alex\\Local Settings\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.4.0-rc2\\variants\\nodemcu",
+                "${workspaceRoot}"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
         }
     ],
     "version": 3

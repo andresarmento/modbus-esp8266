@@ -406,7 +406,7 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);

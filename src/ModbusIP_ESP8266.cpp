@@ -41,29 +41,37 @@ void ModbusIP::task() {
 	}
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (client[n] == NULL)
-			continue;
+			continue;	// for (n)
 		if (!client[n]->connected()) {
 			delete client[n];
 			client[n] = NULL;
-			continue;
+			continue;	// for (n)
 		}
-		uint16_t raw_len = 0;
-		raw_len = client[n]->available();
-		if (raw_len > sizeof(_MBAP)) {
+		if (client[n]->available() > sizeof(_MBAP)) {
 			//for (i = 0; i < 7; i++)	_MBAP[i] = client[n]->read(); //Get MBAP
-			client[n]->readBytes(_MBAP, sizeof(_MBAP));
+			client[n]->readBytes(_MBAP, sizeof(_MBAP));	//Get MBAP
 			_len = _MBAP[4] << 8 | _MBAP[5];
 			_len--; // Do not count with last byte from MBAP
-			if (_MBAP[2] != 0 || _MBAP[3] != 0) continue;   //Not a MODBUSIP packet
-			if (_len > MODBUSIP_MAXFRAME) continue;      //Length is over MODBUSIP_MAXFRAME
-			_frame = (uint8_t*) malloc(_len);
+		
+			if (_MBAP[2] != 0 || _MBAP[3] != 0) {   //Not a MODBUSIP packet
+				client[n]->flush();
+				continue;	// for (n)
+			}
+			if (_len > MODBUSIP_MAXFRAME) {	//Length is over MODBUSIP_MAXFRAME
+				exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_SLAVE_FAILURE);
+				client[n]->flush();
+			} else {
+				_frame = (uint8_t*) malloc(_len);
 			
-			raw_len = raw_len - sizeof(_MBAP);
-			for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
-			
-			this->receivePDU(_frame);
-			client[n]->flush();
-
+				// for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
+				if (client[i]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
+					exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_ILLEGAL_VALUE);
+					client[i]->flush();
+				} else {
+					this->receivePDU(_frame);
+					//client[n]->flush();
+				}
+			}
 			if (_reply != MB_REPLY_OFF) {
 			    //MBAP
 				_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
@@ -72,8 +80,10 @@ void ModbusIP::task() {
 				size_t send_len = (uint16_t)_len + 7;
 				uint8_t sbuf[send_len];
 				
-				for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
-				for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+				//for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
+				//for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+				memcpy(_MBAP, sbuf, sizeof(_MBAP));
+				memcpy(_frame, sbuf + sizeof(_MBAP), _len);
 
 				client[n]->write(sbuf, send_len);
 			}
@@ -100,8 +110,6 @@ void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, modbusFunctio
 void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
 }
 void ModbusMasterIP::task() {
-}
-uint16_t ModbusMasterIP::regGroupsCount() {
 }
 IPAddress ModbusMasterIP::eventSource() {
 }

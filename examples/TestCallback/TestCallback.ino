@@ -17,6 +17,9 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
+#include <list>
+std::list<TRegister> test;
+
 //Modbus Registers Offsets (0-9999)
 const int LED_COIL = 100;
 //Used Pins
@@ -60,8 +63,8 @@ void setup() {
   mb.begin();
 
   pinMode(ledPin, OUTPUT);
-  mb.addReg(COIL(LED_COIL));       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onSet(COIL(LED_COIL), cbLed); // Add callback on Coil LED_COIL value set
+  mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
+  mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
 }
 
 void loop() {
