@@ -72,6 +72,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		_MBAP[3] = 0;	
 		_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
 		_MBAP[5] = (_len+1) & 0x00FF;
+		_MABP[6] = 0xFF;
 				
 		size_t send_len = (uint16_t)_len + 7;
 		uint8_t sbuf[send_len];

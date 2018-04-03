@@ -49,16 +49,16 @@ void ModbusIP::task() {
 		}
 		uint16_t raw_len = 0;
 		raw_len = client[n]->available();
-		if (raw_len > 7) {
-			for (i = 0; i < 7; i++)	_MBAP[i] = client[n]->read(); //Get MBAP
-
+		if (raw_len > sizeof(_MBAP)) {
+			//for (i = 0; i < 7; i++)	_MBAP[i] = client[n]->read(); //Get MBAP
+			client[n]->readBytes(_MBAP, sizeof(_MBAP));
 			_len = _MBAP[4] << 8 | _MBAP[5];
 			_len--; // Do not count with last byte from MBAP
 			if (_MBAP[2] != 0 || _MBAP[3] != 0) continue;   //Not a MODBUSIP packet
 			if (_len > MODBUSIP_MAXFRAME) continue;      //Length is over MODBUSIP_MAXFRAME
 			_frame = (uint8_t*) malloc(_len);
 			
-			raw_len = raw_len - 7;
+			raw_len = raw_len - sizeof(_MBAP);
 			for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
 			
 			this->receivePDU(_frame);
