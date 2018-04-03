@@ -55,15 +55,15 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	IPAddress	ip;
 	uint32_t	queryStart;
 	uint32_t	timeout;
-	void connect(IPAddress address);
 	public:
 	ModbusMasterIP() : WiFiClient() {
 	}
-	void pushBits(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pullBits(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pushWords(uint16_t address, uint16_t numregs, uint8_t fn);
-	void pullWords(uint16_t address, uint16_t numregs, uint8_t fn);
-	void send() {
+	void connect(IPAddress address);
+	void pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pullBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pushWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	bool send() {
 		uint16_t i;
 		//MBAP
 		_MBAP[0] = 0;
@@ -72,19 +72,22 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		_MBAP[3] = 0;	
 		_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
 		_MBAP[5] = (_len+1) & 0x00FF;
+		_MABP[6] = 0xFF;
 				
 		size_t send_len = (uint16_t)_len + 7;
 		uint8_t sbuf[send_len];
 				
 		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
 		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
-			write(sbuf, send_len);
+		write(sbuf, send_len);
+		//Serial.println(_frame[0]);
 	}
-	void get() {
+	bool get() {
 		uint8_t i;
-		if (!connected()) return;
+		if (!connected()) return false;
 		uint16_t raw_len = 0;
 		raw_len = available();
+		//Serial.println(raw_len);
 		if (raw_len > 7) {
 			for (i = 0; i < 7; i++)	_MBAP[i] = read(); //Get MBAP
 			_len = _MBAP[4] << 8 | _MBAP[5];
@@ -95,15 +98,17 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 				for (i = 0; i < _len; i++)
 					_frame[i] = read(); //Get Modbus PDU
 				responcePDU(_frame);
+				return true;
 			}
 			flush();
 		}
+		return false;
 	}
 	void pushCoil() {
 	}
-	void pullCoil() {
-	//	readSlave(COIL(offset), numregs, MB_FC_READ_COILS);
-	//	send();
+	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
+		readSlave(COIL(offset), numregs, MB_FC_READ_COILS);
+		send();
 	}
 	void pushIsts() {
 	}

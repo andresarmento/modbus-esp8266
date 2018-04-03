@@ -6,9 +6,21 @@
 
 ```c
 bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1)
+```
+
+```c
 bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
+```
+
+```c
 bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
+```
+
+```c
 bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
+```
+
+```c
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
 ```
 
