@@ -62,14 +62,18 @@ void ModbusIP::task() {
 				client[n]->flush();
 			} else {
 				_frame = (uint8_t*) malloc(_len);
-			
-				// for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
-				if (client[i]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
-					exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_ILLEGAL_VALUE);
-					client[i]->flush();
+				if (!_frame) {
+					exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_SLAVE_FAILURE);
+					client[n]->flush();
 				} else {
-					this->receivePDU(_frame);
-					//client[n]->flush();
+					//for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
+					if (client[i]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
+						exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_ILLEGAL_VALUE);
+						client[i]->flush();
+					} else {
+						this->receivePDU(_frame);
+						client[n]->flush();
+					}
 				}
 			}
 			if (_reply != MB_REPLY_OFF) {
@@ -82,8 +86,8 @@ void ModbusIP::task() {
 				
 				//for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
 				//for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
-				memcpy(_MBAP, sbuf, sizeof(_MBAP));
-				memcpy(_frame, sbuf + sizeof(_MBAP), _len);
+				memcpy(sbuf, _MBAP, sizeof(_MBAP));
+				memcpy(sbuf + sizeof(_MBAP), _frame, _len);
 
 				client[n]->write(sbuf, send_len);
 			}

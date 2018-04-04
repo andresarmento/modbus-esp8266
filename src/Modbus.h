@@ -28,30 +28,6 @@
 #define IS_IREG(n) (n >= IREG_BASE && n < HREG_BASE)
 #define IS_HREG(n) (n >= HREG_BASE)
 
-//Function Codes
-enum modbusFunctionCode {
-    MB_FC_READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
-    MB_FC_READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs) 1xxxx
-    MB_FC_READ_REGS        = 0x03, // Read Holding Registers 4xxxx
-    MB_FC_READ_INPUT_REGS  = 0x04, // Read Input Registers 3xxxx
-    MB_FC_WRITE_COIL       = 0x05, // Write Single Coil (Output) 0xxxx
-    MB_FC_WRITE_REG        = 0x06, // Preset Single Register 4xxxx
-    MB_FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs) 0xxxx
-    MB_FC_WRITE_REGS       = 0x10, // Write block of contiguous registers 4xxxx
-    MB_FC_MASKWRITE_REG    = 0x16, // Not implemented
-    MB_FC_READWRITE_REGS   = 0x17  // Not implemented
-};
-
-//Exception Codes
-enum modbusResultCode {
-    MB_EX_ILLEGAL_FUNCTION  = 0x01, // Function Code not Supported
-    MB_EX_ILLEGAL_ADDRESS   = 0x02, // Output Address not exists
-    MB_EX_ILLEGAL_VALUE     = 0x03, // Output Value not in Range
-    MB_EX_SLAVE_FAILURE     = 0x04, // Slave or Master Deice Fails to process request
-    MB_EX_ACKNOWLEDGE       = 0x05, // Not used
-    MB_EX_SLAVE_DEVICE_BUSY = 0x06  // Not used
-};
-
 typedef struct TRegister;
 
 // Callback function Type
@@ -93,7 +69,7 @@ class Modbus {
         void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_COILS);
 
         TRegister* searchRegister(uint16_t addr);
-//        TRegister* searchRegister(uint32_t addr);
+
         bool cbEnabled = true;
     
     protected:
@@ -113,29 +89,44 @@ class Modbus {
         void receivePDU(uint8_t* frame);
         void responcePDU(uint8_t* frame);
 
-    public:
-        enum FunctionCode {
-            READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
-            READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs) 1xxxx
-            READ_REGS        = 0x03, // Read Holding Registers 4xxxx
-            READ_INPUT_REGS  = 0x04, // Read Input Registers 3xxxx
-            WRITE_COIL       = 0x05, // Write Single Coil (Output) 0xxxx
-            WRITE_REG        = 0x06, // Preset Single Register 4xxxx
-            WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs) 0xxxx
-            WRITE_REGS       = 0x10, // Write block of contiguous registers 4xxxx
-            MASKWRITE_REG    = 0x16, // Not implemented
-            READWRITE_REGS   = 0x17  // Not implemented
-        };
         TRegister* getHead() {
             return _regs_head;
         }
-        bool readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn);
+
+        bool readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
         bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_COILS);
         bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_REGS);
 
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
+
+        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+
+    public:
+        //Function Codes
+        enum modbusFunctionCode {
+            MB_FC_READ_COILS       = 0x01, // Read Coils (Output) Status 0xxxx
+            MB_FC_READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs) 1xxxx
+            MB_FC_READ_REGS        = 0x03, // Read Holding Registers 4xxxx
+            MB_FC_READ_INPUT_REGS  = 0x04, // Read Input Registers 3xxxx
+            MB_FC_WRITE_COIL       = 0x05, // Write Single Coil (Output) 0xxxx
+            MB_FC_WRITE_REG        = 0x06, // Preset Single Register 4xxxx
+            MB_FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs) 0xxxx
+            MB_FC_WRITE_REGS       = 0x10, // Write block of contiguous registers 4xxxx
+            MB_FC_MASKWRITE_REG    = 0x16, // Not implemented
+            MB_FC_READWRITE_REGS   = 0x17  // Not implemented
+        };
+        //Exception Codes
+        enum modbusResultCode {
+            MB_EX_ILLEGAL_FUNCTION  = 0x01, // Function Code not Supported
+            MB_EX_ILLEGAL_ADDRESS   = 0x02, // Output Address not exists
+            MB_EX_ILLEGAL_VALUE     = 0x03, // Output Value not in Range
+            MB_EX_SLAVE_FAILURE     = 0x04, // Slave or Master Deice Fails to process request
+            MB_EX_ACKNOWLEDGE       = 0x05, // Not used
+            MB_EX_SLAVE_DEVICE_BUSY = 0x06  // Not used
+        };
 
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
             return addReg(HREG(offset), value, numregs);
@@ -179,13 +170,10 @@ class Modbus {
             cbEnable(false);
         }
         
-        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-
-        inline bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onGet(COIL(offset), cb, numregs);
         }
-        inline bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(COIL(offset), cb, numregs);
         }
         bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
