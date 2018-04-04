@@ -5,44 +5,38 @@
 ### Add [multiple] regs
 
 ```c
-bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1)
-bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1)
-bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1)
-bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1)
+bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
+bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
+bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
+bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 ```
 
 ### Write regs
 
 ```c
-bool Hreg(uint16_t offset, uint16_t value)
-bool Coil(uint16_t offset, bool value)
-bool Ists(uint16_t offset, bool value)
-bool Ireg(uint16_t offset, uint16_t value)
+bool Hreg(uint16_t offset, uint16_t value);
+bool Coil(uint16_t offset, bool value);
+bool Ists(uint16_t offset, bool value);
+bool Ireg(uint16_t offset, uint16_t value);
 ```
 
 ### Read regs
 
 ```c
-uint16_t Reg(uint16_t address)
-uint16_t Hreg(uint16_t offset)
-bool Coil(uint16_t offset)
-bool Ists(uint16_t offset)
-uint16_t Ireg(uint16_t offset)
+uint16_t Hreg(uint16_t offset);
+bool Coil(uint16_t offset);
+bool Ists(uint16_t offset);
+uint16_t Ireg(uint16_t offset);
 ```
 
 ### Callbacks
 
 ```c
-void cbEnable(bool state = TRUE)
+void cbEnable(bool state = TRUE);
+void cbDisable();
 ```
 
 Callback generation control. Callback generation is enabled by default.
-
-```c
-void cbDisable()
-```
-
-Disable callback generation.
 
 ```c
 void onConnect(cbModbusConnect cb)
@@ -69,20 +63,20 @@ IPAddress eventSource()
 *ModbusIP and ModbusMasterIP only.* Should be called from onGet/onSet callback function. Returns IP address of remote requesting operation or IPADDR_NONE for local.
 
 ```c
-bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onSetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onSetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onSetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onSetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onSetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onSetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
 ```
 
 Assign callback function on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onSetCoil(regId)` form to disconnect callback.
 
 
 ```c
-bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onGetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
-bool onGetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1)
+bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onGetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onGetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
 ```
 
 Assign callback function on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onGet(regId)` form to disconnect callback.
@@ -99,20 +93,21 @@ Assign callback function on register query event. Multiple sequental registers c
 ### ModBus IP specific
 
 ```c
-void begin()
-void task()
+void begin();
+void task();
 ```
 
 ### ModBus IP Master specific
 
 ```c
-void pullCoils()
-void pushIstss()
-void pullIstss()
-void pushHregs()
-void pullHregs()
-void pushIregs()
-void pullIregs()
+void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
+void pullCoils(cbModbusResult cb = NULL);
+void pushIstss(cbModbusResult cb = NULL);
+void pullIstss(cbModbusResult cb = NULL);
+void pushHregs(cbModbusResult cb = NULL);
+void pullHregs(cbModbusResult cb = NULL);
+void pushIregs(cbModbusResult cb = NULL);
+void pullIregs(cbModbusResult cb = NULL);
 ```
 
 ### Callback example
