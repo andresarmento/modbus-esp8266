@@ -46,11 +46,19 @@ class ModbusCoreIP : public Modbus {
 		
 	}
 };
-
+typedef struct TTransaction;
+typedef uint16_t (*cbModbusSlave)(TTransaction* query, bool result);
+typedef struct TTransaction {
+	uint16_t	id;
+	uint16_t	startreg;
+	uint16_t	numregs;
+	uint32_t	timestamp;
+	TQuery*		next;
+	cbModbusSlave cb;
+}
 class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
-	TRegister* reg;
-	TRegister* next;
+	TTransaction* _trans;
 	uint8_t	   status;
 	IPAddress	ip;
 	uint32_t	queryStart;

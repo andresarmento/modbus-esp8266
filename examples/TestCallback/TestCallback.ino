@@ -1,6 +1,6 @@
 /*
   Modbus-Arduino Example - Test Led using callback (Modbus IP ESP8266/ESP32)
-  Control a Led on D4 pin using Write Single Coil Modbus Function 
+  Control a Led on D4 or TX pin using Write Single Coil Modbus Function 
   Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
@@ -16,9 +16,6 @@
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
-
-#include <list>
-std::list<TRegister> test;
 
 //Modbus Registers Offsets (0-9999)
 const int LED_COIL = 100;

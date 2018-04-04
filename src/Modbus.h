@@ -49,8 +49,8 @@ class Modbus {
         // All function assuming to process Modbus frame from Slave perspective
         // I.e. readRegisters fill frame with local regisers vales
         // writeRegisters sets local registers according to frame values
-	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_COILS);
-	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_READ_REGS);
+	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
         void readRegisters(uint16_t startreg, uint16_t numregs) {
             readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
         }
@@ -86,16 +86,16 @@ class Modbus {
         uint8_t  _len;
         uint8_t  _reply;
         void exceptionResponse(modbusFunctionCode fn, modbusResultCode excode);
-        void receivePDU(uint8_t* frame);
-        void responcePDU(uint8_t* frame);
+        void receivePDU(uint8_t* frame);    //For Slave
+        void responcePDU(uint8_t* frame);   //For Master
 
         TRegister* getHead() {
             return _regs_head;
         }
 
         bool readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_COILS);
-        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn = MB_FC_WRITE_REGS);
+        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
 
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
