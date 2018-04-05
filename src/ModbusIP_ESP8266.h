@@ -53,9 +53,9 @@ typedef struct TTransaction {
 	uint16_t	startreg;
 	uint16_t	numregs;
 	uint32_t	timestamp;
-	TQuery*		next;
+	TTransaction*		next;
 	cbModbusSlave cb;
-}
+};
 class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
 	TTransaction* _trans;
@@ -119,7 +119,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pushCoil() {
 	}
 	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
-		readSlave(offset, numregs, READ_COILS);
+		readSlave(offset, numregs, MB_FC_READ_COILS);
 		send();
 	}
 	void pullCoils() {

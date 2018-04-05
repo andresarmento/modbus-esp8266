@@ -44,66 +44,6 @@ typedef struct TRegister {
 uint16_t cbDefault(TRegister* reg, uint16_t val);
 
 class Modbus {
-    private:
-        TRegister* _regs_head = NULL;
-        // All function assuming to process Modbus frame from Slave perspective
-        // I.e. readRegisters fill frame with local regisers vales
-        // writeRegisters sets local registers according to frame values
-	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-        void readRegisters(uint16_t startreg, uint16_t numregs) {
-            readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
-        }
-        void writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn = MB_FC_WRITE_REG);
-        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_REGS);
-        void readCoils(uint16_t startreg, uint16_t numregs) {
-            readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
-        }
-        void readInputStatus(uint16_t startreg, uint16_t numregs) {
-            readBits(ISTS(startreg), numregs, MB_FC_READ_INPUT_STAT);
-        }
-        void readInputRegisters(uint16_t startreg, uint16_t numregs) {
-            readWords(IREG(startreg), numregs, MB_FC_READ_INPUT_REGS);
-        }
-        void writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn = MB_FC_WRITE_COIL);
-        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_COILS);
-
-        TRegister* searchRegister(uint16_t addr);
-
-        bool cbEnabled = true;
-    
-    protected:
-        //Reply Types
-        enum modbusReplyCode {
-            MB_REPLY_OFF            = 0x01,
-            MB_REPLY_ECHO           = 0x02,
-            MB_REPLY_NORMAL         = 0x03,
-            MB_REPLY_ERROR          = 0x04,
-            MB_REPLY_UNEXPECTED     = 0x05
-        };
-
-        uint8_t* _frame;
-        uint8_t  _len;
-        uint8_t  _reply;
-        void exceptionResponse(modbusFunctionCode fn, modbusResultCode excode);
-        void receivePDU(uint8_t* frame);    //For Slave
-        void responcePDU(uint8_t* frame);   //For Master
-
-        TRegister* getHead() {
-            return _regs_head;
-        }
-
-        bool readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
-
-        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
-        bool Reg(uint16_t address, uint16_t value);
-        uint16_t Reg(uint16_t address);
-
-        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-
     public:
         //Function Codes
         enum modbusFunctionCode {
@@ -194,4 +134,63 @@ class Modbus {
         bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(IREG(offset), cb, numregs);
         }
+    private:
+        TRegister* _regs_head = NULL;
+        // All function assuming to process Modbus frame from Slave perspective
+        // I.e. readRegisters fill frame with local regisers vales
+        // writeRegisters sets local registers according to frame values
+	    void readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+	    void readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+        void readRegisters(uint16_t startreg, uint16_t numregs) {
+            readWords(HREG(startreg), numregs, MB_FC_READ_REGS);
+        }
+        void writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn = MB_FC_WRITE_REG);
+        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_REGS);
+        void readCoils(uint16_t startreg, uint16_t numregs) {
+            readBits(COIL(startreg), numregs, MB_FC_READ_COILS);
+        }
+        void readInputStatus(uint16_t startreg, uint16_t numregs) {
+            readBits(ISTS(startreg), numregs, MB_FC_READ_INPUT_STAT);
+        }
+        void readInputRegisters(uint16_t startreg, uint16_t numregs) {
+            readWords(IREG(startreg), numregs, MB_FC_READ_INPUT_REGS);
+        }
+        void writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn = MB_FC_WRITE_COIL);
+        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn = MB_FC_WRITE_COILS);
+
+        TRegister* searchRegister(uint16_t addr);
+
+        bool cbEnabled = true;
+    
+    protected:
+        //Reply Types
+        enum modbusReplyCode {
+            MB_REPLY_OFF            = 0x01,
+            MB_REPLY_ECHO           = 0x02,
+            MB_REPLY_NORMAL         = 0x03,
+            MB_REPLY_ERROR          = 0x04,
+            MB_REPLY_UNEXPECTED     = 0x05
+        };
+
+        uint8_t* _frame;
+        uint8_t  _len;
+        uint8_t  _reply;
+        void exceptionResponse(modbusFunctionCode fn, modbusResultCode excode);
+        void receivePDU(uint8_t* frame);    //For Slave
+        void responcePDU(uint8_t* frame);   //For Master
+
+        TRegister* getHead() {
+            return _regs_head;
+        }
+
+        bool readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn);
+
+        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
+        bool Reg(uint16_t address, uint16_t value);
+        uint16_t Reg(uint16_t address);
+
+        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
 };
