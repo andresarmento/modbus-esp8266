@@ -50,15 +50,15 @@ typedef struct TTransaction;
 typedef uint16_t (*cbModbusSlave)(TTransaction* query, bool result);
 typedef struct TTransaction {
 	uint16_t	id;
+	Modbus::FunctionCode fn;
 	uint16_t	startreg;
 	uint16_t	numregs;
 	uint32_t	timestamp;
-	TTransaction*		next;
 	cbModbusSlave cb;
 };
 class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
-	TTransaction* _trans;
+	std::list<TTransaction> _trans;
 	uint8_t	   status;
 	IPAddress	ip;
 	uint32_t	queryStart;
@@ -68,10 +68,10 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	ModbusMasterIP() : WiFiClient() {
 	}
 	void connect(IPAddress address);
-	void pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
-	void pullBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
-	void pushWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
-	void pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn);
+	void pushBits(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pullBits(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pushWords(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pullWords(uint16_t address, uint16_t numregs, FunctionCode fn);
 	bool send() {
 		uint16_t i;
 		//MBAP
@@ -119,12 +119,29 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pushCoil() {
 	}
 	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
-		readSlave(offset, numregs, MB_FC_READ_COILS);
+		readSlave(offset, numregs, FC_READ_COILS);
 		send();
 	}
 	void pullCoils() {
 		uint16_t offset;
 		uint16_t numregs = 1;
+	    std::list<TRegister>::iterator it = _regs.begin();
+		if (it == _regs.end()) return;
+		offset = it->address;
+    	while(++it != _regs.end())
+    	{
+			if (!IS_COIL(it->address)) continue;
+        	if (it->address == offset + numregs) {
+				numregs++;
+				continue;
+			}
+        	pullCoil(offset, numregs);
+			offset = it->address;
+			numregs = 1;
+    	}
+		pullCoil(offset, numregs);
+	}
+	/*
 		TRegister* creg = getHead();
 		if (!creg) return;
 		while (creg && !IS_COIL(creg->address)) creg = creg->next;
@@ -145,6 +162,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 			pullCoil(offset, numregs);
 		}
 	}
+	*/
 	void pushIsts() {
 	}
 	void pullIsts() {

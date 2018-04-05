@@ -58,17 +58,17 @@ void ModbusIP::task() {
 				continue;	// for (n)
 			}
 			if (_len > MODBUSIP_MAXFRAME) {	//Length is over MODBUSIP_MAXFRAME
-				exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_SLAVE_FAILURE);
+				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
 				client[n]->flush();
 			} else {
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
-					exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_SLAVE_FAILURE);
+					exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
 					client[n]->flush();
 				} else {
 					//for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
 					if (client[i]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
-						exceptionResponse((modbusFunctionCode)client[n]->read(), MB_EX_ILLEGAL_VALUE);
+						exceptionResponse((FunctionCode)client[n]->read(), EX_ILLEGAL_VALUE);
 						client[i]->flush();
 					} else {
 						this->receivePDU(_frame);
@@ -76,7 +76,7 @@ void ModbusIP::task() {
 					}
 				}
 			}
-			if (_reply != MB_REPLY_OFF) {
+			if (_reply != REPLY_OFF) {
 			    //MBAP
 				_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
 				_MBAP[5] = (_len+1) & 0x00FF;
@@ -88,8 +88,9 @@ void ModbusIP::task() {
 				//for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
 				memcpy(sbuf, _MBAP, sizeof(_MBAP));
 				memcpy(sbuf + sizeof(_MBAP), _frame, _len);
-
 				client[n]->write(sbuf, send_len);
+				//client[n]->write(_MBAP, sizeof(_MBAP));;
+				//client[n]->write(_frame, _len);
 			}
 			free(_frame);
 			_len = 0;
@@ -105,13 +106,13 @@ void ModbusIP::task() {
 void ModbusMasterIP::connect(IPAddress address) {
 	WiFiClient::connect(address, MODBUSIP_PORT);
 }
-void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn){
+void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, FunctionCode fn){
 }
-void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
+void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
-void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
+void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
-void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, modbusFunctionCode fn) {
+void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
 void ModbusMasterIP::task() {
 }

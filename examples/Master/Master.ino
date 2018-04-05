@@ -2,7 +2,8 @@
   Modbus-Arduino Example - Master (Modbus IP ESP8266)
   Control a Led on GPIO0 pin using Write Single Coil Modbus Function 
 
-  Current version
+THIS IS NOT WORKING SAMPLE -- JUST DEVELOPNEMT VERSION
+
   (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
   https://github.com/emelianov/modbus-esp8266
 */

@@ -10,52 +10,26 @@ uint16_t cbDefault(TRegister* reg, uint16_t val) {
 }
 
 TRegister* Modbus::searchRegister(uint16_t address) {
-    TRegister *reg = _regs_head;
-    //scan through the linked list until the end of the list or the register is found.
-    //return the pointer.
-    while (reg) {
-        if (reg->address == address) return reg;
-        reg = reg->next;
-    }
+    const TRegister tmp = {address, 0, cbDefault, cbDefault};
+    std::list<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
+    if (it != _regs.end()) return &*it;
     return NULL;
 }
 
 bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
-    TRegister *newreg;
-    TRegister *root     = NULL;
-	while (numregs > 0) {
-		newreg = (TRegister*) malloc(sizeof(TRegister));
-		if (!newreg) {		//Cleanup if unable to add all regs
-			while (root) {
-				newreg  = root;
-				root    = root->next;
-				free(newreg);
-			}
-			return false;
-		}
-		newreg->address = address;
-		newreg->value   = value;
-		newreg->get     = cbDefault;
-		newreg->set     = cbDefault;
-		newreg->next    = root;
-		root = newreg;
-		address++;
-		numregs--;
-	}
-	if (!_regs_head) {
-    	_regs_head = root;
-    } else {
-    	newreg = _regs_head;
-    	while (newreg->next) {
-        	newreg = newreg->next;
-        }
-        newreg->next = root;
+   #ifdef MB_MAX_REGS
+    if (_regs.size() + numregs > MB_MAX_REGS) return false;
+   #endif
+    for (uint16_t i = 0; i < numregs; i++) {
+        _regs.push_front({address + i, value, cbDefault, cbDefault});
     }
+    _regs.sort();
+    _regs.unique();
     return true;
 }
 
 bool Modbus::Reg(uint16_t address, uint16_t value) {
-    TRegister *reg;
+    TRegister* reg;
     //search for the register address
     reg = this->searchRegister(address);
     //if found then assign the register value to the new value.
@@ -71,7 +45,7 @@ bool Modbus::Reg(uint16_t address, uint16_t value) {
 }
 
 uint16_t Modbus::Reg(uint16_t address) {
-    TRegister *reg;
+    TRegister* reg;
     reg = this->searchRegister(address);
     if(reg)
         if (cbEnabled) {
@@ -84,77 +58,72 @@ uint16_t Modbus::Reg(uint16_t address) {
 }
 
 void Modbus::receivePDU(uint8_t* frame) {
-    modbusFunctionCode fcode  = (modbusFunctionCode)frame[0];
+    FunctionCode fcode  = (FunctionCode)frame[0];
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
 
     switch (fcode) {
 
-        case MB_FC_WRITE_REG:
+        case FC_WRITE_REG:
             //field1 = reg, field2 = value
             this->writeSingleRegister(field1, field2);
         break;
 
-        case MB_FC_READ_REGS:
+        case FC_READ_REGS:
             //field1 = startreg, field2 = numregs
             this->readRegisters(field1, field2);
         break;
 
-        case MB_FC_WRITE_REGS:
+        case FC_WRITE_REGS:
             //field1 = startreg, field2 = status
             this->writeMultipleRegisters(frame,field1, field2, frame[5]);
         break;
 
-        case MB_FC_READ_COILS:
+        case FC_READ_COILS:
             //field1 = startreg, field2 = numregs
             this->readCoils(field1, field2);
         break;
 
-        case MB_FC_READ_INPUT_STAT:
+        case FC_READ_INPUT_STAT:
             //field1 = startreg, field2 = numregs
             this->readInputStatus(field1, field2);
         break;
 
-        case MB_FC_READ_INPUT_REGS:
+        case FC_READ_INPUT_REGS:
             //field1 = startreg, field2 = numregs
             this->readInputRegisters(field1, field2);
         break;
 
-        case MB_FC_WRITE_COIL:
+        case FC_WRITE_COIL:
             //field1 = reg, field2 = status
             this->writeSingleCoil(field1, field2);
         break;
 
-        case MB_FC_WRITE_COILS:
+        case FC_WRITE_COILS:
             //field1 = startreg, field2 = numoutputs
             this->writeMultipleCoils(frame,field1, field2, frame[5]);
         break;
 
         default:
-            this->exceptionResponse(fcode, MB_EX_ILLEGAL_FUNCTION);
+            this->exceptionResponse(fcode, EX_ILLEGAL_FUNCTION);
     }
 }
 
-void Modbus::exceptionResponse(modbusFunctionCode fn, modbusResultCode excode) {
+void Modbus::exceptionResponse(FunctionCode fn, ResultCode excode) {
     //Clean frame buffer
     free(_frame);
     _len = 2;
     _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {
-		// Don't send reply if can't build frame
-		_reply = MB_REPLY_OFF;
-		return;
-    }
     _frame[0] = fn + 0x80;
     _frame[1] = excode;
 
-    _reply = MB_REPLY_NORMAL;
+    _reply = REPLY_NORMAL;
 }
 
-void Modbus::readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+void Modbus::readBits(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x07D0) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
 
@@ -164,7 +133,7 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn
     //I think that ScadaBR request more than one in the single request
     //when you have more then one datapoint configured from same type.
     if (!this->searchRegister(startreg)) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -178,7 +147,7 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn
 
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
-        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
+        this->exceptionResponse(fn, EX_SLAVE_FAILURE);
         return;
     }
     _frame[0] = fn;
@@ -201,20 +170,20 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn
 		startreg++;
 	}
 
-    _reply = MB_REPLY_NORMAL;
+    _reply = REPLY_NORMAL;
 }
 
-void Modbus::readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+void Modbus::readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
 
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(startreg)) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -227,7 +196,7 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode f
 
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
-        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
+        this->exceptionResponse(fn, EX_SLAVE_FAILURE);
         return;
     }
 
@@ -246,37 +215,37 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode f
         i++;
 	}
 
-    _reply = MB_REPLY_NORMAL;
+    _reply = REPLY_NORMAL;
 }
 
-void Modbus::writeSingleRegister(uint16_t reg, uint16_t value, modbusFunctionCode fn) {
+void Modbus::writeSingleRegister(uint16_t reg, uint16_t value, FunctionCode fn) {
     //No necessary verify illegal value (EX_ILLEGAL_VALUE) - because using uint16_t (0x0000 - 0x0FFFF)
     //Check Address and execute (reg exists?)
     if (!this->Hreg(reg, value)) {
-        this->exceptionResponse(MB_FC_WRITE_REG, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
         return;
     }
 
     //Check for failure
     if (this->Hreg(reg) != value) {
-        this->exceptionResponse(MB_FC_WRITE_REG, MB_EX_SLAVE_FAILURE);
+        this->exceptionResponse(fn, EX_SLAVE_FAILURE);
         return;
     }
 
-    _reply = MB_REPLY_ECHO;
+    _reply = REPLY_ECHO;
 }
 
-void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn) {
+void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn) {
     //Check value
     if (numoutputs < 0x0001 || numoutputs > 0x007B || bytecount != 2 * numoutputs) {
-        this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
 
     //Check Address (startreg...startreg + numregs)
     for (int k = 0; k < numoutputs; k++) {
         if (!this->searchRegister(HREG(startreg) + k)) {
-            this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_ILLEGAL_ADDRESS);
+            this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
             return;
         }
     }
@@ -285,12 +254,8 @@ void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t n
     free(_frame);
 	_len = 5;
     _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {
-        this->exceptionResponse(MB_FC_WRITE_REGS, MB_EX_SLAVE_FAILURE);
-        return;
-    }
 
-    _frame[0] = MB_FC_WRITE_REGS;
+    _frame[0] = FC_WRITE_REGS;
     _frame[1] = startreg >> 8;
     _frame[2] = startreg & 0x00FF;
     _frame[3] = numoutputs >> 8;
@@ -304,44 +269,44 @@ void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t n
         i++;
 	}
 
-    _reply = MB_REPLY_NORMAL;
+    _reply = REPLY_NORMAL;
 }
 
-void Modbus::writeSingleCoil(uint16_t reg, uint16_t status, modbusFunctionCode fn) {
+void Modbus::writeSingleCoil(uint16_t reg, uint16_t status, FunctionCode fn) {
     //Check value (status)
     if (status != 0xFF00 && status != 0x0000) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
 
     //Check Address and execute (reg exists?)
     if (!this->Coil(reg, (bool)status)) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
         return;
     }
 
     //Check for failure
     if (this->Coil(reg) != (bool)status) {
-        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
+        this->exceptionResponse(fn, EX_SLAVE_FAILURE);
         return;
     }
 
-    _reply = MB_REPLY_ECHO;
+    _reply = REPLY_ECHO;
 }
 
-void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, modbusFunctionCode fn) {
+void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn) {
     //Check value
     uint16_t bytecount_calc = numoutputs / 8;
     if (numoutputs%8) bytecount_calc++;
     if (numoutputs < 0x0001 || numoutputs > 0x07B0 || bytecount != bytecount_calc) {
-        this->exceptionResponse(fn, MB_EX_ILLEGAL_VALUE);
+        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
 
     //Check Address (startreg...startreg + numregs)
     for (int k = 0; k < numoutputs; k++) {
         if (!this->searchRegister(COIL(startreg) + k)) {
-            this->exceptionResponse(fn, MB_EX_ILLEGAL_ADDRESS);
+            this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
             return;
         }
     }
@@ -350,10 +315,6 @@ void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numo
     free(_frame);
 	_len = 5;
     _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {
-        this->exceptionResponse(fn, MB_EX_SLAVE_FAILURE);
-        return;
-    }
 
     _frame[0] = fn;
     _frame[1] = startreg >> 8;
@@ -374,7 +335,7 @@ void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numo
         startreg++;
 	}
 
-    _reply = MB_REPLY_NORMAL;
+    _reply = REPLY_NORMAL;
 }
 
 bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
@@ -406,11 +367,11 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
-	if (!_frame) return false;
+
 	_frame[0] = fn;
 	_frame[1] = startreg >> 8;
 	_frame[2] = startreg & 0x00FF;
@@ -421,7 +382,7 @@ bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, modbusFunctionCode f
 	return true;
 }
 
-bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
@@ -434,7 +395,7 @@ bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, modbusFunctionC
 	return true;
 }
 
-bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, modbusFunctionCode fn) {
+bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
@@ -452,41 +413,41 @@ void Modbus::responcePDU(uint8_t* frame) {
     if ((fcode & 0x80) != 0) {
         Serial.print("Error: ");
         Serial.println(_frame[1]);
-	    _reply = MB_REPLY_ERROR;
+	    _reply = REPLY_ERROR;
 	    return;
     }
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
 
     switch (fcode) {
-        case MB_FC_READ_REGS:
+        case FC_READ_REGS:
             //field1 = startreg, field2 = status
             this->writeMultipleRegisters(frame, field1, field2, frame[5]);
-            _reply = MB_REPLY_OFF;
+            _reply = REPLY_OFF;
         break;
-        case MB_FC_READ_COILS:
+        case FC_READ_COILS:
             //field1 = startreg, field2 = numoutputs
             this->writeMultipleCoils(frame, field1, field2, frame[5]);
-            _reply = MB_REPLY_OFF;
+            _reply = REPLY_OFF;
         break;
-        case MB_FC_READ_INPUT_STAT:
-            _reply = MB_REPLY_OFF;
+        case FC_READ_INPUT_STAT:
+            _reply = REPLY_OFF;
         break;
-        case MB_FC_READ_INPUT_REGS:
-            _reply = MB_REPLY_OFF;
+        case FC_READ_INPUT_REGS:
+            _reply = REPLY_OFF;
         break;
-        case MB_FC_WRITE_REG:
+        case FC_WRITE_REG:
         break;
-        case MB_FC_WRITE_REGS:
+        case FC_WRITE_REGS:
         break;
-        case MB_FC_WRITE_COIL:
+        case FC_WRITE_COIL:
         break;
-        case MB_FC_WRITE_COILS:
+        case FC_WRITE_COILS:
         break;
         default:
-		_reply = MB_REPLY_ERROR;
+		_reply = REPLY_ERROR;
     }
-    _reply = MB_REPLY_OFF;
+    _reply = REPLY_OFF;
 }
 
 void Modbus::cbEnable(bool state) {

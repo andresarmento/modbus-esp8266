@@ -43,6 +43,20 @@ offsets are 0-based, then, a register configured as 100 in the library is set to
 
 For API specefication see [API.md](https://githab.com/emelianov/modbus-esp8266/API/md)
 
+## Last Changes
+
+* Internal changes
+ * Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
+ * Move object's list implementation to std::list
+ * Modbus class refactoring
+ * ModbusIP networking code refactoring and error reporting
+ * Modbus master implementation preparation
+* Public API changes
+ * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
+ * Mark as private onSet, onGet, addReg, Reg
+ * Added callback-related functions: eventSource, onSetCoil, onGetCoil, onSetReg, onGetReg,..
+ 
+
 ## Contributions
 
 https://github.com/emelianov/modbus-esp8266

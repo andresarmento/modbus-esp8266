@@ -1,6 +1,6 @@
 /*
-  Modbus-Arduino Example - Hreg multiple Holding register debug code (Modbus IP ESP8266/ESP32)
-  
+  Modbus-Arduino Example - Test Led using callback (Modbus IP ESP8266/ESP32)
+  Control a Led on D4 pin using Write Single Coil Modbus Function 
   Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
@@ -12,34 +12,29 @@
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
-#else	//ESP32
+#else
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
 
-#define LEN 10
+#include <list>
+std::list<TRegister> test;
 
+//Modbus Registers Offsets (0-9999)
+const int LED_COIL = 100;
+//Used Pins
+#ifdef ESP8266
+ const int ledPin = D4; // Builtin ESP8266 LED
+#else
+ const int ledPin = TX; // ESP32 TX LED
+#endif
 //ModbusIP object
 ModbusIP mb;
 
-// Callback function to read corresponding DI
-uint16_t cbRead(TRegister* reg, uint16_t val) {
-  Serial.print("Read. Reg RAW#: ");
-  Serial.print(reg->address);
-  Serial.print(" Old: ");
-  Serial.print(reg->value);
-  Serial.print(" New: ");
-  Serial.println(val);
-  return val;
-}
-// Callback function to write-protect DI
-uint16_t cbWrite(TRegister* reg, uint16_t val) {
-  Serial.print("Write. Reg RAW#: ");
-  Serial.print(reg->address);
-  Serial.print(" Old: ");
-  Serial.print(reg->value);
-  Serial.print(" New: ");
-  Serial.println(val);
+// Callback function for write (set) Coil. Returns value to store.
+uint16_t cbLed(TRegister* reg, uint16_t val) {
+  //Attach ledPin to LED_COIL register
+  digitalWrite(ledPin, (val == 0xFF00));
   return val;
 }
 
@@ -52,7 +47,7 @@ bool cbConn(IPAddress ip) {
 void setup() {
   Serial.begin(74880);
  
-  WiFi.begin("ssid", "pass");
+  WiFi.begin("EW", "iMpress6264");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -63,13 +58,13 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-
+  
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  if (!mb.addHReg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onGetHreg(0, cbRead, LEN); // Add callback on Coils value get
-  mb.onSetHreg(0, cbWrite, LEN);
+  pinMode(ledPin, OUTPUT);
+  mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
+  mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
 }
 
 void loop() {
