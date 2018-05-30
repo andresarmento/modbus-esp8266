@@ -1,6 +1,6 @@
 /*
-  Modbus-Arduino Example - Test Led using callback (Modbus IP ESP8266/ESP32)
-  Control a Led on D4 pin using Write Single Coil Modbus Function 
+  Modbus-Arduino Example - Publish multiple DI as coils (Modbus IP ESP8266/ESP32)
+  
   Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
@@ -12,27 +12,34 @@
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
-#else
+#else	//ESP32
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
 
-//Modbus Registers Offsets (0-9999)
-const int LED_COIL = 100;
 //Used Pins
 #ifdef ESP8266
- const int ledPin = D4; // Builtin ESP8266 LED
-#else
- const int ledPin = TX; // ESP32 TX LED
+ uint8_t pinList[] = {D0, D1, D2, D3, D4, D5, D6, D7, D8};
+#else	//ESP32
+  uint8_t pinList[] = {12, 13, 14, 14, 16, 17, 18, 21, 22, 23};
 #endif
+#define LEN sizeof(pinList)/sizeof(uint8_t)
+
 //ModbusIP object
 ModbusIP mb;
 
-// Callback function for write (set) Coil. Returns value to store.
-uint16_t cbLed(TRegister* reg, uint16_t val) {
-  //Attach ledPin to LED_COIL register
-  digitalWrite(ledPin, (val == 0xFF00));
-  return val;
+// Callback function to read corresponding DI
+uint16_t cbRead(TRegister* reg, uint16_t val) {
+  if(reg->address < COIL_BASE)
+    return 0;
+  uint8_t offset = reg->address - COIL_BASE;
+  if(offset >= LEN)
+    return 0; 
+  return COIL_VAL(digitalRead(pinList[offset]));
+}
+// Callback function to write-protect DI
+uint16_t cbWrite(TRegister* reg, uint16_t val) {
+  return reg->value;
 }
 
 // Callback function for client connect. Returns true to allow connection.
@@ -55,13 +62,14 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-  
+  for (uint8_t i = 0; i < LEN; i++)
+    pinMode(pinList[i], INPUT);
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  pinMode(ledPin, OUTPUT);
-  mb.addReg(COIL(LED_COIL));       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onSet(COIL(LED_COIL), cbLed); // Add callback on Coil LED_COIL value set
+  mb.addReg(COIL(COIL_BASE), COIL_VAL(false), LEN); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
+  mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coils value get
+  mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
 }
 
 void loop() {

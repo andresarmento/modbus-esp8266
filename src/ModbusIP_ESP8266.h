@@ -17,18 +17,15 @@
 #define MODBUSIP_MAXFRAME 200
 #define MODBUSIP_TIMEOUT   10
 
-#define TCP_KEEP_ALIVE
-#define TCP_MAX_CLIENTS	    4
+#define MODBUSIP_MAX_CLIENTS	    4
 
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
 class ModbusIP : public Modbus, public WiFiServer {
     private:
-    byte _MBAP[7];
-	#ifdef TCP_KEEP_ALIVE
-	WiFiClient client[TCP_MAX_CLIENTS];
-	#endif
+    uint8_t _MBAP[7];
+	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	cbModbusConnect cbConnect = NULL;
     public:
 	ModbusIP() : WiFiServer(MODBUSIP_PORT) {
