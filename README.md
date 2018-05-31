@@ -41,7 +41,7 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br)
 offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 
-For API specefication see [API.md](https://githab.com/emelianov/modbus-esp8266/API.md)
+For API specefication see [API.md](https://github.com/emelianov/modbus-esp8266/API.md)
 
 ## Contributions
 
