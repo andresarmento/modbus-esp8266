@@ -1,12 +1,12 @@
 /*
-  Modbus-Arduino Example - Publish multiple DI as coils (Modbus IP ESP8266/ESP32)
+  Modbus-Arduino Example - Hreg multiple Holding register debug code (Modbus IP ESP8266/ESP32)
   
   Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
 
   Current version
-  (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+  (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
   https://github.com/emelianov/modbus-esp8266
 */
 
@@ -17,29 +17,30 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-//Used Pins
-#ifdef ESP8266
- uint8_t pinList[] = {D0, D1, D2, D3, D4, D5, D6, D7, D8};
-#else	//ESP32
-  uint8_t pinList[] = {12, 13, 14, 14, 16, 17, 18, 21, 22, 23};
-#endif
-#define LEN sizeof(pinList)/sizeof(uint8_t)
+#define LEN 10
 
 //ModbusIP object
 ModbusIP mb;
 
 // Callback function to read corresponding DI
 uint16_t cbRead(TRegister* reg, uint16_t val) {
-  if(reg->address < COIL_BASE)
-    return 0;
-  uint8_t offset = reg->address - COIL_BASE;
-  if(offset >= LEN)
-    return 0; 
-  return COIL_VAL(digitalRead(pinList[offset]));
+  Serial.print("Read. Reg RAW#: ");
+  Serial.print(reg->address);
+  Serial.print(" Old: ");
+  Serial.print(reg->value);
+  Serial.print(" New: ");
+  Serial.println(val);
+  return val;
 }
 // Callback function to write-protect DI
 uint16_t cbWrite(TRegister* reg, uint16_t val) {
-  return reg->value;
+  Serial.print("Write. Reg RAW#: ");
+  Serial.print(reg->address);
+  Serial.print(" Old: ");
+  Serial.print(reg->value);
+  Serial.print(" New: ");
+  Serial.println(val);
+  return val;
 }
 
 // Callback function for client connect. Returns true to allow connection.
@@ -49,9 +50,13 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
+ #ifdef ESP8266
   Serial.begin(74880);
+ #else
+  Serial.begin(115200);
+ #endif
  
-  WiFi.begin("ssid", "password");
+  WiFi.begin("ssid", "pass");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -62,18 +67,17 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-  for (uint8_t i = 0; i < LEN; i++)
-    pinMode(pinList[i], INPUT);
+
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  mb.addReg(COIL(COIL_BASE), COIL_VAL(false), LEN); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coils value get
-  mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
+  if (!mb.addHreg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Hregs
+  mb.onGetHreg(0, cbRead, LEN); // Add callback on Coils value get
+  mb.onSetHreg(0, cbWrite, LEN);
 }
 
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   yield();
+   delay(100);
 }

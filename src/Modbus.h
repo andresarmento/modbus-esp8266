@@ -1,7 +1,7 @@
 /*
     Modbus.h - Header for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
-                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Arduino.h"
 
@@ -84,39 +84,93 @@ class Modbus {
         #endif
 
         TRegister* searchRegister(uint16_t addr);
-
+        bool cbEnabled = true;
     protected:
         uint8_t* _frame;
         uint8_t  _len;
         uint8_t  _reply;
         void receivePDU(uint8_t* frame);
 
-    public:
-
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
-
-        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
-        bool Hreg(uint16_t offset, uint16_t value);
-        uint16_t Hreg(uint16_t offset);
-
-        #ifndef USE_HOLDING_REGISTERS_ONLY
-            bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
-            bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
-            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
-
-            bool Coil(uint16_t offset, bool value);
-            bool Ists(uint16_t offset, bool value);
-            bool Ireg(uint16_t offset, uint16_t value);
-
-            bool Coil(uint16_t offset);
-            bool Ists(uint16_t offset);
-            uint16_t Ireg(uint16_t offset);
-        #endif
         
         bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+
+    public:
+
+        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+            return addReg(HREG(offset), value, numregs);
+        }
+        bool Hreg(uint16_t offset, uint16_t value) {
+            return Reg(HREG(offset), value);
+        }
+        uint16_t Hreg(uint16_t offset) {
+            return Reg(HREG(offset));
+        }
+
+        #ifndef USE_HOLDING_REGISTERS_ONLY
+            bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+                return addReg(COIL(offset), COIL_VAL(value), numregs);
+            }
+            bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+                return addReg(ISTS(offset), ISTS_VAL(value), numregs);
+            }
+            bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+                return addReg(IREG(offset), value, numregs);
+            }
+
+            bool Coil(uint16_t offset, bool value) {
+                return Reg(COIL(offset), COIL_VAL(value));
+            }
+            bool Ists(uint16_t offset, bool value) {
+                return Reg(ISTS(offset), ISTS_VAL(value));
+            }
+            bool Ireg(uint16_t offset, uint16_t value) {
+                return Reg(IREG(offset), value);
+            }
+
+            bool Coil(uint16_t offset) {
+                return COIL_BOOL(Reg(COIL(offset)));
+            }
+            bool Ists(uint16_t offset) {
+                return ISTS_BOOL(Reg(ISTS(offset)));
+            }
+            uint16_t Ireg(uint16_t offset) {
+                return Reg(IREG(offset));
+            }
+        #endif
+
+        void cbEnable(bool state = true);
+        void cbDisable() {
+            cbEnable(false);
+        }
+        
+        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(COIL(offset), cb, numregs);
+        }
+        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(COIL(offset), cb, numregs);
+        }
+        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(HREG(offset), cb, numregs);
+        }
+        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(HREG(offset), cb, numregs);
+        }
+        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(ISTS(offset), cb, numregs);
+        }
+        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(ISTS(offset), cb, numregs);
+        }
+        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onGet(IREG(offset), cb, numregs);
+        }
+        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+            return onSet(IREG(offset), cb, numregs);
+        }
 };
 
 #endif //MODBUS_H

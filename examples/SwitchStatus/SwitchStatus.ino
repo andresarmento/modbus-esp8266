@@ -1,6 +1,6 @@
 /*
   Modbus-Arduino Example - Test Holding Register (Modbus IP ESP8266)
-  Read Analog sensor on Pin ADC (ADC input between 0 ... 1V)
+  Read Switch Status on pin GPIO0 
   Original library
   Copyright by André Sarmento Barbosa
   http://github.com/andresarmento/modbus-arduino
@@ -12,48 +12,44 @@
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
-#else
+#else //ESP32
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
 
 //Modbus Registers Offsets (0-9999)
-const int SENSOR_IREG = 100;
+const int SWITCH_ISTS = 100;
+//Used Pins
+const int switchPin = 0; //GPIO0
 
 //ModbusIP object
 ModbusIP mb;
 
-long ts;
-
 void setup() {
+ #ifdef ESP8266
     Serial.begin(74880);
- 
+ #else
+    Serial.begin(115200);
+ #endif
+
     WiFi.begin("your_ssid", "your_password");
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+      delay(500);
+      Serial.print(".");
     }
-
-    Serial.println("");
-    Serial.println("WiFi connected");  
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    mb.begin();		//Sart Modbus IP
-    // Add SENSOR_IREG register - Use addIreg() for analog Inputs
-    mb.addIreg(SENSOR_IREG);
-
-    ts = millis();
+    //Config Modbus IP
+    mb.begin();
+    //Set ledPin mode
+    pinMode(switchPin, INPUT);
+    // Add SWITCH_ISTS register - Use addIsts() for digital inputs
+    mb.addIsts(SWITCH_ISTS);
 }
 
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
 
-   //Read each two seconds
-   if (millis() > ts + 2000) {
-       ts = millis();
-       //Setting raw value (0-1024)
-       mb.Ireg(SENSOR_IREG, analogRead(A0));
-   }
+   //Attach switchPin to SWITCH_ISTS register
+   mb.Ists(SWITCH_ISTS, digitalRead(switchPin));
+   delay(100);
 }

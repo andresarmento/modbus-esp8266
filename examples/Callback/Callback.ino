@@ -12,7 +12,7 @@
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
-#else
+#else //ESP32
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
@@ -42,9 +42,12 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
+ #ifdef ESP8266
   Serial.begin(74880);
- 
-  WiFi.begin("ssid", "password");
+ #else
+  Serial.begin(115200);
+ #endif
+  WiFi.begin("SID", "PASSWORD");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -60,12 +63,12 @@ void setup() {
   mb.begin();
 
   pinMode(ledPin, OUTPUT);
-  mb.addReg(COIL(LED_COIL));       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onSet(COIL(LED_COIL), cbLed); // Add callback on Coil LED_COIL value set
+  mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
+  mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
 }
 
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   yield();
+   delay(100);
 }

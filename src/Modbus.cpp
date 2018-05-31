@@ -1,7 +1,7 @@
 /*
-    Modbus.h - Header for Modbus Base Library
+    Modbus.cpp - Implementation for Modbus Base Library
     Copyright (C) 2014 André Sarmento Barbosa
-                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
 
@@ -60,7 +60,11 @@ bool Modbus::Reg(uint16_t address, uint16_t value) {
     reg = this->searchRegister(address);
     //if found then assign the register value to the new value.
     if (reg) {
-        reg->value = reg->set(reg, value);
+        if (cbEnabled) {
+            reg->value = reg->set(reg, value);
+        } else {
+            reg->value = value;
+        }
         return true;
     } else
         return false;
@@ -70,61 +74,14 @@ uint16_t Modbus::Reg(uint16_t address) {
     TRegister *reg;
     reg = this->searchRegister(address);
     if(reg)
-        return reg->get(reg, reg->value);
+        if (cbEnabled) {
+            return reg->get(reg, reg->value);
+        } else {
+            return reg->value;
+        }
     else
         return 0;
 }
-
-bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-    return this->addReg(HREG(offset), value, numregs);
-}
-
-bool Modbus::Hreg(uint16_t offset, uint16_t value) {
-    return Reg(HREG(offset), value);
-}
-
-uint16_t Modbus::Hreg(uint16_t offset) {
-    return Reg(HREG(offset));
-}
-
-#ifndef USE_HOLDING_REGISTERS_ONLY
-    bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
-        return this->addReg(COIL(offset), COIL_VAL(value), numregs);
-    }
-
-    bool Modbus::addIsts(uint16_t offset, bool value, uint16_t numregs) {
-        return this->addReg(ISTS(offset), ISTS_VAL(value), numregs);
-    }
-
-    bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-        return this->addReg(IREG(offset), value, numregs);
-    }
-
-    bool Modbus::Coil(uint16_t offset, bool value) {
-        return Reg(COIL(offset), COIL_VAL(value));
-    }
-
-    bool Modbus::Ists(uint16_t offset, bool value) {
-        return Reg(ISTS(offset), ISTS_VAL(value));
-    }
-
-    bool Modbus::Ireg(uint16_t offset, uint16_t value) {
-        return Reg(IREG(offset), value);
-    }
-
-    bool Modbus::Coil(uint16_t offset) {
-        return COIL_BOOL(Reg(COIL(offset)));
-    }
-
-    bool Modbus::Ists(uint16_t offset) {
-        return ISTS_BOOL(Reg(ISTS(offset)));
-    }
-
-    uint16_t Modbus::Ireg(uint16_t offset) {
-        return Reg(IREG(offset));
-    }
-#endif
-
 
 void Modbus::receivePDU(uint8_t* frame) {
     uint8_t fcode  = frame[0];
@@ -551,4 +508,7 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 		numregs--;
 	}
 	return atLeastOne;
+}
+void Modbus::cbEnable(bool state) {
+    cbEnabled = state;
 }

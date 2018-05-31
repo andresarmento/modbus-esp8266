@@ -1,7 +1,7 @@
 /*
-    Modbus.h - Header for Modbus Base Library
+    ModbusIP_ESP8266.h - Header for ModbusIP Library
     Copyright (C) 2014 André Sarmento Barbosa
-                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <Modbus.h>
 #ifdef ESP8266

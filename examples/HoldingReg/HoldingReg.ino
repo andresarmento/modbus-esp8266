@@ -13,7 +13,7 @@
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
-#else
+#else //ESP32
  #include <WiFi.h>
 #endif
 #include <ModbusIP_ESP8266.h>
@@ -26,7 +26,11 @@ const int TEST_HREG = 100;
 ModbusIP mb;
   
 void setup() {
+ #ifdef ESP8266
   Serial.begin(74880);
+ #else
+  Serial.begin(115200);
+ #endif
  
   WiFi.begin("your_ssid", "your_password");
   
@@ -47,5 +51,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-
+   delay(100);
 }
