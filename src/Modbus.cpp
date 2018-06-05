@@ -12,6 +12,7 @@ uint16_t cbDefault(TRegister* reg, uint16_t val) {
 TRegister* Modbus::searchRegister(uint16_t address) {
     const TRegister tmp = {address, 0, cbDefault, cbDefault};
     std::list<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
+    //std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
     if (it != _regs.end()) return &*it;
     return NULL;
 }
@@ -21,10 +22,15 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
     for (uint16_t i = 0; i < numregs; i++) {
-        _regs.push_front({address + i, value, cbDefault, cbDefault});
+        if (!searchRegister(address + i))
+            _regs.push_back({address + i, value, cbDefault, cbDefault});
     }
     _regs.sort();
-    _regs.unique();
+    //std::sort(_regs.begin(),_regs.end());
+    //_regs.unique();
+    //std::vector<TRegister>::iterator it;
+    //it = std::unique (_regs.begin(), _regs.end());
+    //_regs.resize( std::distance(_regs.begin(),it) );
     return true;
 }
 
@@ -61,7 +67,7 @@ void Modbus::receivePDU(uint8_t* frame) {
     FunctionCode fcode  = (FunctionCode)frame[0];
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
-
+    uint16_t bytecount_calc;
     switch (fcode) {
 
         case FC_WRITE_REG:
@@ -96,12 +102,47 @@ void Modbus::receivePDU(uint8_t* frame) {
 
         case FC_WRITE_COIL:
             //field1 = reg, field2 = status
-            this->writeSingleCoil(field1, field2);
+            //this->writeSingleCoil(field1, field2);
+            //Check value (status)
+            if (field2 != 0xFF00 && field2 != 0x0000) {
+                this->exceptionResponse(fcode, EX_ILLEGAL_VALUE);
+                return;
+            }
+
+            //Check Address and execute (reg exists?)
+            if (!this->Coil(field1, (bool)field2)) {
+                this->exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                return;
+            }
+
+            //Check for failure
+            if (this->Coil(reg) != (bool)status) {
+                this->exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                return;
+            }
+
+            _reply = REPLY_ECHO;
         break;
 
         case FC_WRITE_COILS:
-            //field1 = startreg, field2 = numoutputs
-            this->writeMultipleCoils(frame,field1, field2, frame[5]);
+        //field1 = startreg, field2 = numoutputs, frame[5] = bytecount
+            bytecount_calc = field2 / 8;
+            if (field2%8) bytecount_calc++;
+            if (field2 < 0x0001 || field2 > 0x07B0 || frame[5] != bytecount_calc) {
+                this->exceptionResponse(fcode, EX_ILLEGAL_VALUE);
+                return;
+            }
+            Serial.println("Size ok");
+            //Check Address (startreg...startreg + numregs)
+            for (int k = 0; k < field2; k++) {
+                if (!this->searchRegister(COIL(field1) + k)) {
+                    this->exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                    return;
+                }
+            }
+            this->writeMultipleCoils(frame + MB_FRAME_HEADER, field1, field2, frame[5]);
+            successResponce(field1, field2, FC_WRITE_COILS);
+            _reply = REPLY_NORMAL;
         break;
 
         default:
@@ -255,7 +296,7 @@ void Modbus::writeMultipleRegisters(uint8_t* frame,uint16_t startreg, uint16_t n
 	_len = 5;
     _frame = (uint8_t*) malloc(_len);
 
-    _frame[0] = FC_WRITE_REGS;
+    _frame[0] = fn;
     _frame[1] = startreg >> 8;
     _frame[2] = startreg & 0x00FF;
     _frame[3] = numoutputs >> 8;
@@ -294,23 +335,7 @@ void Modbus::writeSingleCoil(uint16_t reg, uint16_t status, FunctionCode fn) {
     _reply = REPLY_ECHO;
 }
 
-void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn) {
-    //Check value
-    uint16_t bytecount_calc = numoutputs / 8;
-    if (numoutputs%8) bytecount_calc++;
-    if (numoutputs < 0x0001 || numoutputs > 0x07B0 || bytecount != bytecount_calc) {
-        this->exceptionResponse(fn, EX_ILLEGAL_VALUE);
-        return;
-    }
-
-    //Check Address (startreg...startreg + numregs)
-    for (int k = 0; k < numoutputs; k++) {
-        if (!this->searchRegister(COIL(startreg) + k)) {
-            this->exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
-            return;
-        }
-    }
-
+void Modbus::successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn) {
     //Clean frame buffer
     free(_frame);
 	_len = 5;
@@ -321,13 +346,15 @@ void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numo
     _frame[2] = startreg & 0x00FF;
     _frame[3] = numoutputs >> 8;
     _frame[4] = numoutputs & 0x00FF;
+}
 
+void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn) {
     uint8_t bitn = 0;
     uint16_t totoutputs = numoutputs;
     uint16_t i;
 	while (numoutputs--) {
         i = (totoutputs - numoutputs) / 8;
-        this->Coil(startreg, bitRead(frame[6+i], bitn));
+        this->Coil(startreg, bitRead(frame[i], bitn));
         //increment the bit index
         bitn++;
         if (bitn == 8) bitn = 0;
@@ -335,7 +362,7 @@ void Modbus::writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numo
         startreg++;
 	}
 
-    _reply = REPLY_NORMAL;
+    //_reply = REPLY_NORMAL;
 }
 
 bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
@@ -377,8 +404,8 @@ bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	_frame[2] = startreg & 0x00FF;
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
-    Serial.print("_frame[2] = ");
-   Serial.println(_frame[2]);
+   // Serial.print("_frame[2] = ");
+   //Serial.println(_frame[2]);
 	return true;
 }
 
@@ -416,9 +443,11 @@ void Modbus::responcePDU(uint8_t* frame) {
 	    _reply = REPLY_ERROR;
 	    return;
     }
-    uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
-    uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
-
+    //uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
+    //uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
+    uint16_t field1 = 100;
+    uint16_t field2 = 1;
+Serial.println(fcode);
     switch (fcode) {
         case FC_READ_REGS:
             //field1 = startreg, field2 = status
@@ -427,7 +456,10 @@ void Modbus::responcePDU(uint8_t* frame) {
         break;
         case FC_READ_COILS:
             //field1 = startreg, field2 = numoutputs
-            this->writeMultipleCoils(frame, field1, field2, frame[5]);
+            Serial.println(field1);
+            Serial.println(field2);
+            Serial.println(frame[0]);
+            this->writeMultipleCoils(frame, field1, field2, frame[0]);
             _reply = REPLY_OFF;
         break;
         case FC_READ_INPUT_STAT:

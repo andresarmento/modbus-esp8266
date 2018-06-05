@@ -18,13 +18,6 @@
 
 #define MODBUSIP_MAX_CLIENTS	    4
 
-#define MODBUSIP_SLAVE  1
-#define MODBUSIP_MASTER 2
-#define MODBUSIP_PULL_MS 100
-#define MODBUSIP_PUSH 3
-#define MODBUSIP_PULL 4
-#define MODBUSIP_IDLE 5
-
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 typedef union MBAP {
@@ -119,13 +112,14 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pushCoil() {
 	}
 	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
-		readSlave(offset, numregs, FC_READ_COILS);
+		readSlave(COIL(offset), numregs, FC_READ_COILS);
 		send();
 	}
 	void pullCoils() {
 		uint16_t offset;
 		uint16_t numregs = 1;
-	    std::list<TRegister>::iterator it = _regs.begin();
+		std::list<TRegister>::iterator it = _regs.begin();
+	    //std::vector<TRegister>::iterator it = _regs.begin();
 		if (it == _regs.end()) return;
 		offset = it->address;
     	while(++it != _regs.end())

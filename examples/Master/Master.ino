@@ -22,11 +22,16 @@ const int ledPin = 0; //GPIO0
 
 //ModbusIP object
 ModbusMasterIP mb;
-  
+ModbusIP slave;
+uint16_t gc(TRegister* r, uint16_t v) {
+  Serial.print("Set ger: ");
+  Serial.println(v);
+  return v;
+}
 void setup() {
   Serial.begin(74880);
  
-  WiFi.begin("your_ssid", "your_password");
+  WiFi.begin("EW", "iMpress6264");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -42,15 +47,21 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);
-  mb.connect()
-  mb.readSlave(COIL(LED_COIL), 1, MB_FC_READ_COILS);
-  mb.send();
+  mb.onSetCoil(LED_COIL, gc);
+  mb.connect(IPAddress(192, 168, 30, 116));
+  mb.pullCoil(LED_COIL);
+
+  slave.begin();
+  slave.addCoil(LED_COIL);
+  slave.onSetCoil(LED_COIL, gc);
+
 }
  
 void loop() {
    //Call once inside loop() - all magic here
   mb.get();
-
+  slave.task();
    //Attach ledPin to LED_COIL register
   digitalWrite(ledPin, mb.Coil(LED_COIL));
+  delay(100);
 }

@@ -10,6 +10,7 @@
 
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
+#define MB_FRAME_HEADER  6
 #define COIL_BASE     1
 #define ISTS_BASE 10001
 #define IREG_BASE 30001
@@ -180,10 +181,12 @@ class Modbus {
         };
 
         std::list<TRegister> _regs;
+        //std::vector<TRegister> _regs;
         uint8_t* _frame;
         uint8_t  _len;
         uint8_t  _reply;
         void exceptionResponse(FunctionCode fn, ResultCode excode);
+        void successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn);
         void receivePDU(uint8_t* frame);    //For Slave
         void responcePDU(uint8_t* frame);   //For Master
 
