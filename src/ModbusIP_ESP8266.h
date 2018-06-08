@@ -66,6 +66,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pushWords(uint16_t address, uint16_t numregs, FunctionCode fn);
 	void pullWords(uint16_t address, uint16_t numregs, FunctionCode fn);
 	bool send() {
+		if (connected()) Serial.println("Connected");
 		uint16_t i;
 		//MBAP
 		_MBAP[0] = 0;
@@ -82,6 +83,11 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
 		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
 		write(sbuf, send_len);
+		for (uint8_t c = 0; c < send_len; c++) {
+			Serial.print(sbuf[c], HEX);
+			Serial.print(" ");
+		}
+		Serial.println();
 		//Serial.println(_frame[0]);
 	}
 	bool get() {
@@ -89,7 +95,6 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		if (!connected()) return false;
 		uint16_t raw_len = 0;
 		raw_len = available();
-		//Serial.println(raw_len);
 		if (available() > sizeof(_MBAP)) {
 			//for (i = 0; i < 7; i++)	_MBAP[i] = read(); //Get MBAP
 			readBytes(_MBAP, sizeof(_MBAP));	//Get MBAP
@@ -112,7 +117,7 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	void pushCoil() {
 	}
 	void pullCoil(uint16_t offset, uint16_t numregs = 1) {
-		readSlave(COIL(offset), numregs, FC_READ_COILS);
+		readSlave(offset, numregs, FC_READ_COILS);
 		send();
 	}
 	void pullCoils() {

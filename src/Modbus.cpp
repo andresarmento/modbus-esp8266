@@ -116,7 +116,7 @@ void Modbus::receivePDU(uint8_t* frame) {
             }
 
             //Check for failure
-            if (this->Coil(reg) != (bool)status) {
+            if (this->Coil(field1) != (bool)field2) {
                 this->exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
