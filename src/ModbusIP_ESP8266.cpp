@@ -9,6 +9,8 @@ void ModbusIP::begin() {
 	WiFiServer::begin();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		client[i] = NULL;
+		_trans[i] = NULL;
+		ip[i] = INADDR_NONE;
 	}
 }
 
@@ -48,12 +50,12 @@ void ModbusIP::task() {
 			continue;	// for (n)
 		}
 		if (client[n]->available() > sizeof(_MBAP)) {
-			//for (i = 0; i < 7; i++)	_MBAP[i] = client[n]->read(); //Get MBAP
-			client[n]->readBytes(_MBAP, sizeof(_MBAP));	//Get MBAP
-			_len = _MBAP[4] << 8 | _MBAP[5];
+			client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	//Get MBAP
+			_len = __bswap_16(_MBAP.length); //_MBAP.raw[4] << 8 | _MBAP.raw[5];
 			_len--; // Do not count with last byte from MBAP
 		
-			if (_MBAP[2] != 0 || _MBAP[3] != 0) {   //Not a MODBUSIP packet
+			//if (_MBAP.raw[2] != 0 || _MBAP.raw[3] != 0) {   //Not a MODBUSIP packet
+			if (__bswap_16(_MBAP.protocolId) != 0) {   //Check if MODBUSIP packet. __bswap is usless there.
 				client[n]->flush();
 				continue;	// for (n)
 			}
@@ -66,30 +68,27 @@ void ModbusIP::task() {
 					exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
 					client[n]->flush();
 				} else {
-					//for (i = 0; i < _len; i++)	_frame[i] = client[n]->read(); //Get Modbus PDU
 					if (client[i]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
-						exceptionResponse((FunctionCode)client[n]->read(), EX_ILLEGAL_VALUE);
+						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
 						client[i]->flush();
 					} else {
 						this->receivePDU(_frame);
-						client[n]->flush();
+						client[n]->flush();			// Not sure if we need flush rest of data available
 					}
 				}
 			}
 			if (_reply != REPLY_OFF) {
 			    //MBAP
-				_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
-				_MBAP[5] = (_len+1) & 0x00FF;
-				
-				size_t send_len = (uint16_t)_len + 7;
+				_MBAP.length = __bswap_16(_len+1);     //_len+1 for last byte from MBAP
+								
+				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];
 				
-				//for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
-				//for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
-				memcpy(sbuf, _MBAP, sizeof(_MBAP));
-				memcpy(sbuf + sizeof(_MBAP), _frame, _len);
+				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 				client[n]->write(sbuf, send_len);
-				//client[n]->write(_MBAP, sizeof(_MBAP));;
+				// Need to test if we can do not use double buffering
+				//client[n]->write(_MBAP.raw, sizeof(_MBAP.raw));;
 				//client[n]->write(_frame, _len);
 			}
 			free(_frame);

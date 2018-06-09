@@ -10,6 +10,11 @@
  #include <ESP8266WiFi.h>
 #else
  #include <WiFi.h>
+ #include <byteswap.h>
+#endif
+
+#ifndef __bswap_16
+ #define __bswap_16(num) ((uint16_t)num>>8) | ((uint16_t)num<<8)
 #endif
 
 #define MODBUSIP_PORT 	  502
@@ -20,7 +25,7 @@
 
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
-typedef union MBAP {
+typedef union MBAP_t {
 	struct {
 	uint16_t transactionId;
 	uint16_t protocolId;
@@ -31,7 +36,7 @@ typedef union MBAP {
 };
 class ModbusCoreIP : public Modbus {
     protected:
-    uint8_t _MBAP[7];
+    MBAP_t _MBAP;
 	cbModbusConnect cbConnect = NULL;
     public:
     void onConnect(cbModbusConnect cb);
@@ -40,24 +45,21 @@ class ModbusCoreIP : public Modbus {
 	}
 };
 typedef struct TTransaction;
-typedef uint16_t (*cbModbusSlave)(TTransaction* query, bool result);
-typedef struct TTransaction {
-	uint16_t	id;
-	Modbus::FunctionCode fn;
-	uint16_t	startreg;
-	uint16_t	numregs;
-	uint32_t	timestamp;
-	cbModbusSlave cb;
-};
+
 class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	private:
 	std::list<TTransaction> _trans;
-	uint8_t	   status;
 	IPAddress	ip;
-	uint32_t	queryStart;
 	uint32_t	timeout;
 	uint16_t	transactionId = 0;
 	public:
+    enum ResultCode {
+        RESULT_OK           = 0x01,
+        RESULT_TIMEOUT      = 0x02,
+		RESULT_DISCONNECT	= 0x03,
+		RESULT_ERROR		= 0x04
+    };
+
 	ModbusMasterIP() : WiFiClient() {
 	}
 	void connect(IPAddress address);
@@ -69,19 +71,19 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		if (connected()) Serial.println("Connected");
 		uint16_t i;
 		//MBAP
-		_MBAP[0] = 0;
-		_MBAP[1] = 1;
-		_MBAP[2] = 0;
-		_MBAP[3] = 0;	
-		_MBAP[4] = (_len+1) >> 8;     //_len+1 for last byte from MBAP
-		_MBAP[5] = (_len+1) & 0x00FF;
-		_MBAP[6] = 0xFF;
+		_MBAP.transactionId	= __bswap_16(1);
+		_MBAP.protocolId	= __bswap_16(0);
+		_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
+		_MBAP.unitId		= 0xFF;
 				
-		size_t send_len = (uint16_t)_len + 7;
+		size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 		uint8_t sbuf[send_len];
 				
-		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP[i];
-		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+//		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP.raw[i];
+//		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+
+		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 		write(sbuf, send_len);
 		for (uint8_t c = 0; c < send_len; c++) {
 			Serial.print(sbuf[c], HEX);
@@ -95,19 +97,27 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 		if (!connected()) return false;
 		uint16_t raw_len = 0;
 		raw_len = available();
-		if (available() > sizeof(_MBAP)) {
-			//for (i = 0; i < 7; i++)	_MBAP[i] = read(); //Get MBAP
-			readBytes(_MBAP, sizeof(_MBAP));	//Get MBAP
-			_len = _MBAP[4] << 8 | _MBAP[5];
+		if (available() > sizeof(_MBAP.raw)) {
+			readBytes(_MBAP.raw, sizeof(_MBAP.raw));	//Get MBAP
+
+			for (uint8_t c = 0; c < sizeof(_MBAP.raw); c++) {
+			Serial.print(_MBAP.raw[c], HEX);
+			Serial.print(" ");
+			}
+
+			_len = __bswap_16(_MBAP.length);
 			_len--; // Do not count with last byte from MBAP
-			if (_MBAP[2] == 0 && _MBAP[3] == 0 && _len < MODBUSIP_MAXFRAME) {
+			if (__bswap_16(_MBAP.protocolId) == 0 && _len < MODBUSIP_MAXFRAME) {
 				_frame = (uint8_t*) malloc(_len);
-				//raw_len = raw_len - 7;
-				//for (i = 0; i < _len; i++)
-				//	_frame[i] = read(); //Get Modbus PDU
-				if (readBytes(_frame, _len) == _len) {
-					responcePDU(_frame);
-					return true;
+				if (_frame) {
+					if (readBytes(_frame, _len) == _len) {
+						for (uint8_t c = 0; c < _len; c++) {
+							Serial.print(_frame[c], HEX);
+							Serial.print(" ");
+						}
+						responcePDU(_frame);
+						return true;
+					}
 				}
 			}
 			flush();
@@ -186,10 +196,22 @@ class ModbusMasterIP : public ModbusCoreIP, public WiFiClient {
 	bool pushReg(uint16_t address, uint16_t numregs);
 };
 
+typedef uint16_t (*cbModbusSlave)(TTransaction* query, ModbusMasterIP::ResultCode result);
+typedef struct TTransaction {
+	uint16_t	transactionId;
+	Modbus::FunctionCode fn;
+	uint16_t	startreg;
+	uint16_t	numregs;
+	time_t	timestamp;
+	cbModbusSlave cb;
+};
+
 class ModbusIP : public ModbusCoreIP, public WiFiServer {
     private:
-    //uint8_t _MBAP[7];
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
+	std::list<TTransaction> _trans[MODBUSIP_MAX_CLIENTS];
+	IPAddress	ip[MODBUSIP_MAX_CLIENTS];
+
 	//cbModbusConnect cbConnect = NULL;
 	int8_t n = -1;
     public:

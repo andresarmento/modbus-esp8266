@@ -53,8 +53,8 @@ For API specefication see [API.md](https://githab.com/emelianov/modbus-esp8266/A
  * Modbus master implementation preparation
 * Public API changes
  * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
- * Mark as private onSet, onGet, addReg, Reg
- * Added callback-related functions: eventSource, onSetCoil, onGetCoil, onSetReg, onGetReg,..
+ * Back to marking private for onSet, onGet, addReg and Reg methods
+ * Added callback-related eventSource method
  
 
 ## Contributions
