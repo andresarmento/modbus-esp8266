@@ -207,11 +207,55 @@ typedef struct TTransaction {
 };
 
 class ModbusIP : public ModbusCoreIP, public WiFiServer {
-    private:
+    public:
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	std::list<TTransaction> _trans[MODBUSIP_MAX_CLIENTS];
-	IPAddress	ip[MODBUSIP_MAX_CLIENTS];
-
+	IPAddress	slaveIp[MODBUSIP_MAX_CLIENTS];
+	int8_t getFreeClient() {
+		for (uint8_t i = 0; n < MODBUSIP_MAX_CLIENTS; i++) {
+			if (!client[i])
+				return i;
+			if (!client[i]->connected()) {	// Free client if not connected
+				delete client[i];
+				client[i] = NULL;
+				slaveIp[i] = INADDR_NONE;
+				return i;
+			}	
+		}
+		return -1;
+	}
+	int8_t getClient(IPAddress ip) {
+		Serial.println(0);
+		for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
+			if (client[i] && client[i]->remoteIP() == ip)
+				return i;
+		return -1;
+	}
+	bool isConnected(IPAddress ip) {
+		int8_t p = getClient(ip);
+		return  p != -1 && client[p]->connected();
+	}
+	bool connectSlave(IPAddress ip) {
+		if(getClient(ip) == -1) {
+			Serial.println(1);
+			uint8_t p = getFreeClient();
+			Serial.println(2);
+			if (p != -1) {
+				Serial.println(3);
+				client[p] = new WiFiClient();
+				client[p]->connect(ip, MODBUSIP_PORT);
+				Serial.println(4);
+				slaveIp[p] = ip;
+				return true;
+			}
+		}
+		return false;
+	}
+	bool disconnect(IPAddress addr) {}
+	void onMasterConnect(cbModbusConnect cb) {}
+	void onMasterDisconnect(cbModbusConnect cb) {}
+	void slave() {}
+	void master() {}
 	//cbModbusConnect cbConnect = NULL;
 	int8_t n = -1;
     public:
@@ -221,4 +265,103 @@ class ModbusIP : public ModbusCoreIP, public WiFiServer {
     void task();
     //void onConnect(cbModbusConnect cb);
     IPAddress eventSource();
+
+		void pushBits(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pullBits(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pushWords(uint16_t address, uint16_t numregs, FunctionCode fn);
+	void pullWords(uint16_t address, uint16_t numregs, FunctionCode fn);
+	bool send(IPAddress ip) {
+		//if (connected()) Serial.println("Connected");
+		uint16_t i;
+		//MBAP
+		_MBAP.transactionId	= __bswap_16(1);
+		_MBAP.protocolId	= __bswap_16(0);
+		_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
+		_MBAP.unitId		= 0xFF;
+				
+		size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
+		uint8_t sbuf[send_len];
+				
+//		for (i = 0; i < 7; i++)	    sbuf[i] = _MBAP.raw[i];
+//		for (i = 0; i < _len; i++)	sbuf[i+7] = _frame[i];
+
+		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+		int8_t p = getClient(ip);
+		if (p != -1 && client[p]->connected()) {
+			Serial.println(client[p]->write(sbuf, send_len));
+			for (uint8_t c = 0; c < send_len; c++) {
+				Serial.print(sbuf[c], HEX);
+				Serial.print(" ");
+			}
+			Serial.println();
+			//Serial.println(_frame[0]);
+		}
+	}
+	void pushIsts() {
+	}
+	void pullIsts() {
+	}
+	void pushHreg() {
+	}
+	void pullHreg() {
+	}
+	void pushIreg() {
+	}
+	void pullIreg() {
+	}
+	public:
+	bool pullReg(uint16_t address, uint16_t numregs) {
+		addReg(address, numregs);
+		return true;
+	}
+	bool pushReg(uint16_t address, uint16_t numregs);
+	void pushCoil() {
+	}
+	void pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1) {
+		readSlave(offset, numregs, FC_READ_COILS);
+		send(ip);
+	}
+	void pullCoils() {
+		uint16_t offset;
+		uint16_t numregs = 1;
+		std::list<TRegister>::iterator it = _regs.begin();
+	    //std::vector<TRegister>::iterator it = _regs.begin();
+		if (it == _regs.end()) return;
+		offset = it->address;
+    	while(++it != _regs.end())
+    	{
+			if (!IS_COIL(it->address)) continue;
+        	if (it->address == offset + numregs) {
+				numregs++;
+				continue;
+			}
+        	pullCoil(offset, numregs);
+			offset = it->address;
+			numregs = 1;
+    	}
+		pullCoil(offset, numregs);
+	}
+	/*
+		TRegister* creg = getHead();
+		if (!creg) return;
+		while (creg && !IS_COIL(creg->address)) creg = creg->next;
+		if (creg) {
+			offset = creg->address;
+			while (creg->next) {
+				creg = creg->next;
+				if (IS_COIL(creg->address)) {
+					if ((offset + 1) == creg->address) {
+						numregs++;
+						continue;
+					}
+					pullCoil(offset, numregs);
+					offset = creg->address;
+					numregs = 1;
+				}
+			}
+			pullCoil(offset, numregs);
+		}
+	}
+	*/
 };

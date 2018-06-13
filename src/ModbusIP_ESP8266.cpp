@@ -9,8 +9,8 @@ void ModbusIP::begin() {
 	WiFiServer::begin();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		client[i] = NULL;
-		_trans[i] = NULL;
-		ip[i] = INADDR_NONE;
+		//_trans[i] = NULL;
+		slaveIp[i] = INADDR_NONE;
 	}
 }
 
@@ -72,11 +72,20 @@ void ModbusIP::task() {
 						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
 						client[i]->flush();
 					} else {
-						this->receivePDU(_frame);
+						if (slaveIp[i] == INADDR_NONE) {
+							receivePDU(_frame);	// Slave
+						} else {
+							for (uint8_t c = 0; c < _len; c++) {
+			Serial.print(_frame[c], HEX);
+			Serial.print(" ");
+							}
+							responcePDU(_frame);// Master
+						}
 						client[n]->flush();			// Not sure if we need flush rest of data available
 					}
 				}
 			}
+			if (slaveIp[i] != INADDR_NONE) _reply = REPLY_OFF;
 			if (_reply != REPLY_OFF) {
 			    //MBAP
 				_MBAP.length = __bswap_16(_len+1);     //_len+1 for last byte from MBAP
@@ -102,21 +111,21 @@ void ModbusIP::task() {
 //	cbConnect = cb;
 //}
 
-void ModbusMasterIP::connect(IPAddress address) {
-	WiFiClient::connect(address, MODBUSIP_PORT);
+//void ModbusMasterIP::connect(IPAddress address) {
+//	WiFiClient::connect(address, MODBUSIP_PORT);
+//}
+void ModbusIP::pushBits(uint16_t address, uint16_t numregs, FunctionCode fn){
 }
-void ModbusMasterIP::pushBits(uint16_t address, uint16_t numregs, FunctionCode fn){
+void ModbusIP::pullBits(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
-void ModbusMasterIP::pullBits(uint16_t address, uint16_t numregs, FunctionCode fn) {
+void ModbusIP::pushWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
-void ModbusMasterIP::pushWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
+void ModbusIP::pullWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
 }
-void ModbusMasterIP::pullWords(uint16_t address, uint16_t numregs, FunctionCode fn) {
-}
-void ModbusMasterIP::task() {
-}
-IPAddress ModbusMasterIP::eventSource() {
-}
+//void ModbusMasterIP::task() {
+//}
+//IPAddress ModbusMasterIP::eventSource() {
+//}
 
 void ModbusCoreIP::onConnect(cbModbusConnect cb = NULL) {
 	cbConnect = cb;

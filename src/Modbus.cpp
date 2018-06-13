@@ -445,9 +445,8 @@ void Modbus::responcePDU(uint8_t* frame) {
     }
     //uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     //uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
-    uint16_t field1 = 100;
+    uint16_t field1 = 0;
     uint16_t field2 = 1;
-Serial.println(fcode);
     switch (fcode) {
         case FC_READ_REGS:
             //field1 = startreg, field2 = status
@@ -456,8 +455,11 @@ Serial.println(fcode);
         break;
         case FC_READ_COILS:
             //field1 = startreg, field2 = numoutputs
-            Serial.println(field1);
-            Serial.println(field2);
+            Serial.print("Start: ");
+            Serial.print(field1);
+            Serial.print(" Count: ");
+            Serial.print(field2);
+            Serial.print(" Data: ");
             Serial.println(frame[0]);
             this->writeMultipleCoils(frame, field1, field2, frame[0]);
             _reply = REPLY_OFF;
