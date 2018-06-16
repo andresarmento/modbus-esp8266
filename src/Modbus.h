@@ -1,7 +1,7 @@
 /*
     Modbuc.h - Header for Modbus Base Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 
@@ -10,7 +10,6 @@
 
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
-#define MB_FRAME_HEADER  6
 #define COIL_BASE     1
 #define ISTS_BASE 10001
 #define IREG_BASE 30001
@@ -69,106 +68,101 @@ class Modbus {
         };
         //Exception Codes
         enum ResultCode {
-            EX_ILLEGAL_FUNCTION  = 0x01, // Function Code not Supported
-            EX_ILLEGAL_ADDRESS   = 0x02, // Output Address not exists
-            EX_ILLEGAL_VALUE     = 0x03, // Output Value not in Range
-            EX_SLAVE_FAILURE     = 0x04, // Slave or Master Deice Fails to process request
-            EX_ACKNOWLEDGE       = 0x05, // Not used
-            EX_SLAVE_DEVICE_BUSY = 0x06  // Not used
+            EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
+            EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not exists
+            EX_ILLEGAL_VALUE        = 0x03, // Output Value not in Range
+            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Deice Fails to process request
+            EX_ACKNOWLEDGE          = 0x05, // Not used
+            EX_SLAVE_DEVICE_BUSY    = 0x06, // Not used
+            EX_MEMORY_PARITY_ERROR  = 0x08, // Not used
+            EX_PATH_UNAVAILABLE     = 0x0A, // Not used
+            EX_DEVICE_FAILED_TO_RESPOND = 0x0B, // Not used
+            EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected master error
+            EX_DATA_MISMACH         = 0xE2, // Custom. Inpud data size mismach
+            EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transaction
+            EX_TIMEOUT              = 0xE4  // Custom. Operation not finished within reasonable time
         };
 
-        inline bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
             return addReg(HREG(offset), value, numregs);
         }
-        inline bool Hreg(uint16_t offset, uint16_t value) {
+        bool Hreg(uint16_t offset, uint16_t value) {
             return Reg(HREG(offset), value);
         }
-        inline uint16_t Hreg(uint16_t offset) {
+        uint16_t Hreg(uint16_t offset) {
             return Reg(HREG(offset));
         }
-        inline bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+        uint16_t removeHreg(uint16_t offset) {
+            return removeReg(HREG(offset));
+        }
+        bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
             return addReg(COIL(offset), COIL_VAL(value), numregs);
         }
-        inline bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+        bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
             return addReg(ISTS(offset), ISTS_VAL(value), numregs);
         }
-        inline bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+        bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
             return addReg(IREG(offset), value, numregs);
         }
-        inline bool Coil(uint16_t offset, bool value) {
+        bool Coil(uint16_t offset, bool value) {
             return Reg(COIL(offset), COIL_VAL(value));
         }
-        inline bool Ists(uint16_t offset, bool value) {
+        bool Ists(uint16_t offset, bool value) {
             return Reg(ISTS(offset), ISTS_VAL(value));
         }
-        inline bool Ireg(uint16_t offset, uint16_t value) {
+        bool Ireg(uint16_t offset, uint16_t value) {
             return Reg(IREG(offset), value);
         }
-        inline bool Coil(uint16_t offset) {
+        bool Coil(uint16_t offset) {
             return COIL_BOOL(Reg(COIL(offset)));
         }
-        inline bool Ists(uint16_t offset) {
+        bool Ists(uint16_t offset) {
             return ISTS_BOOL(Reg(ISTS(offset)));
         }
-        inline uint16_t Ireg(uint16_t offset) {
+        uint16_t Ireg(uint16_t offset) {
             return Reg(IREG(offset));
         }
         
         void cbEnable(bool state = true);
-        inline void cbDisable() {
+        void cbDisable() {
             cbEnable(false);
         }
         
-        inline bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onGet(COIL(offset), cb, numregs);
         }
-        inline bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(COIL(offset), cb, numregs);
         }
-        inline bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onGet(HREG(offset), cb, numregs);
         }
-        inline bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(HREG(offset), cb, numregs);
         }
-        inline bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onGet(ISTS(offset), cb, numregs);
         }
-        inline bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(ISTS(offset), cb, numregs);
         }
-        inline bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onGet(IREG(offset), cb, numregs);
         }
-        inline bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
+        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
             return onSet(IREG(offset), cb, numregs);
         }
     private:
-        // All function assuming to process Modbus frame from Slave perspective
-        // I.e. readRegisters fill frame with local regisers vales
-        // writeRegisters sets local registers according to frame values
 	    void readBits(uint16_t startreg, uint16_t numregs, FunctionCode fn);
 	    void readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn);
-        void readRegisters(uint16_t startreg, uint16_t numregs) {
-            readWords(HREG(startreg), numregs, FC_READ_REGS);
-        }
-        void writeSingleRegister(uint16_t reg, uint16_t value, FunctionCode fn = FC_WRITE_REG);
-        void writeMultipleRegisters(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn = FC_WRITE_REGS);
-        inline void readCoils(uint16_t startreg, uint16_t numregs) {
-            readBits(COIL(startreg), numregs, FC_READ_COILS);
-        }
-        inline void readInputStatus(uint16_t startreg, uint16_t numregs) {
-            readBits(ISTS(startreg), numregs, FC_READ_INPUT_STAT);
-        }
-        inline void readInputRegisters(uint16_t startreg, uint16_t numregs) {
-            readWords(IREG(startreg), numregs, FC_READ_INPUT_REGS);
-        }
-        void writeSingleCoil(uint16_t reg, uint16_t status, FunctionCode fn = FC_WRITE_COIL);
-        void writeMultipleCoils(uint8_t* frame, uint16_t startreg, uint16_t numoutputs, uint8_t bytecount, FunctionCode fn = FC_WRITE_COILS);
+        
+        void setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutputs);
+        void setMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numoutputs);
+        
+        void getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs);
+        void getMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numregs);
 
         TRegister* searchRegister(uint16_t addr);
-
-        bool cbEnabled = true;
     
     protected:
         //Reply Types
@@ -181,14 +175,14 @@ class Modbus {
         };
 
         std::list<TRegister> _regs;
-        //std::vector<TRegister> _regs;
-        uint8_t* _frame;
-        uint8_t  _len;
-        uint8_t  _reply;
+        uint8_t*  _frame;
+        uint16_t  _len;
+        uint8_t   _reply;
+        bool cbEnabled = true;
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn);
-        void receivePDU(uint8_t* frame);    //For Slave
-        void responcePDU(uint8_t* frame);   //For Master
+        void slavePDU(uint8_t* frame);    //For Slave
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame);   //For Master
 
         bool readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn);
         bool writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn);
@@ -197,6 +191,7 @@ class Modbus {
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
         uint16_t Reg(uint16_t address);
+        bool removeReg(uint16_t address);   // Not implemented
 
         bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);

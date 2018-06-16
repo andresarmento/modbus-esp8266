@@ -40,6 +40,7 @@ Callback generation control. Callback generation is enabled by default.
 
 ```c
 void onConnect(cbModbusConnect cb)
+void onDisonnect(cbModbusConnect cb)
 ```
 
 *ModbusIP only.* Assign callback function on new incoming connection event.
