@@ -19,8 +19,9 @@
 
 #define MODBUSIP_PORT 	  502
 #define MODBUSIP_MAXFRAME 200
-#define MODBUSIP_TIMEOUT   10
+#define MODBUSIP_TIMEOUT 1000
 #define MODBUSIP_UNIT	  255
+#define MODBUSIP_MAX_TRANSACIONS 32
 
 #define MODBUSIP_MAX_CLIENTS	    4
 
@@ -29,7 +30,7 @@ typedef bool (*cbModbusConnect)(IPAddress ip);
 
 typedef struct TTransaction TTransaction;
 
-typedef bool (*cbTransaction)(uint8_t event, IPAddress ip);
+typedef bool (*cbTransaction)(Modbus::ResultCode event, TTransaction* t);
 
 typedef struct TTransaction {
 	uint16_t	transactionId;
@@ -47,16 +48,6 @@ typedef struct TTransaction {
 };
 
 class ModbusIP : public Modbus {
-	public:
-		enum EventCode {
-			SUCCESS				= 0x00,
-    		MASTER_CONNECT		= 0xD1,
-    		MASTER_DISCONNECT	= 0xD2,
-			TRANSACTION_ERROR	= 0xD4,
-			TRANSACTION_TIMEOUT	= 0xD5,
-    		SLAVE_CONNECT		= 0xD6,
-    		SLAVE_DISCONNECT	= 0xD7
-		};
 	protected:
 	typedef union MBAP_t {
 		struct {
@@ -78,7 +69,7 @@ class ModbusIP : public Modbus {
 
 	TTransaction* searchTransaction(uint16_t id) {
     	TTransaction tmp;
-		// = {id, 0, NULL, NULL};
+		// = {id, 0, nullptr, nullptr};
 		tmp.transactionId = id;
 		tmp.timestamp = 0;
 		tmp.cb = nullptr;
@@ -87,7 +78,7 @@ class ModbusIP : public Modbus {
     	if (it != _trans.end()) return &*it;
     	return nullptr;
 	}
-	void clientsCleanup() { 	// Free clients if not connected
+	void cleanup() { 	// Free clients if not connected and remove timedout transactions
 		for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 			if (client[i] && !client[i]->connected()) {
 				IPAddress ip = client[i]->remoteIP();
@@ -95,8 +86,16 @@ class ModbusIP : public Modbus {
 				client[i] = nullptr;
 				if (cbDisconnect && cbEnabled) 
 					cbDisconnect(ip);
-			}	
-		}		
+			}
+		}
+		for (TTransaction& t : _trans) {
+			if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
+				_trans.remove(t);
+				if (cbEnabled && t.cb)
+					t.cb(EX_TIMEOUT, &t);
+			}
+		}
+
 	}
 	int8_t getFreeClient() {
 		//clientsCleanup();
@@ -108,45 +107,38 @@ class ModbusIP : public Modbus {
 
 	int8_t getSlave(IPAddress ip) {
 		for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-			if (client[i] && client[i]->remoteIP() == ip && client[i]->localPort() != MODBUSIP_PORT)
+			if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() != MODBUSIP_PORT)
 				return i;
 		return -1;
 	}
 
 	bool send(IPAddress ip, cbTransaction cb) {
-		uint16_t i;
+		if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
+			return false;
+		int8_t p = getSlave(ip);
+		if (p == -1 || !client[p]->connected())
+			return false;
 		transactionId++;
 		_MBAP.transactionId	= __bswap_16(transactionId);
 		_MBAP.protocolId	= __bswap_16(0);
 		_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
-		_MBAP.unitId		= 0xFF;
+		_MBAP.unitId		= MODBUSIP_UNIT;
 		size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 		uint8_t sbuf[send_len];
 		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-		int8_t p = getSlave(ip);
-		if (p != -1 && client[p]->connected()) {
-			if (client[p]->write(sbuf, send_len) == send_len) {
-			//if (client[p]->write(_MBAP.raw, sizeof(_MBAP.raw)) == sizeof(_MBAP.raw) && client[p]->write(_frame, _len) == _len) {
-				//_trans.push_back({transactionId, millis(), cb, _len, _frame});
-				TTransaction tmp;// = {transactionId, millis(), cb, _frame};
-				tmp.transactionId = transactionId;
-				tmp.timestamp = millis();
-				tmp.cb = cb;
-				tmp._frame = _frame;
-				_trans.push_back(tmp);
-				_frame = NULL;
-				return true;
-			}
-/*
-			for (uint8_t c = 0; c < send_len; c++) {
-				Serial.print(sbuf[c], HEX);
-				Serial.print(" ");
-			}
-			Serial.println();
-*/
-		}
-		return false;
+		if (client[p]->write(sbuf, send_len) != send_len)
+			return false;
+		//if (client[p]->write(_MBAP.raw, sizeof(_MBAP.raw)) == sizeof(_MBAP.raw) && client[p]->write(_frame, _len) == _len) {
+		//_trans.push_back({transactionId, millis(), cb, _len, _frame});
+		TTransaction tmp;// = {transactionId, millis(), cb, _frame};
+		tmp.transactionId = transactionId;
+		tmp.timestamp = millis();
+		tmp.cb = cb;
+		tmp._frame = _frame;
+		_trans.push_back(tmp);
+		_frame = nullptr;
+		return true;
 	}
 
 	public:
@@ -162,15 +154,15 @@ class ModbusIP : public Modbus {
 	}
 
 	bool connect(IPAddress ip) {
-		if(getSlave(ip) == -1) {
-			uint8_t p = getFreeClient();
-			if (p != -1) {
-				client[p] = new WiFiClient();
-				client[p]->connect(ip, MODBUSIP_PORT);
-				return true;
-			}
-		}
-		return false;
+		cleanup();
+		if(getSlave(ip) != -1)
+			return true;
+		int8_t p = getFreeClient();
+		if (p == -1)
+			return false;
+		client[p] = new WiFiClient();
+		client[p]->connect(ip, MODBUSIP_PORT);
+		return true;
 	}
 
 	bool disconnect(IPAddress addr) {}
@@ -194,23 +186,26 @@ class ModbusIP : public Modbus {
     void onConnect(cbModbusConnect cb);
     IPAddress eventSource();
 
-	bool pullReg(uint16_t address, uint16_t numregs) {
-		addReg(address, numregs);
-		return true;
-	}
-	bool pushReg(uint16_t address, uint16_t numregs);
-
 	public:
-	bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = NULL) {
+	bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
 		//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
-		writeSlaveBits(COIL(offset), numregs, FC_WRITE_COILS);
+		if (numregs == 1) {
+			readSlave(COIL(offset), COIL_VAL(Coil(offset)), FC_WRITE_COIL);
+		} else {
+			writeSlaveBits(COIL(offset), numregs, FC_WRITE_COILS);
+		}
 		return send(ip, cb);
 	}
-	bool pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = NULL) {
+	bool pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
 		addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 		readSlave(COIL(offset), numregs, FC_READ_COILS);
 		return send(ip, cb);
 	}
+/*	
 	void pullCoils() {	// Not implemented. Just test code.
 		uint16_t offset;
 		uint16_t numregs = 1;
@@ -230,16 +225,37 @@ class ModbusIP : public Modbus {
     	}
 		pullCoil(offset, numregs);
 	}
-	void pushIsts() {
+*/
+	bool pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
+		addIsts(offset, numregs);	// Should registers requre to be added there or use existing?
+		readSlave(ISTS(offset), numregs, FC_READ_INPUT_STAT);
+		return send(ip, cb);
 	}
-	void pullIsts() {
+	bool pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
+		//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
+		if (numregs == 1) {
+			readSlave(HREG(offset), Hreg(offset), FC_WRITE_REG);
+		} else {
+			writeSlaveWords(HREG(offset), numregs, FC_WRITE_REGS);
+		}
+		return send(ip, cb);
 	}
-	void pushHreg() {
+	bool pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
+		addHreg(offset, numregs);	// Should registers requre to be added there or use existing?
+		readSlave(HREG(offset), numregs, FC_READ_REGS);
+		return send(ip, cb);
 	}
-	void pullHreg() {
-	}
-	void pushIreg() {
-	}
-	void pullIreg() {
+	bool pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
+		if (numregs < 0x0001 || numregs > 0x007B)
+			return false;
+		addIreg(offset, numregs);	// Should registers requre to be added there or use existing?
+		readSlave(IREG(offset), numregs, FC_READ_INPUT_REGS);
+		return send(ip, cb);
 	}
 };

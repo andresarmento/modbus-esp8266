@@ -68,6 +68,7 @@ class Modbus {
         };
         //Exception Codes
         enum ResultCode {
+            EX_SUCCESS              = 0x00, // Custom. No error
             EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
             EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not exists
             EX_ILLEGAL_VALUE        = 0x03, // Output Value not in Range
@@ -80,7 +81,8 @@ class Modbus {
             EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected master error
             EX_DATA_MISMACH         = 0xE2, // Custom. Inpud data size mismach
             EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transaction
-            EX_TIMEOUT              = 0xE4  // Custom. Operation not finished within reasonable time
+            EX_TIMEOUT              = 0xE4, // Custom. Operation not finished within reasonable time
+            EX_CONNECTION_LOST      = 0xE5  // Custom. Connection with device lost
         };
 
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {

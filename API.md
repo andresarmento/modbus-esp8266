@@ -29,6 +29,24 @@ bool Ists(uint16_t offset);
 uint16_t Ireg(uint16_t offset);
 ```
 
+### Query [multiple] regs from remote slave
+
+```c
+bool pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pullIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
+```
+
+### Send [multiple] regs to remote slave
+
+```c
+bool pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pushIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+bool pushIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
+```
+
 ### Callbacks
 
 ```c
@@ -43,7 +61,7 @@ void onConnect(cbModbusConnect cb)
 void onDisonnect(cbModbusConnect cb)
 ```
 
-*ModbusIP only.* Assign callback function on new incoming connection event.
+Assign callback function on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip)
@@ -58,10 +76,18 @@ typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
 Get/Set register callback function definition. Pointer to TRegister structure (see source for details) of the register and new value are passed as arguments.
 
 ```c
+typedef uint16_t (*cbTransaction)(uint8_t eventCode, TTransaction* transaction)
+```
+
+Transaction end callback function definition. Pointer to TTransaction structure (see source for details) is passed.
+
+```c
 IPAddress eventSource()
 ```
 
-*ModbusIP and ModbusMasterIP only.* Should be called from onGet/onSet callback function. Returns IP address of remote requesting operation or IPADDR_NONE for local.
+Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
+
+*Note:* In case of transaction callback INADDR_NONE returned in case if transaction is timedout.
 
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
@@ -96,19 +122,16 @@ Assign callback function on register query event. Multiple sequental registers c
 ```c
 void begin();
 void task();
+void master();
 ```
 
 ### ModBus IP Master specific
 
 ```c
+void slave();
+bool connect(IPAddress ip);
+bool disconnect(IPAddress ip);
 void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
-void pullCoils(cbModbusResult cb = NULL);
-void pushIstss(cbModbusResult cb = NULL);
-void pullIstss(cbModbusResult cb = NULL);
-void pushHregs(cbModbusResult cb = NULL);
-void pullHregs(cbModbusResult cb = NULL);
-void pushIregs(cbModbusResult cb = NULL);
-void pullIregs(cbModbusResult cb = NULL);
 ```
 
 ### Callback example

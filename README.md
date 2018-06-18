@@ -1,4 +1,4 @@
-# Modbus Library for ESP8266/ESP32
+# Modbus Master/Slave Library for ESP8266/ESP32 v2.0.ALFA
 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
@@ -16,7 +16,9 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 * Supported platforms are
   * ESP8266
   * ESP32
-* Operates as a slave, master or both
+* Operates as
+  * slave
+  * master
 * Fully async operations. No loop locks.
 * Supports Modbus IP (TCP)
 * Reply exception messages for all supported functions
@@ -30,9 +32,11 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Incoming IP connection
+  * Master connect
+  * Slave disconnect 
   * Read specific Register
   * Write specific Register
+  * Slave transaction finish
 
 ## Notes:
 
@@ -41,20 +45,20 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br)
 offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 
-For API specefication see [API.md](https://githab.com/emelianov/modbus-esp8266/API/md)
+For API specefication see [API.md](https://github.com/emelianov/modbus-esp8266/API.md)
 
 ## Last Changes
 
 * Internal changes
  * Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
- * Move object's list implementation to std::list
+ * Change object's list implementation to std::list
  * Modbus class refactoring
  * ModbusIP networking code refactoring and error reporting
- * Modbus master implementation preparation
 * Public API changes
+ * Modbus master implementation
  * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
  * Back to marking private for onSet, onGet, addReg and Reg methods
- * Added callback-related eventSource method
+ * Added callback-related eventSource method, onDisconnect, onEvent callbacks
  
 
 ## Contributions

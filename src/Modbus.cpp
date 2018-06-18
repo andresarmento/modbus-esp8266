@@ -151,7 +151,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                     break;
                 }
             }
-            setMultipleBits(frame + 6, field1, field2);
+            setMultipleBits(frame + 6, COIL(field1), field2);
             successResponce(field1, field2, fcode);
             _reply = REPLY_NORMAL;
         break;
@@ -188,9 +188,9 @@ void Modbus::getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs
 	while (numregs--) {
         i = (totregs - numregs) / 8;
 		if (BIT_BOOL(Reg(startreg)))
-			bitSet(frame[2+i], bitn);
+			bitSet(frame[i], bitn);
 		else
-			bitClear(frame[2+i], bitn);
+			bitClear(frame[i], bitn);
 		bitn++; //increment the bit index
 		if (bitn == 8) bitn = 0;
 		startreg++; //increment the register
@@ -268,7 +268,7 @@ void Modbus::setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutp
     uint16_t i;
 	while (numoutputs--) {
         i = (totoutputs - numoutputs) / 8;
-        Reg(startreg, bitRead(frame[i], bitn));
+        Reg(startreg, BIT_VAL(bitRead(frame[i], bitn)));
         bitn++;     //increment the bit index
         if (bitn == 8) bitn = 0;
         startreg++; //increment the register
@@ -349,14 +349,20 @@ bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn
 
 bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
-	_len = 5;
+	_len = 6 + 2 * numregs;
 	_frame = (uint8_t*) malloc(_len);
-	_frame[0] = fn;
-	_frame[1] = startreg >> 8;
-	_frame[2] = startreg & 0x00FF;
-	_frame[3] = numregs >> 8;
-	_frame[4] = numregs & 0x00FF;
-	return true;
+    if (_frame) {
+	    _frame[0] = fn;
+	    _frame[1] = startreg >> 8;
+	    _frame[2] = startreg & 0x00FF;
+	    _frame[3] = numregs >> 8;
+	    _frame[4] = numregs & 0x00FF;
+        _frame[5] = _len - 6;
+        getMultipleWords(_frame + 6, startreg, numregs);
+        return true;
+    }
+    _reply = REPLY_OFF;
+	return false;    
 }
 
 void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame) {

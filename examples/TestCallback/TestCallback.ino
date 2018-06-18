@@ -65,7 +65,7 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
   mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
-  //test.push_front({10,10,NULL,NULL,NULL});
+  //test.push_front({10,10,nullptr,nullptr,nullptr});
   //Serial.println(test.begin()->address);
 }
 
