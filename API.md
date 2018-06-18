@@ -1,4 +1,4 @@
-# Modbus Library for ESP8266/ESP32
+# Modbus Master/Slave Library for ESP8266/ESP32
 
 ## API
 
@@ -47,6 +47,13 @@ bool pushIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction
 bool pushIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
 ```
 
+### Write value to remote slave reg
+
+```c
+bool Coil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
+bool Hreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+```
+
 ### Callbacks
 
 ```c
@@ -54,7 +61,7 @@ void cbEnable(bool state = TRUE);
 void cbDisable();
 ```
 
-Callback generation control. Callback generation is enabled by default.
+Callback generation control. Callback generation is enabled by default. Affect all callbacks.
 
 ```c
 void onConnect(cbModbusConnect cb)

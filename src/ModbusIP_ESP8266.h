@@ -41,10 +41,6 @@ typedef struct TTransaction {
 	    {
 		    return transactionId == obj.transactionId;
 	    }
-    bool operator >(const TTransaction &obj) const
-	    {
-		    return timestamp > obj.timestamp;
-	    }
 };
 
 class ModbusIP : public Modbus {
@@ -64,12 +60,11 @@ class ModbusIP : public Modbus {
 	WiFiServer* server;
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	std::list<TTransaction> _trans;
-	int16_t		transactionId = 0;
+	int16_t		transactionId = 0;  // Last started transaction. Increments on on unsuccessful transaction start too.
 	int8_t n = -1;
 
 	TTransaction* searchTransaction(uint16_t id) {
     	TTransaction tmp;
-		// = {id, 0, nullptr, nullptr};
 		tmp.transactionId = id;
 		tmp.timestamp = 0;
 		tmp.cb = nullptr;
@@ -88,7 +83,7 @@ class ModbusIP : public Modbus {
 					cbDisconnect(ip);
 			}
 		}
-		for (TTransaction& t : _trans) {
+		for (TTransaction& t : _trans) {    // Cleanup transactions on timeout
 			if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
 				_trans.remove(t);
 				if (cbEnabled && t.cb)
@@ -97,7 +92,7 @@ class ModbusIP : public Modbus {
 		}
 
 	}
-	int8_t getFreeClient() {
+	int8_t getFreeClient() {    // Returns free slot position
 		//clientsCleanup();
 		for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
 			if (!client[i])
@@ -112,9 +107,11 @@ class ModbusIP : public Modbus {
 		return -1;
 	}
 
-	bool send(IPAddress ip, cbTransaction cb) {
+	bool send(IPAddress ip, cbTransaction cb) { // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
+    #ifdef MODBUSIP_MAX_TRANSACIONS
 		if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
 			return false;
+    #endif
 		int8_t p = getSlave(ip);
 		if (p == -1 || !client[p]->connected())
 			return false;
@@ -129,9 +126,7 @@ class ModbusIP : public Modbus {
 		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 		if (client[p]->write(sbuf, send_len) != send_len)
 			return false;
-		//if (client[p]->write(_MBAP.raw, sizeof(_MBAP.raw)) == sizeof(_MBAP.raw) && client[p]->write(_frame, _len) == _len) {
-		//_trans.push_back({transactionId, millis(), cb, _len, _frame});
-		TTransaction tmp;// = {transactionId, millis(), cb, _frame};
+		TTransaction tmp;
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
 		tmp.cb = cb;
@@ -145,7 +140,7 @@ class ModbusIP : public Modbus {
 	uint16_t lastTransaction() {
 		return transactionId;
 	}
-	bool isTransaction(uint16_t id) {
+	bool isTransaction(uint16_t id) { // Check if transaction is in progress (by ID)
 		searchTransaction(id) != nullptr;
 	}
 	bool isConnected(IPAddress ip) {
@@ -165,7 +160,7 @@ class ModbusIP : public Modbus {
 		return true;
 	}
 
-	bool disconnect(IPAddress addr) {}
+	bool disconnect(IPAddress addr) {}  // Not implemented yet
 
 	void onDisconnect(cbModbusConnect cb = nullptr) {
 		cbDisconnect = cb;
@@ -187,6 +182,14 @@ class ModbusIP : public Modbus {
     IPAddress eventSource();
 
 	public:
+    bool Coil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr) {
+		readSlave(COIL(offset), COIL_VAL(value), FC_WRITE_COIL);
+		return send(ip, cb);
+    }
+    bool Hreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr) {
+		readSlave(HREG(offset), value, FC_WRITE_REG);
+		return send(ip, cb);
+    }
 	bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr) {
 		if (numregs < 0x0001 || numregs > 0x007B)
 			return false;

@@ -31,10 +31,8 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
 
 bool Modbus::Reg(uint16_t address, uint16_t value) {
     TRegister* reg;
-    //search for the register address
-    reg = searchRegister(address);
-    //if found then assign the register value to the new value.
-    if (reg) {
+    reg = searchRegister(address); //search for the register address
+    if (reg) { //if found then assign the register value to the new value.
         if (cbEnabled) {
             reg->value = reg->set(reg, value);
         } else {
