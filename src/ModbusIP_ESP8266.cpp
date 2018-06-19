@@ -81,7 +81,9 @@ void ModbusIP::task() {
 								trans->cb((ResultCode)_reply, trans);
 							}
 							free(trans->_frame);
-							_trans.remove(*trans);
+							//_trans.remove(*trans);
+							std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
+							_trans.erase(it);
 						}
 					}
 					client[n]->flush();			// Not sure if we need flush rest of data available

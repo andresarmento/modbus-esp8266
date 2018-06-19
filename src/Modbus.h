@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Arduino.h"
-#include <list>
+//#include <list>
 
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
@@ -176,7 +176,8 @@ class Modbus {
             REPLY_UNEXPECTED     = 0x05
         };
 
-        std::list<TRegister> _regs;
+        //std::list<TRegister> _regs;
+        std::vector<TRegister> _regs;
         uint8_t*  _frame;
         uint16_t  _len;
         uint8_t   _reply;

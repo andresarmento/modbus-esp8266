@@ -58,7 +58,8 @@ class ModbusIP : public Modbus {
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server;
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
-	std::list<TTransaction> _trans;
+	//std::list<TTransaction> _trans;
+	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on on unsuccessful transaction start too.
 	int8_t n = -1;
 
@@ -68,7 +69,8 @@ class ModbusIP : public Modbus {
 		tmp.timestamp = 0;
 		tmp.cb = nullptr;
 		tmp._frame = nullptr;
-    	std::list<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), tmp);
+    	//std::list<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), tmp);
+		std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), tmp);
     	if (it != _trans.end()) return &*it;
     	return nullptr;
 	}
@@ -86,7 +88,9 @@ class ModbusIP : public Modbus {
 			if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
 				if (cbEnabled && t.cb)
 					t.cb(EX_TIMEOUT, &t);
-				_trans.remove(t);
+				//_trans.remove(t);
+				std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), t);
+				_trans.erase(it);
 			}
 		}
 
@@ -129,6 +133,7 @@ class ModbusIP : public Modbus {
 			return false;
 		client[p] = new WiFiClient();
 		client[p]->connect(ip, MODBUSIP_PORT);
+		if (client[p]->connected()) {Serial.println("Connected");} else Serial.println("Not yet");
 		return true;
 	}
 
