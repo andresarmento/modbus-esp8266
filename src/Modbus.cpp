@@ -243,7 +243,7 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
         exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
     }
-    if (searchRegister(startreg)) { //Check Address
+    if (!searchRegister(startreg)) { //Check Address
         exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
         return;
     }
@@ -367,8 +367,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame) {
     uint8_t fcode  = frame[0];
     _reply = 0;
     if ((fcode & 0x80) != 0) {
-        Serial.print("Error: ");
-        Serial.println(_frame[1]);
 	    _reply = _frame[1];
 	    return;
     }

@@ -22,7 +22,6 @@
 #define MODBUSIP_TIMEOUT 1000
 #define MODBUSIP_UNIT	  255
 #define MODBUSIP_MAX_TRANSACIONS 32
-
 #define MODBUSIP_MAX_CLIENTS	    4
 
 // Callback function Type
@@ -85,9 +84,9 @@ class ModbusIP : public Modbus {
 		}
 		for (TTransaction& t : _trans) {    // Cleanup transactions on timeout
 			if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
-				_trans.remove(t);
 				if (cbEnabled && t.cb)
 					t.cb(EX_TIMEOUT, &t);
+				_trans.remove(t);
 			}
 		}
 
@@ -107,34 +106,7 @@ class ModbusIP : public Modbus {
 		return -1;
 	}
 
-	bool send(IPAddress ip, cbTransaction cb) { // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
-    #ifdef MODBUSIP_MAX_TRANSACIONS
-		if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
-			return false;
-    #endif
-		int8_t p = getSlave(ip);
-		if (p == -1 || !client[p]->connected())
-			return false;
-		transactionId++;
-		_MBAP.transactionId	= __bswap_16(transactionId);
-		_MBAP.protocolId	= __bswap_16(0);
-		_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
-		_MBAP.unitId		= MODBUSIP_UNIT;
-		size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
-		uint8_t sbuf[send_len];
-		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
-		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-		if (client[p]->write(sbuf, send_len) != send_len)
-			return false;
-		TTransaction tmp;
-		tmp.transactionId = transactionId;
-		tmp.timestamp = millis();
-		tmp.cb = cb;
-		tmp._frame = _frame;
-		_trans.push_back(tmp);
-		_frame = nullptr;
-		return true;
-	}
+	bool send(IPAddress ip, cbTransaction cb);
 
 	public:
 	uint16_t lastTransaction() {
@@ -145,11 +117,11 @@ class ModbusIP : public Modbus {
 	}
 	bool isConnected(IPAddress ip) {
 		int8_t p = getSlave(ip);
-		return  p != -1 && client[p]->connected();
+		return  p != -1;// && client[p]->connected();
 	}
 
 	bool connect(IPAddress ip) {
-		cleanup();
+		//cleanup();
 		if(getSlave(ip) != -1)
 			return true;
 		int8_t p = getFreeClient();
@@ -182,11 +154,11 @@ class ModbusIP : public Modbus {
     IPAddress eventSource();
 
 	public:
-    bool Coil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr) {
+    bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr) {
 		readSlave(COIL(offset), COIL_VAL(value), FC_WRITE_COIL);
 		return send(ip, cb);
     }
-    bool Hreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr) {
+    bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr) {
 		readSlave(HREG(offset), value, FC_WRITE_REG);
 		return send(ip, cb);
     }

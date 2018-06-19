@@ -105,6 +105,36 @@ void ModbusIP::task() {
 	n = -1;
 }
 
+bool ModbusIP::send(IPAddress ip, cbTransaction cb) { // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
+#ifdef MODBUSIP_MAX_TRANSACIONS
+	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
+		return false;
+#endif
+	int8_t p = getSlave(ip);
+	if (p == -1 || !client[p]->connected())
+		return false;
+	transactionId++;
+	_MBAP.transactionId	= __bswap_16(transactionId);
+	_MBAP.protocolId	= __bswap_16(0);
+	_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
+	_MBAP.unitId		= MODBUSIP_UNIT;
+	size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
+	uint8_t sbuf[send_len];
+	memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+	if (client[p]->write(sbuf, send_len) != send_len)
+		return false;
+	TTransaction tmp;
+	tmp.transactionId = transactionId;
+	tmp.timestamp = millis();
+	tmp.cb = cb;
+	tmp._frame = _frame;
+	_trans.push_back(tmp);
+	_frame = nullptr;
+	return true;
+}
+
+
 void ModbusIP::onConnect(cbModbusConnect cb = nullptr) {
 	cbConnect = cb;
 }
