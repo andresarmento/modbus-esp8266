@@ -11,6 +11,8 @@ bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 ```
 
+Offset is 0..9999
+
 ### Write regs
 
 ```c
@@ -53,6 +55,8 @@ Write Register/Coil or Write Multiple Registers/Coils Modbus function selected a
 bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
 bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 ```
+
+Write value to remote Hreg/Coil. Offset is 0..65535.
 
 ### Callbacks
 

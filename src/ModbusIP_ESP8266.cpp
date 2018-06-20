@@ -54,21 +54,23 @@ TTransaction* ModbusIP::searchTransaction(uint16_t id) {
 
 void ModbusIP::task() {
 	cleanup();
-	while (server->hasClient()) {
-		WiFiClient* currentClient = new WiFiClient(server->available());
-		if (currentClient == nullptr && !currentClient->connected())
-			continue;
-		if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
-			n = getFreeClient();
-			if (n > -1) {
-				client[n] = currentClient;
-				continue; // while
+	if (server) {
+		while (server->hasClient()) {
+			WiFiClient* currentClient = new WiFiClient(server->available());
+			if (currentClient == nullptr && !currentClient->connected())
+				continue;
+			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
+				n = getFreeClient();
+				if (n > -1) {
+					client[n] = currentClient;
+					continue; // while
+				}
 			}
+			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
+			currentClient->flush();
+			currentClient->stop();
+			delete currentClient;
 		}
-		// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
-		currentClient->flush();
-		currentClient->stop();
-		delete currentClient;
 	}
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (client[n] == nullptr)
@@ -211,12 +213,12 @@ int8_t ModbusIP::getSlave(IPAddress ip) {
 }
 
 bool ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb) {
-	readSlave(COIL(offset), COIL_VAL(value), FC_WRITE_COIL);
+	readSlave(offset, COIL_VAL(value), FC_WRITE_COIL);
 	return send(ip, cb);
    }
 
 bool ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb) {
-	readSlave(HREG(offset), value, FC_WRITE_REG);
+	readSlave(offset, value, FC_WRITE_REG);
 	return send(ip, cb);
 }
 
@@ -225,9 +227,9 @@ bool ModbusIP::pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 		return false;
 	//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 	if (numregs == 1) {
-		readSlave(COIL(offset), COIL_VAL(Coil(offset)), FC_WRITE_COIL);
+		readSlave(offset, COIL_VAL(Coil(offset)), FC_WRITE_COIL);
 	} else {
-		writeSlaveBits(COIL(offset), numregs, FC_WRITE_COILS);
+		writeSlaveBits(offset, COIL(offset), numregs, FC_WRITE_COILS);
 	}
 	return send(ip, cb);
 }
@@ -236,7 +238,7 @@ bool ModbusIP::pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	if (numregs < 0x0001 || numregs > 0x007B)
 		return false;
 	addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
-	readSlave(COIL(offset), numregs, FC_READ_COILS);
+	readSlave(offset, numregs, FC_READ_COILS);
 	return send(ip, cb);
 }
 
@@ -244,7 +246,7 @@ bool ModbusIP::pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	if (numregs < 0x0001 || numregs > 0x007B)
 		return false;
 	addIsts(offset, numregs);	// Should registers requre to be added there or use existing?
-	readSlave(ISTS(offset), numregs, FC_READ_INPUT_STAT);
+	readSlave(offset, numregs, FC_READ_INPUT_STAT);
 	return send(ip, cb);
 }
 
@@ -253,9 +255,9 @@ bool ModbusIP::pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 		return false;
 	//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 	if (numregs == 1) {
-		readSlave(HREG(offset), Hreg(offset), FC_WRITE_REG);
+		readSlave(offset, Hreg(offset), FC_WRITE_REG);
 	} else {
-		writeSlaveWords(HREG(offset), numregs, FC_WRITE_REGS);
+		writeSlaveWords(offset, HREG(offset), numregs, FC_WRITE_REGS);
 	}
 	return send(ip, cb);
 }
@@ -264,7 +266,7 @@ bool ModbusIP::pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	if (numregs < 0x0001 || numregs > 0x007B)
 		return false;
 	addHreg(offset, numregs);	// Should registers requre to be added there or use existing?
-	readSlave(HREG(offset), numregs, FC_READ_REGS);
+	readSlave(offset, numregs, FC_READ_REGS);
 	return send(ip, cb);
 }
 
@@ -272,6 +274,6 @@ bool ModbusIP::pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	if (numregs < 0x0001 || numregs > 0x007B)
 		return false;
 	addIreg(offset, numregs);	// Should registers requre to be added there or use existing?
-	readSlave(IREG(offset), numregs, FC_READ_INPUT_REGS);
+	readSlave(offset, numregs, FC_READ_INPUT_REGS);
 	return send(ip, cb);
 }

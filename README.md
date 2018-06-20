@@ -1,4 +1,6 @@
-# Modbus Master/Slave Library for ESP8266/ESP32 v2.0.ALFA
+# Modbus Master-Slave Library for ESP8266/ESP32
+
+#v2.0.BETA
 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
@@ -33,7 +35,7 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
   * 0x10 - Write Multiple Registers
 * Callbacks for
   * Master connect
-  * Slave disconnect
+  * Master/Slave disconnect
   * Read specific Register
   * Write specific Register
   * Slave transaction finish

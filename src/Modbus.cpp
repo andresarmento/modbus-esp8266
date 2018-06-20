@@ -20,6 +20,9 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
    #ifdef MB_MAX_REGS
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
+   #ifdef MB_MAX_ADDRESS
+    if (address > MB_MAX_ADDRESS) return false;
+   #endif
     for (uint16_t i = 0; i < numregs; i++) {
         if (!searchRegister(address + i))
             _regs.push_back({address + i, value, cbDefault, cbDefault});
@@ -309,27 +312,27 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
 	_frame[0] = fn;
-	_frame[1] = startreg >> 8;
-	_frame[2] = startreg & 0x00FF;
+	_frame[1] = address >> 8;
+	_frame[2] = address & 0x00FF;
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
 	return true;
 }
 
-bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveBits(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 6 + numregs/8;
 	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = startreg >> 8;
-	    _frame[2] = startreg & 0x00FF;
+	    _frame[1] = address >> 8;
+	    _frame[2] = address & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
@@ -342,14 +345,14 @@ bool Modbus::writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn
 	return false;
 }
 
-bool Modbus::writeSlaveWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveWords(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 6 + 2 * numregs;
 	_frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = startreg >> 8;
-	    _frame[2] = startreg & 0x00FF;
+	    _frame[1] = address >> 8;
+	    _frame[2] = address & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;

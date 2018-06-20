@@ -9,6 +9,7 @@
 
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
+#define MB_MAX_ADDRESS 9999
 #define COIL_BASE     1
 #define ISTS_BASE 10001
 #define IREG_BASE 30001
@@ -176,18 +177,18 @@ class Modbus {
         };
 
         std::vector<TRegister> _regs;
-        uint8_t*  _frame;
-        uint16_t  _len;
-        uint8_t   _reply;
+        uint8_t*  _frame = nullptr;
+        uint16_t  _len = 0;
+        uint8_t   _reply = 0;
         bool cbEnabled = true;
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
         void masterPDU(uint8_t* frame, uint8_t* sourceFrame);   //For Master
 
-        bool readSlave(uint16_t startreg, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveBits(uint16_t startreg, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveWords(uint16_t startreg, uint16_t numregs, FunctionCode fn);
+        bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveBits(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveWords(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn);
 
         bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(uint16_t address, uint16_t value);
