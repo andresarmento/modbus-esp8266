@@ -33,7 +33,7 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
   * 0x10 - Write Multiple Registers
 * Callbacks for
   * Master connect
-  * Slave disconnect 
+  * Slave disconnect
   * Read specific Register
   * Write specific Register
   * Slave transaction finish
@@ -41,25 +41,22 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 ## Notes:
 
 1. When using Modbus IP the transport protocol is TCP (port 502).
-
-2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br)
-offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-
-For API specefication see [API.md](https://github.com/emelianov/modbus-esp8266/API.md)
+2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
+3. All type register's addresses are limited to 0..9999 for local and remote both.
+4. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/API.md)
 
 ## Last Changes
 
 * Internal changes
- * Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
- * Change object's list implementation to std::list
- * Modbus class refactoring
- * ModbusIP networking code refactoring and error reporting
+  * Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
+  * Change object's list implementation to *std::vector*
+  * Modbus class refactoring
+  * ModbusIP networking code refactoring and error reporting
 * Public API changes
- * Modbus master implementation
- * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
- * Back to marking private for onSet, onGet, addReg and Reg methods
- * Added callback-related eventSource method, onDisconnect, onEvent callbacks
- 
+  * Modbus master implementation
+  * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
+  * Back to marking private for onSet, onGet, addReg and Reg methods
+  * Added callback-related eventSource method, onDisconnect and transaction result callbacks
 
 ## Contributions
 

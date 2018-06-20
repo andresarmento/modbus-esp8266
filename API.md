@@ -50,8 +50,8 @@ bool pushIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction
 ### Write value to remote slave reg
 
 ```c
-bool Coil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
-bool Hreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
+bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 ```
 
 ### Callbacks
@@ -146,26 +146,26 @@ void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
 ```c
 ModbusIP mb;
 bool coil = false; // Define external variable to get/set value
-uint16_t cbCoilSet(TRegister* reg, uint16_t val) {	// 'reg' is pointer to reg to modify, 'val' is new register value
+uint16_t cbCoilSet(TRegister* reg, uint16_t val) { // 'reg' is pointer to reg to modify, 'val' is new register value
   Serial.print("Set query from ");
   Serial.println(mb.eventSource().toString());
   coil = COIL_BOOL(val);
-  return val;	// Returns value to be saved to TRegister structure
+  return val; // Returns value to be saved to TRegister structure
 }
 uint16_t cbCoilGet(TRegister* reg, uint16_t val) {
   Serial.print("Get query from ");
   Serial.println(mb.eventSource().toString());
-  return COIL_VAL(coil);	// Returns value to be returned to ModBus master as reply for current request
+  return COIL_VAL(coil); // Returns value to be returned to ModBus master as reply for current request
 }
 bool cbConn(IPAddress ip) {
-	Serial.println(ip);
-	return true;		// Return 'true' to allow connection or 'false' to drop connection
+  Serial.println(ip);
+  return true; // Return 'true' to allow connection or 'false' to drop connection
 }
-ModbusIP mb;	// ModbusIP object
+ModbusIP mb; // ModbusIP object
 void setup() {
 ...
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.begin();
+  mb.slave();
   mb.addCoil(COIL_NR);     // Add Coil
   mb.onSetCoil(COIL_NR, cbCoilSet); // Add callback on Coil COIL_NR value set
   mb.onGetCoil(COIL_NR, cbCoilGet); // Add callback on Coil COIL_NR value get
@@ -173,11 +173,10 @@ void setup() {
 }
 void loop() {
 ...
-	mb.task();
+  mb.task();
 ...
 }
 ```
-
 
 ## Contributions
 
