@@ -43,9 +43,9 @@ bool pullIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction
 ```c
 bool pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
 bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pushIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pushIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
 ```
+
+Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value.
 
 ### Write value to remote slave reg
 
@@ -94,7 +94,7 @@ IPAddress eventSource()
 
 Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
 
-*Note:* In case of transaction callback INADDR_NONE returned in case if transaction is timedout.
+*Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
 
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
@@ -129,13 +129,13 @@ Assign callback function on register query event. Multiple sequental registers c
 ```c
 void begin();
 void task();
-void master();
+void slave();
 ```
 
 ### ModBus IP Master specific
 
 ```c
-void slave();
+void master();
 bool connect(IPAddress ip);
 bool disconnect(IPAddress ip);
 void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
@@ -146,16 +146,16 @@ void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
 ```c
 ModbusIP mb;
 bool coil = false; // Define external variable to get/set value
-uint16_t cbCoilSet(TRegister* reg, uint16_t val) { // 'reg' is pointer to reg to modify, 'val' is new register value
+uint16_t cbCoilSet(TRegister* reg, uint16_t val) { // 'reg' is pointer to reg structure to modify, 'val' is new register value
   Serial.print("Set query from ");
   Serial.println(mb.eventSource().toString());
-  coil = COIL_BOOL(val);
+  coil = COIL_BOOL(val);  // Assign value to external variable
   return val; // Returns value to be saved to TRegister structure
 }
 uint16_t cbCoilGet(TRegister* reg, uint16_t val) {
   Serial.print("Get query from ");
   Serial.println(mb.eventSource().toString());
-  return COIL_VAL(coil); // Returns value to be returned to ModBus master as reply for current request
+  return COIL_VAL(coil); // Override value to be returned to ModBus master as reply for current request
 }
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
@@ -164,8 +164,8 @@ bool cbConn(IPAddress ip) {
 ModbusIP mb; // ModbusIP object
 void setup() {
 ...
-  mb.onConnect(cbConn);   // Add callback on connection event
-  mb.slave();
+  mb.onConnect(cbConn); // Add callback on connection event
+  mb.slave(); // Accept incoming Modbus connections
   mb.addCoil(COIL_NR);     // Add Coil
   mb.onSetCoil(COIL_NR, cbCoilSet); // Add callback on Coil COIL_NR value set
   mb.onGetCoil(COIL_NR, cbCoilGet); // Add callback on Coil COIL_NR value get

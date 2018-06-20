@@ -11,7 +11,6 @@ uint16_t cbDefault(TRegister* reg, uint16_t val) {
 
 TRegister* Modbus::searchRegister(uint16_t address) {
     const TRegister tmp = {address, 0, cbDefault, cbDefault};
-    //std::list<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
     std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
     if (it != _regs.end()) return &*it;
     return nullptr;
@@ -25,9 +24,7 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
         if (!searchRegister(address + i))
             _regs.push_back({address + i, value, cbDefault, cbDefault});
     }
-    std::sort(_regs.begin(), _regs.end());
-    //_regs.sort();
-    //_regs.unique();
+    //std::sort(_regs.begin(), _regs.end());
     return true;
 }
 
@@ -70,7 +67,6 @@ void Modbus::slavePDU(uint8_t* frame) {
     switch (fcode) {
         case FC_WRITE_REG:
             //field1 = reg, field2 = value
-            //writeSingleRegister(field1, field2);
             if (!Hreg(field1, field2)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 break;
@@ -89,7 +85,6 @@ void Modbus::slavePDU(uint8_t* frame) {
 
         case FC_WRITE_REGS:
             //field1 = startreg, field2 = numregs, frame[5] = data lenght, header len = 6
-            //writeMultipleRegisters(frame, field1, field2, frame[5]);
             if (field2 < 0x0001 || field2 > 0x007B || frame[5] != 2 * field2) { //Check value
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 break;
@@ -386,12 +381,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame) {
         break;
         case FC_READ_COILS:
             //field1 = startreg, field2 = numregs, frame[1] = data length, header len = 2
-            Serial.print("Start: ");
-            Serial.print(field1);
-            Serial.print(" Count: ");
-            Serial.print(field2);
-            Serial.print(" Data: ");
-            Serial.println(frame[0]);
             bytecount_calc = field2 / 8;
             if (field2%8) bytecount_calc++;
             if (frame[1] != bytecount_calc) { // check if data size matches
