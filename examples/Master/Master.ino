@@ -46,7 +46,7 @@ void setup() {
   Serial.begin(115200);
  #endif
  
-  WiFi.begin("EW", "iMpress6264");
+  WiFi.begin("SSID", "password");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);

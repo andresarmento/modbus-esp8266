@@ -13,7 +13,7 @@ bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 
 Offset is 0..9999
 
-### Write regs
+### Write reg
 
 ```c
 bool Hreg(uint16_t offset, uint16_t value);
@@ -22,7 +22,7 @@ bool Ists(uint16_t offset, bool value);
 bool Ireg(uint16_t offset, uint16_t value);
 ```
 
-### Read regs
+### Read reg
 
 ```c
 uint16_t Hreg(uint16_t offset);
@@ -65,7 +65,7 @@ void cbEnable(bool state = TRUE);
 void cbDisable();
 ```
 
-Callback generation control. Callback generation is enabled by default. Affect all callbacks.
+Callback generation control. Callback generation is enabled by default. *Has no effect on transactions callbacks.*
 
 ```c
 void onConnect(cbModbusConnect cb)
@@ -78,7 +78,7 @@ Assign callback function on new incoming connection event.
 typedef bool (*cbModbusConnect)(IPAddress ip)
 ```
 
-Connect event callback function definition. Client IP address is passed as argument.
+Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
 
 ```c
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
@@ -142,7 +142,6 @@ void slave();
 void master();
 bool connect(IPAddress ip);
 bool disconnect(IPAddress ip);
-void (cbModbusResult*)(TTransaction* trans, Modbus::ResultCode);
 ```
 
 ### Callback example

@@ -2,6 +2,8 @@
 
 #v2.0.BETA
 
+*Be careful using current version in production. Satble version from 'realeses' page is recommended.*
+
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
@@ -49,16 +51,18 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 
 ## Last Changes
 
-* Internal changes
-  * Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
-  * Change object's list implementation to *std::vector*
-  * Modbus class refactoring
-  * ModbusIP networking code refactoring and error reporting
-* Public API changes
-  * Modbus master implementation
-  * Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
-  * Back to marking private for onSet, onGet, addReg and Reg methods
-  * Added callback-related eventSource method, onDisconnect and transaction result callbacks
+```diff
+//Internal changes
+- Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
++ Change object's list implementation to *std::vector*
++ Modbus class refactoring
++ ModbusIP networking code refactoring and error reporting
+//Public API changes
++ Modbus master implementation
+- Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
+- Back to marking private for onSet, onGet, addReg and Reg methods
++ Added callback-related eventSource method, onDisconnect and transaction result callbacks
+```
 
 ## Contributions
 
