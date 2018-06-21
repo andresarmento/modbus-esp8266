@@ -1,4 +1,4 @@
-# Modbus Master/Slave Library for ESP8266/ESP32
+# Modbus Master-Slave Library for ESP8266/ESP32
 
 ## API
 
@@ -131,8 +131,13 @@ Assign callback function on register query event. Multiple sequental registers c
 ### ModBus IP specific
 
 ```c
-void begin();
 void task();
+```
+
+### ModBus IP Slave specific
+
+```c
+void begin(); // Depricated. Use slave() instead.
 void slave();
 ```
 
@@ -141,7 +146,10 @@ void slave();
 ```c
 void master();
 bool connect(IPAddress ip);
-bool disconnect(IPAddress ip);
+bool disconnect(IPAddress ip);  // Not implemented yet.
+uint16_t lastTransaction();
+bool isTransaction(uint16_t id);
+bool isConnected(IPAddress ip);
 ```
 
 ### Callback example

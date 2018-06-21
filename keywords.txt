@@ -1,8 +1,10 @@
-# Syntax Coloring Map For ModbusIP_ESP8266
+# Syntax Coloring Map For ModbusIP-ESP8266
 
 # Datatypes (KEYWORD1)
-ModbusIP        KEYWORD1
-ModbusIP_ESP8266 KEYWORD1
+ModbusIP    KEYWORD1
+Modbus  KEYWORD1
+TRegister  KEYWORD1
+TTransaction  KEYWORD1
 
 # Methods and Functions (KEYWORD2)
 begin          	KEYWORD2
@@ -30,6 +32,17 @@ Coil            KEYWORD2
 Ists            KEYWORD2
 Ireg            KEYWORD2
 Hreg            KEYWORD2
+lastTransaction KEYWORD2
+isTransaction KEYWORD2
+isConnected KEYWORD2
+writeCoil KEYWORD2
+writeHreg KEYWORD2
+pushCoil KEYWORD2
+pullCoil KEYWORD2
+pullIsts KEYWORD2
+pushHreg KEYWORD2
+pullHreg KEYWORD2
+pullIreg KEYWORD2
 
 # Constants and Macros (LITERAL1)
 BIT_VAL			LITERAL1
@@ -39,3 +52,4 @@ COIL_BOOL		LITERAL1
 ISTS_VAL		LITERAL1
 ISTS_BOOL		LITERAL1
 ResultCode  LITERAL1
+FunctionCode    LITERAL1

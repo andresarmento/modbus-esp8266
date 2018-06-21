@@ -58,7 +58,7 @@ class ModbusIP : public Modbus {
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
-	//std::vector<TTransaction> _trans;
+	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 
@@ -69,7 +69,6 @@ class ModbusIP : public Modbus {
 	bool send(IPAddress ip, cbTransaction cb);
 
 	public:
-	std::vector<TTransaction> _trans;
 	uint16_t lastTransaction() {
 		return transactionId;
 	}
