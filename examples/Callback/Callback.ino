@@ -17,6 +17,9 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
+#include <list>
+std::list<TRegister> test;
+
 //Modbus Registers Offsets (0-9999)
 const int LED_COIL = 100;
 //Used Pins
@@ -44,10 +47,15 @@ bool cbConn(IPAddress ip) {
 void setup() {
  #ifdef ESP8266
   Serial.begin(74880);
+<<<<<<< HEAD:examples/Callback/Callback.ino
  #else
   Serial.begin(115200);
  #endif
   WiFi.begin("SID", "PASSWORD");
+=======
+ 
+  WiFi.begin("EW", "iMpress6264");
+>>>>>>> std-list:examples/TestCallback/TestCallback.ino
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -65,10 +73,19 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
   mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
+<<<<<<< HEAD:examples/Callback/Callback.ino
+=======
+  //test.push_front({10,10,nullptr,nullptr,nullptr});
+  //Serial.println(test.begin()->address);
+>>>>>>> std-list:examples/TestCallback/TestCallback.ino
 }
 
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
+<<<<<<< HEAD:examples/Callback/Callback.ino
    delay(100);
+=======
+   yield();
+>>>>>>> std-list:examples/TestCallback/TestCallback.ino
 }

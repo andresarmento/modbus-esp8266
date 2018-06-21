@@ -71,9 +71,9 @@ void setup() {
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-  mb.addReg(COIL(COIL_BASE), COIL_VAL(false), LEN); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onGet(COIL(COIL_BASE), cbRead, LEN); // Add callback on Coils value get
-  mb.onSet(COIL(COIL_BASE), cbWrite, LEN);
+  mb.addCoil(COIL_BASE, COIL_VAL(false), LEN); // Add Coils.
+  mb.onGetCoil(COIL_BASE, cbRead, LEN); // Add callback on Coils value get
+  mb.onSetCoil(COIL_BASE, cbWrite, LEN);
 }
 
 void loop() {

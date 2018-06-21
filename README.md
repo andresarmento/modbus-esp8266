@@ -1,11 +1,16 @@
-# Modbus Library for ESP8266/ESP32
+# Modbus Master-Slave Library for ESP8266/ESP32
+
+# v2.0.BETA
+
+*Be careful using current version in production. Satble version from 'releses' page is recommended.*
 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
 
-In the current version the library allows the ESP8266/ESP32 operate async as a slave, supporting Modbus IP via wireless network. For more information about Modbus see:
+
+In the current version the library allows the ESP8266/ESP32 operate async as a master and/or slave, supporting Modbus IP via wireless network. For more information about Modbus see:
 
 http://pt.wikipedia.org/wiki/Modbus
 http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
@@ -16,7 +21,9 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 * Supported platforms are
   * ESP8266
   * ESP32
-* Operates as a slave
+* Operates as
+  * slave
+  * master
 * Fully async operations. No loop locks.
 * Supports Modbus IP (TCP)
 * Reply exception messages for all supported functions
@@ -30,18 +37,33 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Incoming IP connection
+  * Master connect
+  * Master/Slave disconnect
   * Read specific Register
   * Write specific Register
+  * Slave transaction finish
 
 ## Notes:
 
 1. When using Modbus IP the transport protocol is TCP (port 502).
+2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
+3. All type register's addresses are limited to 0..9999 for local and remote both.
+4. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/API.md)
 
-2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br)
-offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
+## Last Changes
 
-For API specefication see [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
+```diff
+//Internal changes
+- Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
++ Change object's list implementation to *std::vector*
++ Modbus class refactoring
++ ModbusIP networking code refactoring and error reporting
+//Public API changes
++ Modbus master implementation
+- Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
+- Back to marking private for onSet, onGet, addReg and Reg methods
++ Added callback-related eventSource method, onDisconnect and transaction result callbacks
+```
 
 ## Contributions
 
