@@ -178,16 +178,17 @@ void Modbus::exceptionResponse(FunctionCode fn, ResultCode excode) {
 
 void Modbus::getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs) {
     uint8_t bitn = 0;
-    uint16_t totregs = numregs;
-    uint16_t i;
+    uint16_t i = 0;
 	while (numregs--) {
-        i = (totregs - numregs) / 8;
 		if (BIT_BOOL(Reg(startreg)))
 			bitSet(frame[i], bitn);
-		else
+        else
 			bitClear(frame[i], bitn);
 		bitn++; //increment the bit index
-		if (bitn == 8) bitn = 0;
+		if (bitn == 8)  {
+            i++;
+            bitn = 0;
+        }
 		startreg++; //increment the register
 	}
 }
@@ -259,13 +260,14 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
 
 void Modbus::setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutputs) {
     uint8_t bitn = 0;
-    uint16_t totoutputs = numoutputs;
-    uint16_t i;
+    uint16_t i = 0;
 	while (numoutputs--) {
-        i = (totoutputs - numoutputs) / 8;
         Reg(startreg, BIT_VAL(bitRead(frame[i], bitn)));
         bitn++;     //increment the bit index
-        if (bitn == 8) bitn = 0;
+        if (bitn == 8) {
+            i++;
+            bitn = 0;
+        }
         startreg++; //increment the register
 	}
 }
