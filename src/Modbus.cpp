@@ -20,9 +20,6 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
    #ifdef MB_MAX_REGS
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
-   #ifdef MB_MAX_ADDRESS
-    if (address > MB_MAX_ADDRESS) return false;
-   #endif
     for (uint16_t i = 0; i < numregs; i++) {
         if (!searchRegister(address + i))
             _regs.push_back({address + i, value, cbDefault, cbDefault});
@@ -375,7 +372,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame) {
     uint8_t bytecount_calc;
     switch (fcode) {
         case FC_READ_REGS:
-            //field1 = startreg, field2 = status, frame[1] = data lenght, header len = 2
+            //field1 = startreg, field2 = numregs, frame[1] = data lenght, header len = 2
             if (frame[1] != 2 * field2) { //Check if data size matches
                 _reply = EX_DATA_MISMACH;
                 break;

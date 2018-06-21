@@ -21,7 +21,7 @@
 #define MODBUSIP_MAXFRAME 200
 #define MODBUSIP_TIMEOUT 1000
 #define MODBUSIP_UNIT	  255
-#define MODBUSIP_MAX_TRANSACIONS 32
+#define MODBUSIP_MAX_TRANSACIONS 16
 #define MODBUSIP_MAX_CLIENTS	  4
 
 // Callback function Type
@@ -58,7 +58,7 @@ class ModbusIP : public Modbus {
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
 	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
-	std::vector<TTransaction> _trans;
+	//std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 
@@ -69,6 +69,7 @@ class ModbusIP : public Modbus {
 	bool send(IPAddress ip, cbTransaction cb);
 
 	public:
+	std::vector<TTransaction> _trans;
 	uint16_t lastTransaction() {
 		return transactionId;
 	}

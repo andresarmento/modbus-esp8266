@@ -86,6 +86,9 @@ class Modbus {
         };
 
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+        #ifdef MB_MAX_ADDRESS
+            if (offset > MB_MAX_ADDRESS) return false;
+        #endif
             return addReg(HREG(offset), value, numregs);
         }
         bool Hreg(uint16_t offset, uint16_t value) {
@@ -98,12 +101,21 @@ class Modbus {
             return removeReg(HREG(offset));
         }
         bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+        #ifdef MB_MAX_ADDRESS
+            if (offset > MB_MAX_ADDRESS) return false;
+        #endif
             return addReg(COIL(offset), COIL_VAL(value), numregs);
         }
         bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
+        #ifdef MB_MAX_ADDRESS
+            if (offset > MB_MAX_ADDRESS) return false;
+        #endif
             return addReg(ISTS(offset), ISTS_VAL(value), numregs);
         }
         bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
+        #ifdef MB_MAX_ADDRESS
+            if (offset > MB_MAX_ADDRESS) return false;
+        #endif
             return addReg(IREG(offset), value, numregs);
         }
         bool Coil(uint16_t offset, bool value) {

@@ -152,7 +152,7 @@ bool ModbusIP::send(IPAddress ip, cbTransaction cb) { // Prepare and send Modbus
 	_MBAP.protocolId	= __bswap_16(0);
 	_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= MODBUSIP_UNIT;
-	size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
+	size_t send_len = _len + sizeof(_MBAP.raw);
 	uint8_t sbuf[send_len];
 	memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
@@ -177,6 +177,15 @@ void ModbusIP::onDisconnect(cbModbusConnect cb) {
 		cbDisconnect = cb;
 }
 
+bool ifExpired(TTransaction& t) {
+	if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
+		if (t.cb)
+			t.cb(Modbus::EX_TIMEOUT, &t);
+		free(t._frame);
+		return true;
+	}
+	return false;
+}
 void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout transactions
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (client[i] && !client[i]->connected()) {
@@ -187,14 +196,15 @@ void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout
 				cbDisconnect(ip);
 		}
 	}
-	for (TTransaction& t : _trans) {    // Cleanup transactions on timeout
-		if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
-			if (cbEnabled && t.cb)
-				t.cb(EX_TIMEOUT, &t);
-			std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), t);
-			_trans.erase(it);
-		}
-	}
+//	for (TTransaction& t : _trans) {    // Cleanup transactions on timeout
+//		if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
+//			if (cbEnabled && t.cb)
+//				t.cb(EX_TIMEOUT, &t);
+//			//std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), t);
+//			//if (it) _trans.erase(it);
+//		}
+			_trans.erase( remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
+//	}
 }
 
 int8_t ModbusIP::getFreeClient() {    // Returns free slot position

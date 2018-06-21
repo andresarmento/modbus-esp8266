@@ -1,5 +1,5 @@
 /*
-  Modbus-Arduino Example - Master (Modbus IP ESP8266)
+  Modbus-Arduino Example - Master (Modbus IP ESP8266/ESP32)
   Control Led on D4/TX pin by remote Modbus devise using Read Single Coil Modbus Function
 
   (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
