@@ -1,6 +1,6 @@
 /*
     Modbus.cpp - Source for Modbus Base Library
-    Copyright (C) 2014 André Sarmento Barbosa
+    Copyright (C) 2014 AndrÃ© Sarmento Barbosa
 */
 #include "Modbus.h"
 
@@ -26,6 +26,7 @@ void Modbus::addReg(word address, word value) {
     TRegister *newreg;
 
 	newreg = (TRegister *) malloc(sizeof(TRegister));
+	if (!newreg) return;
 	newreg->address = address;
 	newreg->value		= value;
 	newreg->next		= 0;
@@ -176,6 +177,10 @@ void Modbus::exceptionResponse(byte fcode, byte excode) {
     free(_frame);
     _len = 2;
     _frame = (byte *) malloc(_len);
+    if (!_frame) {
+	_reply = MB_REPLY_OFF;
+	return;
+    }
     _frame[0] = fcode + 0x80;
     _frame[1] = excode;
 
@@ -324,17 +329,18 @@ void Modbus::readCoils(word startreg, word numregs) {
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    word i = 0;
 	while (numregs--) {
-        i = (totregs - numregs) / 8;
 		if (this->Coil(startreg))
 			bitSet(_frame[2+i], bitn);
 		else
 			bitClear(_frame[2+i], bitn);
 		//increment the bit index
 		bitn++;
-		if (bitn == 8) bitn = 0;
+		if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
 		//increment the register
 		startreg++;
 	}
@@ -352,7 +358,7 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(startreg + 10001)) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_STAT, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -375,17 +381,18 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     _frame[1] = _len - 2;
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    word i = 0;
 	while (numregs--) {
-        i = (totregs - numregs) / 8;
 		if (this->Ists(startreg))
 			bitSet(_frame[2+i], bitn);
 		else
 			bitClear(_frame[2+i], bitn);
 		//increment the bit index
 		bitn++;
-		if (bitn == 8) bitn = 0;
+		if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
 		//increment the register
 		startreg++;
 	}
@@ -403,7 +410,7 @@ void Modbus::readInputRegisters(word startreg, word numregs) {
     //Check Address
     //*** See comments on readCoils method.
     if (!this->searchRegister(startreg + 30001)) {
-        this->exceptionResponse(MB_FC_READ_COILS, MB_EX_ILLEGAL_ADDRESS);
+        this->exceptionResponse(MB_FC_READ_INPUT_REGS, MB_EX_ILLEGAL_ADDRESS);
         return;
     }
 
@@ -494,14 +501,15 @@ void Modbus::writeMultipleCoils(byte* frame,word startreg, word numoutputs, byte
     _frame[4] = numoutputs & 0x00FF;
 
     byte bitn = 0;
-    word totoutputs = numoutputs;
-    word i;
+    word i = 0;
 	while (numoutputs--) {
-        i = (totoutputs - numoutputs) / 8;
         this->Coil(startreg, bitRead(frame[6+i], bitn));
         //increment the bit index
         bitn++;
-        if (bitn == 8) bitn = 0;
+        if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
         //increment the register
         startreg++;
 	}
