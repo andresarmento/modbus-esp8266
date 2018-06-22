@@ -1,0 +1,6 @@
+{
+    "board": "esp8266:esp8266:nodemcuv2",
+    "configuration": "CpuFrequency=80,FlashSize=4M1M,LwIPVariant=v2mss536,Debug=Serial,DebugLevel=None____,FlashErase=none,UploadSpeed=921600",
+    "port": "/dev/cu.SLAB_USBtoUART",
+    "sketch": "examples/Master/Master.ino"
+}

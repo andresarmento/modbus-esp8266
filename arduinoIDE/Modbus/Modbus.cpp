@@ -329,17 +329,18 @@ void Modbus::readCoils(word startreg, word numregs) {
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    word i = 0;
 	while (numregs--) {
-        i = (totregs - numregs) / 8;
 		if (this->Coil(startreg))
 			bitSet(_frame[2+i], bitn);
 		else
 			bitClear(_frame[2+i], bitn);
 		//increment the bit index
 		bitn++;
-		if (bitn == 8) bitn = 0;
+		if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
 		//increment the register
 		startreg++;
 	}
@@ -380,17 +381,18 @@ void Modbus::readInputStatus(word startreg, word numregs) {
     _frame[1] = _len - 2;
 
     byte bitn = 0;
-    word totregs = numregs;
-    word i;
+    word i = 0;
 	while (numregs--) {
-        i = (totregs - numregs) / 8;
 		if (this->Ists(startreg))
 			bitSet(_frame[2+i], bitn);
 		else
 			bitClear(_frame[2+i], bitn);
 		//increment the bit index
 		bitn++;
-		if (bitn == 8) bitn = 0;
+		if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
 		//increment the register
 		startreg++;
 	}
@@ -499,14 +501,15 @@ void Modbus::writeMultipleCoils(byte* frame,word startreg, word numoutputs, byte
     _frame[4] = numoutputs & 0x00FF;
 
     byte bitn = 0;
-    word totoutputs = numoutputs;
-    word i;
+    word i = 0;
 	while (numoutputs--) {
-        i = (totoutputs - numoutputs) / 8;
         this->Coil(startreg, bitRead(frame[6+i], bitn));
         //increment the bit index
         bitn++;
-        if (bitn == 8) bitn = 0;
+        if (bitn == 8) {
+            bitn = 0;
+            i++;
+        }
         //increment the register
         startreg++;
 	}
