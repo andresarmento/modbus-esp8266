@@ -7,7 +7,7 @@
 
 #include "Arduino.h"
 
-#define MB_GLOBAL_REGS
+//#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
 #define MB_MAX_ADDRESS 9999
@@ -19,6 +19,10 @@
 #define ISTS(n) (n + ISTS_BASE)
 #define IREG(n) (n + IREG_BASE)
 #define HREG(n) (n + HREG_BASE)
+//#define COIL(n) {TReg::COIL, n}
+//#define ISTS(n) {TReg::ISTS, n}
+//#define IREG(n) {TReg::IREG, n}
+//#define HREG(n) {TReg::HREG, n}
 #define BIT_VAL(v) (v?0xFF00:0x0000)
 #define BIT_BOOL(v) (v==0xFF00)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
@@ -32,22 +36,25 @@
 
 typedef struct TRegister;
 
-// Callback function Type
-typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
+typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
+typedef struct TReg {
+    enum RegType {COIL, ISTS, IREG, HREG};
+    RegType type;
+    uint16_t address;
+    bool operator ==(const TReg &obj) const {
+	    return type == obj.type && address == obj.address;
+	}
+};
 
 typedef struct TRegister {
+    //TReg    address;
     uint16_t address;
     uint16_t value;
     cbModbus get;
     cbModbus set;
-    bool operator <(const TRegister &obj) const
-	    {
-		    return address < obj.address;
-	    }
-    bool operator ==(const TRegister &obj) const
-	    {
-		    return address == obj.address;
-	    }
+    bool operator ==(const TRegister &obj) const {
+	    return address == obj.address;
+	}
 };
 
 uint16_t cbDefault(TRegister* reg, uint16_t val);
@@ -64,10 +71,13 @@ class Modbus {
             FC_WRITE_REG        = 0x06, // Preset Single Register
             FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
             FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
+            FC_READ_FILE_REC    = 0x14, // Not implemented
+            FC_WRITE_FILE_REC   = 0x15, // Not implemented
             FC_MASKWRITE_REG    = 0x16, // Not implemented
             FC_READWRITE_REGS   = 0x17  // Not implemented
         };
         //Exception Codes
+        //Custom result codes used internally and for callbacks but never used for Modbus responce
         enum ResultCode {
             EX_SUCCESS              = 0x00, // Custom. No error
             EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported

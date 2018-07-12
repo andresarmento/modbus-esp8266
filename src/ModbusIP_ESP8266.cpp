@@ -100,13 +100,16 @@ void ModbusIP::task() {
 					client[n]->flush();
 				} else {
 					if (client[n]->localPort() == MODBUSIP_PORT) {
-						slavePDU(_frame);	// Slave
+						// Process incoming frame as slave
+						slavePDU(_frame);
 					} else {
+						// Process reply to master request
 						_reply = EX_SUCCESS;
 						TTransaction* trans = searchTransaction(__bswap_16(_MBAP.transactionId));
-						if (trans) {
-							if ((_frame[0] & 0x7F) == trans->_frame[0]) {
-								masterPDU(_frame, trans->_frame); // Master
+						if (trans) { // if valid transaction id
+							if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
+								// Procass incoming frame as master
+								masterPDU(_frame, trans->_frame);
 							} else {
 								_reply = EX_UNEXPECTED_RESPONSE;
 							}
@@ -114,7 +117,6 @@ void ModbusIP::task() {
 								trans->cb((ResultCode)_reply, trans);
 							}
 							free(trans->_frame);
-							//_trans.remove(*trans);
 							std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
 							_trans.erase(it);
 						}
@@ -123,10 +125,9 @@ void ModbusIP::task() {
 				}
 			}
 		}
-		if (client[n]->localPort() != MODBUSIP_PORT) _reply = REPLY_OFF;
+		if (client[n]->localPort() != MODBUSIP_PORT) _reply = REPLY_OFF;	// No replay if it was request to master
 		if (_reply != REPLY_OFF) {
-			_MBAP.length = __bswap_16(_len+1);     //_len+1 for last byte from MBAP
-							
+			_MBAP.length = __bswap_16(_len+1);     //_len+1 for last byte from MBAP					
 			size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 			uint8_t sbuf[send_len];				
 			memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));

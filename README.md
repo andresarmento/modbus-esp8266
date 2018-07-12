@@ -15,6 +15,7 @@ In the current version the library allows the ESP8266/ESP32 operate async as a m
 http://pt.wikipedia.org/wiki/Modbus
 http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
 http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
+http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 
 ## Features
 
@@ -54,15 +55,22 @@ http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf
 
 ```diff
 //Internal changes
-- Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
++ Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
 + Change object's list implementation to *std::vector*
 + Modbus class refactoring
 + ModbusIP networking code refactoring and error reporting
++ Global registers storage to share between multiple Modbus* instances
 //Public API changes
 + Modbus master implementation
-- Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
-- Back to marking private for onSet, onGet, addReg and Reg methods
++ Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
++ Back to marking private for onSet, onGet, addReg and Reg methods
 + Added callback-related eventSource method, onDisconnect and transaction result callbacks
+// ToDo
+- Extend register addressing to 1..65535
+- ModbusSerial (over RS-485)
+- Read/Write file records function
+- Write mask register function
+- Serial line-specific functions
 ```
 
 ## Contributions

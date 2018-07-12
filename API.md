@@ -56,7 +56,7 @@ bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nul
 bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 ```
 
-Write value to remote Hreg/Coil. Offset is 0..65535.
+Write value to remote Hreg/Coil. Offset is 1..65535.
 
 ### Callbacks
 
