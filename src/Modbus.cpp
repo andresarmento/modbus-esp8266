@@ -5,6 +5,10 @@
 */
 #include "Modbus.h"
 
+#ifdef MB_GLOBAL_REGS
+std::vector<TRegister> _regs;
+#endif
+
 uint16_t cbDefault(TRegister* reg, uint16_t val) {
 	return val;
 }

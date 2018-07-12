@@ -7,6 +7,7 @@
 
 #include "Arduino.h"
 
+#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
 #define MB_MAX_ADDRESS 9999
@@ -187,8 +188,9 @@ class Modbus {
             REPLY_ERROR          = 0x04,
             REPLY_UNEXPECTED     = 0x05
         };
-
+    #ifndef MB_GLOBAL_REGS
         std::vector<TRegister> _regs;
+    #endif
         uint8_t*  _frame = nullptr;
         uint16_t  _len = 0;
         uint8_t   _reply = 0;
