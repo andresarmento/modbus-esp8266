@@ -289,3 +289,14 @@ bool ModbusIP::pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	readSlave(IREG(offset), numregs, FC_READ_INPUT_REGS);
 	return send(ip, cb);
 }
+
+uint16_t ModbusIP::lastTransaction() {
+	return transactionId;
+}
+bool ModbusIP::isTransaction(uint16_t id) { // Check if transaction is in progress (by ID)
+	searchTransaction(id) != nullptr;
+}
+bool ModbusIP::isConnected(IPAddress ip) {
+	int8_t p = getSlave(ip);
+	return  p != -1;// && client[p]->connected();
+}

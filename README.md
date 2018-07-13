@@ -71,7 +71,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 - Read/Write file records function
 - Write mask register function
 - Serial line-specific functions
-- Implement removeReg, removeCoil, removeIsts, removeIreg, removeHreg
+- removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
 ```
 
 ## Contributions
@@ -82,7 +82,8 @@ a.m.emelianov@gmail.com
 
 Original version:
 
-http://github.com/andresarmento/modbus-esp8266
+https://github.com/andresarmento/modbus-esp8266
+https://github.com/andresarmento/modbus-arduino
 
 prof (at) andresarmento (dot) com
 

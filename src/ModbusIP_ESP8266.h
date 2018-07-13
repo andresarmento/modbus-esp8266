@@ -69,18 +69,10 @@ class ModbusIP : public Modbus {
 	bool send(IPAddress ip, cbTransaction cb);
 
 	public:
-	uint16_t lastTransaction() {
-		return transactionId;
-	}
-	bool isTransaction(uint16_t id) { // Check if transaction is in progress (by ID)
-		searchTransaction(id) != nullptr;
-	}
-	bool isConnected(IPAddress ip) {
-		int8_t p = getSlave(ip);
-		return  p != -1;// && client[p]->connected();
-	}
-
 	ModbusIP();
+	uint16_t lastTransaction();
+	bool isTransaction(uint16_t id);
+	bool isConnected(IPAddress ip);
 	bool connect(IPAddress ip);
 	bool disconnect(IPAddress addr) {}  // Not implemented yet
 	void slave();
