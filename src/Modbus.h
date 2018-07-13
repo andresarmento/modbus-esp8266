@@ -10,29 +10,16 @@
 //#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
 #define MB_MAX_FRAME   128
-#define MB_MAX_ADDRESS 9999
-#define COIL_BASE     1
-#define ISTS_BASE 10001
-#define IREG_BASE 30001
-#define HREG_BASE 40001
-#define COIL(n) (n + COIL_BASE)
-#define ISTS(n) (n + ISTS_BASE)
-#define IREG(n) (n + IREG_BASE)
-#define HREG(n) (n + HREG_BASE)
-//#define COIL(n) {TAddress::COIL, n}
-//#define ISTS(n) {TAddress::ISTS, n}
-//#define IREG(n) {TAddress::IREG, n}
-//#define HREG(n) {TAddress::HREG, n}
+#define COIL(n) (TAddress){TAddress::COIL, n}
+#define ISTS(n) (TAddress){TAddress::ISTS, n}
+#define IREG(n) (TAddress){TAddress::IREG, n}
+#define HREG(n) (TAddress){TAddress::HREG, n}
 #define BIT_VAL(v) (v?0xFF00:0x0000)
 #define BIT_BOOL(v) (v==0xFF00)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
 #define COIL_BOOL(v) (v==0xFF00)
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
 #define ISTS_BOOL(v) (v==0xFF00)
-#define IS_COIL(n) (n < ISTS_BASE)
-#define IS_ISTS(n) (n >= ISTS_BASE && n < IREG_BASE)
-#define IS_IREG(n) (n >= IREG_BASE && n < HREG_BASE)
-#define IS_HREG(n) (n >= HREG_BASE)
 
 typedef struct TRegister;
 
@@ -65,8 +52,7 @@ typedef struct TAddress {
 };
 
 typedef struct TRegister {
-    //TAddress    address;
-    uint16_t address;
+    TAddress    address;
     uint16_t value;
     cbModbus get;
     cbModbus set;
@@ -115,9 +101,6 @@ class Modbus {
         };
 
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
-        #ifdef MB_MAX_ADDRESS
-            if (offset > MB_MAX_ADDRESS) return false;
-        #endif
             return addReg(HREG(offset), value, numregs);
         }
         bool Hreg(uint16_t offset, uint16_t value) {
@@ -130,21 +113,12 @@ class Modbus {
             return removeReg(HREG(offset));
         }
         bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
-        #ifdef MB_MAX_ADDRESS
-            if (offset > MB_MAX_ADDRESS) return false;
-        #endif
             return addReg(COIL(offset), COIL_VAL(value), numregs);
         }
         bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
-        #ifdef MB_MAX_ADDRESS
-            if (offset > MB_MAX_ADDRESS) return false;
-        #endif
             return addReg(ISTS(offset), ISTS_VAL(value), numregs);
         }
         bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
-        #ifdef MB_MAX_ADDRESS
-            if (offset > MB_MAX_ADDRESS) return false;
-        #endif
             return addReg(IREG(offset), value, numregs);
         }
         bool Coil(uint16_t offset, bool value) {
@@ -196,16 +170,16 @@ class Modbus {
             return onSet(IREG(offset), cb, numregs);
         }
     private:
-	    void readBits(uint16_t startreg, uint16_t numregs, FunctionCode fn);
-	    void readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn);
+	    void readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
+	    void readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
         
-        void setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutputs);
-        void setMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numoutputs);
+        void setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
+        void setMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
         
-        void getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs);
-        void getMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numregs);
+        void getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs);
+        void getMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs);
 
-        TRegister* searchRegister(uint16_t addr);
+        TRegister* searchRegister(TAddress addr);
     
     protected:
         //Reply Types
@@ -224,19 +198,19 @@ class Modbus {
         uint8_t   _reply = 0;
         bool cbEnabled = true;
         void exceptionResponse(FunctionCode fn, ResultCode excode);
-        void successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn);
+        void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
         void masterPDU(uint8_t* frame, uint8_t* sourceFrame);   //For Master
 
-        bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveBits(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveWords(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn);
+        bool readSlave(TAddress address, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
 
-        bool addReg(uint16_t address, uint16_t value = 0, uint16_t numregs = 1);
-        bool Reg(uint16_t address, uint16_t value);
-        uint16_t Reg(uint16_t address);
-        bool removeReg(uint16_t address);   // Not implemented
+        bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
+        bool Reg(TAddress address, uint16_t value);
+        uint16_t Reg(TAddress address);
+        bool removeReg(TAddress address);   // Not implemented
 
-        bool onGet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSet(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
 };

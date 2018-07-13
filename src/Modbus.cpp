@@ -13,14 +13,14 @@ uint16_t cbDefault(TRegister* reg, uint16_t val) {
 	return val;
 }
 
-TRegister* Modbus::searchRegister(uint16_t address) {
+TRegister* Modbus::searchRegister(TAddress address) {
     const TRegister tmp = {address, 0, cbDefault, cbDefault};
     std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
     if (it != _regs.end()) return &*it;
     return nullptr;
 }
 
-bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
+bool Modbus::addReg(TAddress address, uint16_t value, uint16_t numregs) {
    #ifdef MB_MAX_REGS
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
@@ -32,7 +32,7 @@ bool Modbus::addReg(uint16_t address, uint16_t value, uint16_t numregs) {
     return true;
 }
 
-bool Modbus::Reg(uint16_t address, uint16_t value) {
+bool Modbus::Reg(TAddress address, uint16_t value) {
     TRegister* reg;
     reg = searchRegister(address); //search for the register address
     if (reg) { //if found then assign the register value to the new value.
@@ -46,7 +46,7 @@ bool Modbus::Reg(uint16_t address, uint16_t value) {
         return false;
 }
 
-uint16_t Modbus::Reg(uint16_t address) {
+uint16_t Modbus::Reg(TAddress address) {
     TRegister* reg;
     reg = searchRegister(address);
     if(reg)
@@ -59,7 +59,7 @@ uint16_t Modbus::Reg(uint16_t address) {
         return 0;
 }
 
-bool Modbus::removeReg(uint16_t address) {
+bool Modbus::removeReg(TAddress address) {
     // Empty stub
 }
 
@@ -100,7 +100,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 }
             }
             setMultipleWords(frame + 6, HREG(field1), field2);
-            successResponce(field1, field2, fcode);
+            successResponce(HREG(field1), field2, fcode);
             _reply = REPLY_NORMAL;
         break;
 
@@ -151,7 +151,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 }
             }
             setMultipleBits(frame + 6, COIL(field1), field2);
-            successResponce(field1, field2, fcode);
+            successResponce(COIL(field1), field2, fcode);
             _reply = REPLY_NORMAL;
         break;
 
@@ -160,13 +160,13 @@ void Modbus::slavePDU(uint8_t* frame) {
     }
 }
 
-void Modbus::successResponce(uint16_t startreg, uint16_t numoutputs, FunctionCode fn) {
+void Modbus::successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn) {
     free(_frame);
 	_len = 5;
     _frame = (uint8_t*) malloc(_len);
     _frame[0] = fn;
-    _frame[1] = startreg >> 8;
-    _frame[2] = startreg & 0x00FF;
+    _frame[1] = startreg.address >> 8;
+    _frame[2] = startreg.address & 0x00FF;
     _frame[3] = numoutputs >> 8;
     _frame[4] = numoutputs & 0x00FF;
 }
@@ -180,7 +180,7 @@ void Modbus::exceptionResponse(FunctionCode fn, ResultCode excode) {
     _reply = REPLY_NORMAL;
 }
 
-void Modbus::getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs) {
+void Modbus::getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs) {
     uint8_t bitn = 0;
     uint16_t i = 0;
 	while (numregs--) {
@@ -197,7 +197,7 @@ void Modbus::getMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numregs
 	}
 }
 
-void Modbus::getMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numregs) {
+void Modbus::getMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs) {
     uint16_t val;
     uint16_t i = 0;
 	while(numregs--) {
@@ -208,7 +208,7 @@ void Modbus::getMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numreg
 	}
 }
 
-void Modbus::readBits(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     if (numregs < 0x0001 || numregs > 0x07D0) { //Check value (numregs)
         exceptionResponse(fn, EX_ILLEGAL_VALUE);
         return;
@@ -239,7 +239,7 @@ void Modbus::readBits(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
     _reply = REPLY_NORMAL;
 }
 
-void Modbus::readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+void Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         exceptionResponse(fn, EX_ILLEGAL_VALUE);
@@ -262,7 +262,7 @@ void Modbus::readWords(uint16_t startreg, uint16_t numregs, FunctionCode fn) {
     _reply = REPLY_NORMAL;
 }
 
-void Modbus::setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutputs) {
+void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs) {
     uint8_t bitn = 0;
     uint16_t i = 0;
 	while (numoutputs--) {
@@ -276,7 +276,7 @@ void Modbus::setMultipleBits(uint8_t* frame, uint16_t startreg, uint16_t numoutp
 	}
 }
 
-void Modbus::setMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numregs) {
+void Modbus::setMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs) {
     uint16_t val;
     uint16_t i = 0;
 	while(numregs--) {
@@ -286,7 +286,7 @@ void Modbus::setMultipleWords(uint8_t* frame, uint16_t startreg, uint16_t numreg
 	}
 }
 
-bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
+bool Modbus::onGet(TAddress address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
 	while (numregs > 0) {
@@ -300,7 +300,7 @@ bool Modbus::onGet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	}
 	return atLeastOne;
 }
-bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
+bool Modbus::onSet(TAddress address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
 	while (numregs > 0) {
@@ -315,27 +315,27 @@ bool Modbus::onSet(uint16_t address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
+bool Modbus::readSlave(TAddress address, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
 	_frame[0] = fn;
-	_frame[1] = address >> 8;
-	_frame[2] = address & 0x00FF;
+	_frame[1] = address.address >> 8;
+	_frame[2] = address.address & 0x00FF;
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
 	return true;
 }
 
-bool Modbus::writeSlaveBits(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 6 + numregs/8;
 	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = address >> 8;
-	    _frame[2] = address & 0x00FF;
+	    _frame[1] = startreg.address >> 8;
+	    _frame[2] = startreg.address & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
@@ -348,14 +348,14 @@ bool Modbus::writeSlaveBits(uint16_t address, uint16_t startreg, uint16_t numreg
 	return false;
 }
 
-bool Modbus::writeSlaveWords(uint16_t address, uint16_t startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 6 + 2 * numregs;
 	_frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = address >> 8;
-	    _frame[2] = address & 0x00FF;
+	    _frame[1] = startreg.address >> 8;
+	    _frame[2] = startreg.address & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;

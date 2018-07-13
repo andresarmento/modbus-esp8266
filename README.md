@@ -48,8 +48,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 
 1. When using Modbus IP the transport protocol is TCP (port 502).
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-3. All type register's addresses are limited to 0..9999 for local and remote both.
-4. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
+3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 
 ## Last Changes
 
@@ -65,8 +64,8 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
 + Back to marking private for onSet, onGet, addReg and Reg methods
 + Added callback-related eventSource method, onDisconnect and transaction result callbacks
++ Extend register addressing to 0..65535
 // ToDo
-- Extend register addressing to 0..65535
 - Move rest of implementations from Modbus.h
 - ModbusSerial (over RS-485)
 - Read/Write file records function
