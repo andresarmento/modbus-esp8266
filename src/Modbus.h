@@ -19,10 +19,10 @@
 #define ISTS(n) (n + ISTS_BASE)
 #define IREG(n) (n + IREG_BASE)
 #define HREG(n) (n + HREG_BASE)
-//#define COIL(n) {TReg::COIL, n}
-//#define ISTS(n) {TReg::ISTS, n}
-//#define IREG(n) {TReg::IREG, n}
-//#define HREG(n) {TReg::HREG, n}
+//#define COIL(n) {TAddress::COIL, n}
+//#define ISTS(n) {TAddress::ISTS, n}
+//#define IREG(n) {TAddress::IREG, n}
+//#define HREG(n) {TAddress::HREG, n}
 #define BIT_VAL(v) (v?0xFF00:0x0000)
 #define BIT_BOOL(v) (v==0xFF00)
 #define COIL_VAL(v) (v?0xFF00:0x0000)
@@ -37,17 +37,35 @@
 typedef struct TRegister;
 
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
-typedef struct TReg {
+typedef struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG};
     RegType type;
     uint16_t address;
-    bool operator ==(const TReg &obj) const {
+    bool operator==(const TAddress &obj) const { // TAddress == TAddress
 	    return type == obj.type && address == obj.address;
 	}
+    TAddress& operator++() {     // ++TAddress
+        address++;
+        return *this;
+    }
+    TAddress  operator++(int) {  // TAddress++
+        TAddress result(*this);
+        address++;
+        return result;
+    }
+    TAddress& operator+=(const int& inc) {  // TAddress += integer
+        address += inc;
+        return *this;
+    }
+    TAddress operator+(const int &inc) {    // TAddress + integer
+        TAddress result(*this);
+        result.address += inc;
+        return result;
+   }
 };
 
 typedef struct TRegister {
-    //TReg    address;
+    //TAddress    address;
     uint16_t address;
     uint16_t value;
     cbModbus get;
