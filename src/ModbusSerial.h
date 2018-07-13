@@ -31,7 +31,7 @@ class ModbusSerial : public Modbus {
     #ifdef MB_SOFTWARE_SERIAL
         bool config(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
     #else
-        bool config(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin=-1);
+        bool config(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
     #endif
         void task();
         bool receive(uint8_t* frame);

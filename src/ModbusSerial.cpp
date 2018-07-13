@@ -38,7 +38,7 @@ uint8_t ModbusSerial::getSlaveId() {
 bool ModbusSerial::config(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
     (*port).begin(baud);
 #else
-bool ModbusSerial::config(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin) {
+bool ModbusSerial::config(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin) {
     (*port).begin(baud, format);
 #endif
     _port = port;
@@ -80,9 +80,9 @@ bool ModbusSerial::receive(uint8_t* frame) {
 
     //PDU starts after first uint8_t
     //framesize PDU = framesize - address(1) - crc(2)
-    receivePDU(frame+1);
+    slavePDU(frame+1);
     //No reply to Broadcasts
-    if (address == 0xFF) _reply = MB_REPLY_OFF;
+    if (address == 0xFF) _reply = Modbus::REPLY_OFF;
     return true;
 }
 
@@ -149,10 +149,10 @@ void ModbusSerial::task() {
     for (i=0 ; i < _len ; i++) _frame[i] = (*_port).read();
 
     if (receive(_frame)) {
-        if (_reply == MB_REPLY_NORMAL)
+        if (_reply == Modbus::REPLY_NORMAL)
             sendPDU(_frame);
         else
-        if (_reply == MB_REPLY_ECHO)
+        if (_reply == Modbus::REPLY_ECHO)
             send(_frame);
     }
 
