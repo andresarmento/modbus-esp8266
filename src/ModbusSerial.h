@@ -18,20 +18,17 @@ uint16_t calcCrc(uint16_t address, uint8_t* pduframe, uint8_t pdulen);
 class ModbusSerial : public Modbus {
     private:
         Stream* _port;
-        uint32_t  _baud;
-        u_int _format;
         int   _txPin;
         unsigned int _t15; // inter character time out
         unsigned int _t35; // frame delay
         uint8_t  _slaveId;
     public:
-        ModbusSerial();
         bool setSlaveId(uint8_t slaveId);
         uint8_t getSlaveId();
     #ifdef MB_SOFTWARE_SERIAL
-        bool config(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
+        bool slave(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
     #else
-        bool config(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
+        bool slave(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
     #endif
         void task();
         bool receive(uint8_t* frame);

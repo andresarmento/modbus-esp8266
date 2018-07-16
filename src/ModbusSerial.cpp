@@ -21,10 +21,6 @@ uint16_t calcCrc(uint8_t address, uint8_t* pduFrame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
-ModbusSerial::ModbusSerial() {
-
-}
-
 bool ModbusSerial::setSlaveId(uint8_t slaveId){
     _slaveId = slaveId;
     return true;
@@ -35,10 +31,10 @@ uint8_t ModbusSerial::getSlaveId() {
 }
 
 #ifdef MB_SOFTWARE_SERIAL
-bool ModbusSerial::config(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
+bool ModbusSerial::slave(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
     (*port).begin(baud);
 #else
-bool ModbusSerial::config(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin) {
+bool ModbusSerial::slave(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin) {
     (*port).begin(baud, format);
 #endif
     _port = port;
