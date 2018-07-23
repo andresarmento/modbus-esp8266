@@ -213,4 +213,8 @@ class Modbus {
 
         bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+
+        ~Modbus() {
+            free(_frame);
+        }
 };

@@ -35,11 +35,13 @@ typedef struct TTransaction {
 	uint16_t	transactionId;
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
-	uint8_t*	_frame;
-    bool operator ==(const TTransaction &obj) const
-	    {
+	uint8_t*	_frame = nullptr;
+    bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
-	    }
+	}
+	~TTransaction() {
+		free(_frame);
+	}
 };
 
 class ModbusIP : public Modbus {

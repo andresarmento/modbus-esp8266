@@ -183,7 +183,7 @@ bool ifExpired(TTransaction& t) {
 	if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
 		if (t.cb)
 			t.cb(Modbus::EX_TIMEOUT, &t);
-		free(t._frame);
+		//free(t._frame);
 		return true;
 	}
 	return false;
