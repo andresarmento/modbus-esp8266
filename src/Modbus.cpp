@@ -60,7 +60,13 @@ uint16_t Modbus::Reg(TAddress address) {
 }
 
 bool Modbus::removeReg(TAddress address) {
-    // Empty stub
+    TRegister* reg = searchRegister(address);
+    if (reg) {
+        _regs.erase(std::remove( _regs.begin(), _regs.end(), *reg), _regs.end() );
+        return true;
+    }
+    return false;
+
 }
 
 void Modbus::slavePDU(uint8_t* frame) {
@@ -327,7 +333,7 @@ bool Modbus::readSlave(TAddress address, uint16_t numregs, FunctionCode fn) {
 	return true;
 }
 
-bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data) {
 	free(_frame);
 	_len = 6 + numregs/8;
 	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
@@ -348,7 +354,7 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn
 	return false;
 }
 
-bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn, uint16_t* data) {
 	free(_frame);
 	_len = 6 + 2 * numregs;
 	_frame = (uint8_t*) malloc(_len);
@@ -359,14 +365,18 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode f
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
-        getMultipleWords(_frame + 6, startreg, numregs);
+        if (data) {
+            memcpy(_frame + 6, data, numregs * 2);
+        } else {
+            getMultipleWords(_frame + 6, startreg, numregs);
+        }
         return true;
     }
     _reply = REPLY_OFF;
 	return false;    
 }
 
-void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame) {
+void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output) {
     uint8_t fcode  = frame[0];
     _reply = 0;
     if ((fcode & 0x80) != 0) {

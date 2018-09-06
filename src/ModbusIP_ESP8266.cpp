@@ -109,12 +109,12 @@ void ModbusIP::task() {
 						if (trans) { // if valid transaction id
 							if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
 								// Procass incoming frame as master
-								masterPDU(_frame, trans->_frame);
+								masterPDU(_frame, trans->_frame, trans->data);
 							} else {
 								_reply = EX_UNEXPECTED_RESPONSE;
 							}
 							if (cbEnabled && trans->cb) {
-								trans->cb((ResultCode)_reply, trans);
+								trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
 							}
 							free(trans->_frame);
 							std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
@@ -141,7 +141,7 @@ void ModbusIP::task() {
 	n = -1;
 }
 
-bool ModbusIP::send(IPAddress ip, cbTransaction cb) { // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
+uint16_t ModbusIP::send(IPAddress ip, cbTransaction cb, void* data) { // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
 #ifdef MODBUSIP_MAX_TRANSACIONS
 	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
 		return false;
@@ -150,6 +150,7 @@ bool ModbusIP::send(IPAddress ip, cbTransaction cb) { // Prepare and send Modbus
 	if (p == -1 || !client[p]->connected())
 		return false;
 	transactionId++;
+	if (!transactionId) transactionId = 1;
 	_MBAP.transactionId	= __bswap_16(transactionId);
 	_MBAP.protocolId	= __bswap_16(0);
 	_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
@@ -164,10 +165,11 @@ bool ModbusIP::send(IPAddress ip, cbTransaction cb) { // Prepare and send Modbus
 	tmp.transactionId = transactionId;
 	tmp.timestamp = millis();
 	tmp.cb = cb;
+	tmp.data = data;
 	tmp._frame = _frame;
 	_trans.push_back(tmp);
 	_frame = nullptr;
-	return true;
+	return transactionId;
 }
 
 
@@ -182,8 +184,8 @@ void ModbusIP::onDisconnect(cbModbusConnect cb) {
 bool ifExpired(TTransaction& t) {
 	if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
 		if (t.cb)
-			t.cb(Modbus::EX_TIMEOUT, &t);
-		//free(t._frame);
+			t.cb(Modbus::EX_TIMEOUT, t.transactionId, nullptr);
+		free(t._frame);
 		return true;
 	}
 	return false;
@@ -198,15 +200,7 @@ void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout
 				cbDisconnect(ip);
 		}
 	}
-//	for (TTransaction& t : _trans) {    // Cleanup transactions on timeout
-//		if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
-//			if (cbEnabled && t.cb)
-//				t.cb(EX_TIMEOUT, &t);
-//			//std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), t);
-//			//if (it) _trans.erase(it);
-//		}
-			_trans.erase( remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
-//	}
+	_trans.erase( remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
 }
 
 int8_t ModbusIP::getFreeClient() {    // Returns free slot position
@@ -224,19 +218,24 @@ int8_t ModbusIP::getSlave(IPAddress ip) {
 	return -1;
 }
 
-bool ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb) {
+uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb) {
 	readSlave(COIL(offset), COIL_VAL(value), FC_WRITE_COIL);
 	return send(ip, cb);
-   }
+}
 
-bool ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb) {
+uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb) {
 	readSlave(HREG(offset), value, FC_WRITE_REG);
 	return send(ip, cb);
 }
 
-bool ModbusIP::pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	writeSlaveWords(HREG(offset), numregs, FC_WRITE_REGS, value);
+	return send(ip, cb);
+}
+
+uint16_t ModbusIP::pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 	if (numregs == 1) {
 		readSlave(COIL(offset), COIL_VAL(Coil(offset)), FC_WRITE_COIL);
@@ -246,25 +245,22 @@ bool ModbusIP::pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	return send(ip, cb);
 }
 
-bool ModbusIP::pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 	readSlave(COIL(offset), numregs, FC_READ_COILS);
 	return send(ip, cb);
 }
 
-bool ModbusIP::pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	addIsts(offset, numregs);	// Should registers requre to be added there or use existing?
 	readSlave(ISTS(offset), numregs, FC_READ_INPUT_STAT);
 	return send(ip, cb);
 }
 
-bool ModbusIP::pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
 	if (numregs == 1) {
 		readSlave(HREG(offset), Hreg(offset), FC_WRITE_REG);
@@ -274,27 +270,22 @@ bool ModbusIP::pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTrans
 	return send(ip, cb);
 }
 
-bool ModbusIP::pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	addHreg(offset, numregs);	// Should registers requre to be added there or use existing?
 	readSlave(HREG(offset), numregs, FC_READ_REGS);
 	return send(ip, cb);
 }
 
-bool ModbusIP::pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B)
-		return false;
+uint16_t ModbusIP::pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	addIreg(offset, numregs);	// Should registers requre to be added there or use existing?
 	readSlave(IREG(offset), numregs, FC_READ_INPUT_REGS);
 	return send(ip, cb);
 }
 
-uint16_t ModbusIP::lastTransaction() {
-	return transactionId;
-}
 bool ModbusIP::isTransaction(uint16_t id) { // Check if transaction is in progress (by ID)
-	searchTransaction(id) != nullptr;
+	return searchTransaction(id) != nullptr;
 }
 bool ModbusIP::isConnected(IPAddress ip) {
 	int8_t p = getSlave(ip);

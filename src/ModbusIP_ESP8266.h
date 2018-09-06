@@ -29,18 +29,16 @@ typedef bool (*cbModbusConnect)(IPAddress ip);
 
 typedef struct TTransaction TTransaction;
 
-typedef bool (*cbTransaction)(Modbus::ResultCode event, TTransaction* t);
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 
 typedef struct TTransaction {
 	uint16_t	transactionId;
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
 	uint8_t*	_frame = nullptr;
+	void*		data = nullptr;
     bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
-	}
-	~TTransaction() {
-		free(_frame);
 	}
 };
 
@@ -68,11 +66,11 @@ class ModbusIP : public Modbus {
 	void cleanup(); 	// Free clients if not connected and remove timedout transactions
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
-	bool send(IPAddress ip, cbTransaction cb);
+	uint16_t send(IPAddress ip, cbTransaction cb, void* data = nullptr);
 
 	public:
 	ModbusIP();
-	uint16_t lastTransaction();
+	//uint16_t lastTransaction();
 	bool isTransaction(uint16_t id);
 	bool isConnected(IPAddress ip);
 	bool connect(IPAddress ip);
@@ -86,12 +84,18 @@ class ModbusIP : public Modbus {
 	void onDisconnect(cbModbusConnect cb = nullptr);
     IPAddress eventSource();
 
-    bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
-	bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
-	bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	bool pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	bool pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	bool pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	bool pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	bool pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+    uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
+	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+//  uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+//  uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+//  uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+//	uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+//	uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t pullIreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
 };

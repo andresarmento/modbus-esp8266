@@ -31,20 +31,29 @@ bool Ists(uint16_t offset);
 uint16_t Ireg(uint16_t offset);
 ```
 
+### Remove reg
+
+```c
+bool removeHreg(uint16_t offset);
+bool removeCoil(uint16_t offset);
+bool removeIsts(uint16_t offset);
+bool removeIreg(uint16_t offset);
+```
+
 ### Query [multiple] regs from remote slave
 
 ```c
-bool pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pullIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
+uint16_t pullHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
 ```
 
 ### Send [multiple] regs to remote slave
 
 ```c
-bool pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
-bool pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pushHreg(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value.
@@ -52,11 +61,17 @@ Write Register/Coil or Write Multiple Registers/Coils Modbus function selected a
 ### Write value to remote slave reg
 
 ```c
-bool writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
-bool writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
+uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 ```
 
-Write value to remote Hreg/Coil. Offset is 0..65535.
+Write values to remote Hreg/Coil. Offset is 0..65535.
+
+```c
+uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+```
+
+Write multiple values from array to remote Hreg. Offset is 0..65535.
 
 ### Callbacks
 
@@ -68,32 +83,32 @@ void cbDisable();
 Callback generation control. Callback generation is enabled by default. *Has no effect on transactions callbacks.*
 
 ```c
-void onConnect(cbModbusConnect cb)
-void onDisonnect(cbModbusConnect cb)
+void onConnect(cbModbusConnect cb);
+void onDisonnect(cbModbusConnect cb);
 ```
 
 Assign callback function on new incoming connection event.
 
 ```c
-typedef bool (*cbModbusConnect)(IPAddress ip)
+typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
 Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
 
 ```c
-typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val)
+typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
 ```
 
 Get/Set register callback function definition. Pointer to TRegister structure (see source for details) of the register and new value are passed as arguments.
 
 ```c
-typedef uint16_t (*cbTransaction)(uint8_t eventCode, TTransaction* transaction)
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 ```
 
-Transaction end callback function definition. Pointer to TTransaction structure (see source for details) is passed.
+Transaction end callback function definition. *data* is currently reserved.
 
 ```c
-IPAddress eventSource()
+IPAddress eventSource();
 ```
 
 Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
@@ -147,7 +162,6 @@ void slave();
 void master();
 bool connect(IPAddress ip);
 bool disconnect(IPAddress ip);  // Not implemented yet.
-uint16_t lastTransaction();
 bool isTransaction(uint16_t id);
 bool isConnected(IPAddress ip);
 ```

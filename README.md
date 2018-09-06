@@ -65,13 +65,13 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Back to marking private for onSet, onGet, addReg and Reg methods
 + Added callback-related eventSource method, onDisconnect and transaction result callbacks
 + Extend register addressing to 0..65535
++ removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
 // ToDo
 - Move rest of implementations from Modbus.h
 - ModbusSerial (over RS-485)
-- Read/Write file records function
-- Write mask register function
-- Serial line-specific functions
-- removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
+- Modbus Read/Write File Records function
+- Modbus Write Mask Register function
+- Modbus Serial line-specific functions
 ```
 
 ## Contributions

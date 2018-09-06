@@ -139,7 +139,16 @@ class Modbus {
         uint16_t Ireg(uint16_t offset) {
             return Reg(IREG(offset));
         }
-        
+        bool removeCoil(uint16_t offset) {
+            return removeReg(COIL(offset));
+        }
+        bool removeIsts(uint16_t offset) {
+            return removeReg(ISTS(offset));
+        }
+        bool removeIreg(uint16_t offset) {
+            return removeReg(IREG(offset));
+        }
+
         void cbEnable(bool state = true);
         void cbDisable() {
             cbEnable(false);
@@ -200,16 +209,16 @@ class Modbus {
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
-        void masterPDU(uint8_t* frame, uint8_t* sourceFrame);   //For Master
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output= nullptr);   //For Master
 
         bool readSlave(TAddress address, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
+        bool writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn, uint16_t* data = nullptr);
 
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);
         uint16_t Reg(TAddress address);
-        bool removeReg(TAddress address);   // Not implemented
+        bool removeReg(TAddress address);
 
         bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
