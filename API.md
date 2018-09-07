@@ -11,8 +11,6 @@ bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 ```
 
-Offset is 0..65535
-
 ### Write reg
 
 ```c
@@ -49,6 +47,8 @@ uint16_t pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransac
 uint16_t pullIreg(IPAddress ip, uint16_t offset, uint16_t nemregs = 1, cbTransaction cb = nullptr);
 ```
 
+Result is saved to local registers. Method returns corresponding transaction id.
+
 ### Send [multiple] regs to remote slave
 
 ```c
@@ -58,20 +58,32 @@ uint16_t pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransac
 
 Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value.
 
-### Write value to remote slave reg
+### Write [multiple] values to remote slave reg
 
 ```c
 uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
 uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 ```
 
-Write values to remote Hreg/Coil. Offset is 0..65535.
+Write single value to remote Hreg/Coil.
 
 ```c
+uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
-Write multiple values from array to remote Hreg. Offset is 0..65535.
+Write multiple values from array to remote Coil/Hreg.
+
+### Read values from multiple remote slave regs
+
+```c
+	uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+```
+
+Read values from remote Hreg/Coil/Ireg/Ists to array.
 
 ### Callbacks
 

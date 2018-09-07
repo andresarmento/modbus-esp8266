@@ -1,6 +1,6 @@
-# Modbus Master-Slave Library for ESP8266/ESP32
+# Modbus Master-Slave Library for ESP8266/ESP32 v2.0
 
-# v2.0.BETA
+# Status: Release Candidate
 
 *Be careful using current version in production. Stable version from 'releases' page is recommended.*
 
@@ -8,7 +8,6 @@ This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The M
 used in industrial automation and can be used in other areas, such as home automation.
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
-
 
 In the current version the library allows the ESP8266/ESP32 operate async as a master and/or slave, supporting Modbus IP via wireless network. For more information about Modbus see:
 
@@ -59,6 +58,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Modbus class refactoring
 + ModbusIP networking code refactoring and error reporting
 + Global registers storage to share between multiple Modbus* instances
++ Move rest of implementations from Modbus.h
 //Public API changes
 + Modbus master implementation
 + Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
@@ -66,8 +66,8 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Added callback-related eventSource method, onDisconnect and transaction result callbacks
 + Extend register addressing to 0..65535
 + removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
++ readCoil, readHreg, readIsts, readIreg
 // ToDo
-- Move rest of implementations from Modbus.h
 - ModbusSerial (over RS-485)
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function

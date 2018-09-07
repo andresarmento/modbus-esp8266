@@ -218,9 +218,28 @@ int8_t ModbusIP::getSlave(IPAddress ip) {
 	return -1;
 }
 
+int8_t ModbusIP::getMaster(IPAddress ip) {
+	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
+		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() == MODBUSIP_PORT)
+			return i;
+	return -1;
+}
+
 uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb) {
 	readSlave(COIL(offset), COIL_VAL(value), FC_WRITE_COIL);
 	return send(ip, cb);
+}
+
+uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	writeSlaveBits(COIL(offset), numregs, FC_WRITE_COILS, value);
+	return send(ip, cb);	
+}
+
+uint16_t ModbusIP::readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	readSlave(COIL(offset), numregs, FC_READ_COILS);
+	return send(ip, cb, value);
 }
 
 uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb) {
@@ -234,9 +253,27 @@ uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uin
 	return send(ip, cb);
 }
 
+uint16_t ModbusIP::readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	readSlave(HREG(offset), numregs, FC_READ_REGS);
+	return send(ip, cb, value);
+}
+
+uint16_t ModbusIP::readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	readSlave(ISTS(offset), numregs, FC_READ_INPUT_STAT);
+	return send(ip, cb, value);
+}
+
+uint16_t ModbusIP::readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	readSlave(IREG(offset), numregs, FC_READ_INPUT_REGS);
+	return send(ip, cb, value);
+}
+
 uint16_t ModbusIP::pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > 0x007B) return false;
-	//addCoil(offset, numregs);	// Should registers requre to be added there or use existing?
+	//addCoil(offset, numregs);	// Should registers requre to be added there or use only existing?
 	if (numregs == 1) {
 		readSlave(COIL(offset), COIL_VAL(Coil(offset)), FC_WRITE_COIL);
 	} else {

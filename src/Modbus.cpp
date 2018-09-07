@@ -232,7 +232,7 @@ void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     //Determine the message length = function type, byte count and
 	//for each group of 8 registers the message length increases by 1
 	_len = 2 + numregs/8;
-	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
+	if (numregs % 8) _len++; //Add 1 to the message length for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
         exceptionResponse(fn, EX_SLAVE_FAILURE);
@@ -336,7 +336,7 @@ bool Modbus::readSlave(TAddress address, uint16_t numregs, FunctionCode fn) {
 bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data) {
 	free(_frame);
 	_len = 6 + numregs/8;
-	if (numregs%8) _len++; //Add 1 to the message length for the partial byte.
+	if (numregs % 8) _len++; //Add 1 to the message length for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
@@ -346,7 +346,11 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
         _frame[_len - 1] = 0;  //Clean last probably partial byte
-        getMultipleBits(_frame + 6, startreg, numregs);
+        if (data) {
+            bitsToBool(data, _frame + 6, numregs);
+        } else {
+            getMultipleBits(_frame + 6, startreg, numregs);
+        }
         _reply = REPLY_NORMAL;
         return true;
     }
@@ -376,7 +380,40 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode f
 	return false;    
 }
 
-void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output) {
+void Modbus::boolToBits(uint8_t* dst, bool* src, uint16_t numregs) {
+    uint8_t bitn = 0;
+    uint16_t i = 0;
+    uint16_t j = 0;
+	while (numregs--) {
+		if (src[j])
+			bitSet(dst[i], bitn);
+        else
+			bitClear(dst[i], bitn);
+		bitn++; //increment the bit index
+		if (bitn == 8)  {
+            i++;
+            bitn = 0;
+        }
+		j++; //increment the register
+	}
+}
+
+void Modbus::bitsToBool(bool* dst, uint8_t* src, uint16_t numregs) {
+    uint8_t bitn = 0;
+    uint16_t i = 0;
+    uint16_t j = 0;
+	while (numregs--) {
+        dst[j] = bitRead(src[i], bitn);
+        bitn++;     //increment the bit index
+        if (bitn == 8) {
+            i++;
+            bitn = 0;
+        }
+        j++; //increment the register
+	}
+}
+
+void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, void* output) {
     uint8_t fcode  = frame[0];
     _reply = 0;
     if ((fcode & 0x80) != 0) {
@@ -393,27 +430,39 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output) {
                 _reply = EX_DATA_MISMACH;
                 break;
             }
-            setMultipleWords(frame + 2, HREG(field1), field2);
+            if (output) {
+                memcpy(output, frame + 2, 2 * field2);
+            } else {
+                setMultipleWords(frame + 2, HREG(field1), field2);
+            }
         break;
         case FC_READ_COILS:
             //field1 = startreg, field2 = numregs, frame[1] = data length, header len = 2
             bytecount_calc = field2 / 8;
-            if (field2%8) bytecount_calc++;
+            if (field2 % 8) bytecount_calc++;
             if (frame[1] != bytecount_calc) { // check if data size matches
                 _reply = EX_DATA_MISMACH;
                 break;
             }
-            setMultipleBits(frame + 2, COIL(field1), field2);
+            if (output) {
+                bitsToBool((bool*)output, frame + 2, field2);
+            } else {
+                setMultipleBits(frame + 2, COIL(field1), field2);
+            }
         break;
         case FC_READ_INPUT_STAT:
             //field1 = startreg, field2 = numregs, frame[1] = data length, header len = 2
             bytecount_calc = field2 / 8;
-            if (field2%8) bytecount_calc++;
+            if (field2 % 8) bytecount_calc++;
             if (frame[1] != bytecount_calc) { // check if data size matches
                 _reply = EX_DATA_MISMACH;
                 break;
             }
-            setMultipleBits(frame + 2, ISTS(field1), field2);
+            if (output) {
+                bitsToBool((bool*)output, frame + 2, field2);
+            } else {
+                setMultipleBits(frame + 2, ISTS(field1), field2);
+            }
         break;
         case FC_READ_INPUT_REGS:
             //field1 = startreg, field2 = status, frame[1] = data lenght, header len = 2
@@ -421,7 +470,11 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output) {
                 _reply = EX_DATA_MISMACH;
                 break;
             }
-            setMultipleWords(frame + 2, IREG(field1), field2);
+            if (output) {
+                memcpy(output, frame + 2, 2 * field2);
+            } else {
+                setMultipleWords(frame + 2, IREG(field1), field2);
+            }
         break;
         case FC_WRITE_REG:
         break;
@@ -438,4 +491,84 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output) {
 
 void Modbus::cbEnable(bool state) {
     cbEnabled = state;
+}
+void Modbus::cbDisable() {
+    cbEnable(false);
+}
+
+bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
+    return addReg(HREG(offset), value, numregs);
+}
+bool Modbus::Hreg(uint16_t offset, uint16_t value) {
+    return Reg(HREG(offset), value);
+}
+uint16_t Modbus::Hreg(uint16_t offset) {
+    return Reg(HREG(offset));
+}
+uint16_t Modbus::removeHreg(uint16_t offset) {
+    return removeReg(HREG(offset));
+}
+bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
+    return addReg(COIL(offset), COIL_VAL(value), numregs);
+}
+bool Modbus::addIsts(uint16_t offset, bool value, uint16_t numregs) {
+    return addReg(ISTS(offset), ISTS_VAL(value), numregs);
+}
+bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t numregs) {
+    return addReg(IREG(offset), value, numregs);
+}
+bool Modbus::Coil(uint16_t offset, bool value) {
+    return Reg(COIL(offset), COIL_VAL(value));
+}
+bool Modbus::Ists(uint16_t offset, bool value) {
+    return Reg(ISTS(offset), ISTS_VAL(value));
+}
+bool Modbus::Ireg(uint16_t offset, uint16_t value) {
+    return Reg(IREG(offset), value);
+}
+bool Modbus::Coil(uint16_t offset) {
+    return COIL_BOOL(Reg(COIL(offset)));
+}
+bool Modbus::Ists(uint16_t offset) {
+    return ISTS_BOOL(Reg(ISTS(offset)));
+}
+uint16_t Modbus::Ireg(uint16_t offset) {
+    return Reg(IREG(offset));
+}
+bool Modbus::removeCoil(uint16_t offset) {
+    return removeReg(COIL(offset));
+}
+bool Modbus::removeIsts(uint16_t offset) {
+    return removeReg(ISTS(offset));
+}
+bool Modbus::removeIreg(uint16_t offset) {
+    return removeReg(IREG(offset));
+}
+bool Modbus::onGetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onGet(COIL(offset), cb, numregs);
+}
+bool Modbus::onSetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onSet(COIL(offset), cb, numregs);
+}
+bool Modbus::onGetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onGet(HREG(offset), cb, numregs);
+}
+bool Modbus::onSetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onSet(HREG(offset), cb, numregs);
+}
+bool Modbus::onGetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onGet(ISTS(offset), cb, numregs);
+}
+bool Modbus::onSetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onSet(ISTS(offset), cb, numregs);
+}
+bool Modbus::onGetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onGet(IREG(offset), cb, numregs);
+}
+bool Modbus::onSetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return onSet(IREG(offset), cb, numregs);
+}
+
+Modbus::~Modbus() {
+    free(_frame);
 }

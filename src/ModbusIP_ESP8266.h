@@ -27,8 +27,6 @@
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
-typedef struct TTransaction TTransaction;
-
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 
 typedef struct TTransaction {
@@ -66,6 +64,7 @@ class ModbusIP : public Modbus {
 	void cleanup(); 	// Free clients if not connected and remove timedout transactions
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
+	int8_t getMaster(IPAddress ip);
 	uint16_t send(IPAddress ip, cbTransaction cb, void* data = nullptr);
 
 	public:
@@ -86,12 +85,12 @@ class ModbusIP : public Modbus {
 
     uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
-//  uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-//  uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-//  uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-//	uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-//	uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+	uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t pushCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t pullCoil(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t pullIsts(IPAddress ip, uint16_t offset, uint16_t numregs = 1, cbTransaction cb = nullptr);

@@ -99,85 +99,35 @@ class Modbus {
             EX_TIMEOUT              = 0xE4, // Custom. Operation not finished within reasonable time
             EX_CONNECTION_LOST      = 0xE5  // Custom. Connection with device lost
         };
-
-        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
-            return addReg(HREG(offset), value, numregs);
-        }
-        bool Hreg(uint16_t offset, uint16_t value) {
-            return Reg(HREG(offset), value);
-        }
-        uint16_t Hreg(uint16_t offset) {
-            return Reg(HREG(offset));
-        }
-        uint16_t removeHreg(uint16_t offset) {
-            return removeReg(HREG(offset));
-        }
-        bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1) {
-            return addReg(COIL(offset), COIL_VAL(value), numregs);
-        }
-        bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1) {
-            return addReg(ISTS(offset), ISTS_VAL(value), numregs);
-        }
-        bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1) {
-            return addReg(IREG(offset), value, numregs);
-        }
-        bool Coil(uint16_t offset, bool value) {
-            return Reg(COIL(offset), COIL_VAL(value));
-        }
-        bool Ists(uint16_t offset, bool value) {
-            return Reg(ISTS(offset), ISTS_VAL(value));
-        }
-        bool Ireg(uint16_t offset, uint16_t value) {
-            return Reg(IREG(offset), value);
-        }
-        bool Coil(uint16_t offset) {
-            return COIL_BOOL(Reg(COIL(offset)));
-        }
-        bool Ists(uint16_t offset) {
-            return ISTS_BOOL(Reg(ISTS(offset)));
-        }
-        uint16_t Ireg(uint16_t offset) {
-            return Reg(IREG(offset));
-        }
-        bool removeCoil(uint16_t offset) {
-            return removeReg(COIL(offset));
-        }
-        bool removeIsts(uint16_t offset) {
-            return removeReg(ISTS(offset));
-        }
-        bool removeIreg(uint16_t offset) {
-            return removeReg(IREG(offset));
-        }
+        ~Modbus();
+        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
+        bool Hreg(uint16_t offset, uint16_t value);
+        uint16_t Hreg(uint16_t offset);
+        uint16_t removeHreg(uint16_t offset);
+        bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
+        bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
+        bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
+        bool Coil(uint16_t offset, bool value);
+        bool Ists(uint16_t offset, bool value);
+        bool Ireg(uint16_t offset, uint16_t value);
+        bool Coil(uint16_t offset);
+        bool Ists(uint16_t offset);
+        uint16_t Ireg(uint16_t offset);
+        bool removeCoil(uint16_t offset);
+        bool removeIsts(uint16_t offset);
+        bool removeIreg(uint16_t offset);
 
         void cbEnable(bool state = true);
-        void cbDisable() {
-            cbEnable(false);
-        }
+        void cbDisable();
         
-        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onGet(COIL(offset), cb, numregs);
-        }
-        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onSet(COIL(offset), cb, numregs);
-        }
-        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onGet(HREG(offset), cb, numregs);
-        }
-        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onSet(HREG(offset), cb, numregs);
-        }
-        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onGet(ISTS(offset), cb, numregs);
-        }
-        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onSet(ISTS(offset), cb, numregs);
-        }
-        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onGet(IREG(offset), cb, numregs);
-        }
-        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1) {
-            return onSet(IREG(offset), cb, numregs);
-        }
+        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
     private:
 	    void readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
 	    void readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
@@ -187,6 +137,9 @@ class Modbus {
         
         void getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs);
         void getMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs);
+
+        void bitsToBool(bool* dst, uint8_t* src, uint16_t numregs);
+        void boolToBits(uint8_t* dst, bool* src, uint16_t numregs);
 
         TRegister* searchRegister(TAddress addr);
     
@@ -209,7 +162,7 @@ class Modbus {
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
-        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint8_t* output= nullptr);   //For Master
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, void* output= nullptr);   //For Master
 
         bool readSlave(TAddress address, uint16_t numregs, FunctionCode fn);
         bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
@@ -222,8 +175,4 @@ class Modbus {
 
         bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-
-        ~Modbus() {
-            free(_frame);
-        }
 };

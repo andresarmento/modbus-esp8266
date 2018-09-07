@@ -31,11 +31,14 @@ Coil	KEYWORD2
 Ists	KEYWORD2
 Ireg	KEYWORD2
 Hreg	KEYWORD2
-lastTransaction	KEYWORD2
 isTransaction	KEYWORD2
 isConnected	KEYWORD2
 writeCoil	KEYWORD2
+readCoil	KEYWORD2
 writeHreg	KEYWORD2
+readHreg	KEYWORD2
+readIsts	KEYWORD2
+readIreg	KEYWORD2
 pushCoil	KEYWORD2
 pullCoil	KEYWORD2
 pullIsts	KEYWORD2
