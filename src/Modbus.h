@@ -6,6 +6,8 @@
 #pragma once
 
 #include "Arduino.h"
+#include <vector>
+#include <algorithm>
 
 //#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
