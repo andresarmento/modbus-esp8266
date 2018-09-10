@@ -37,14 +37,14 @@ typedef struct TAddress {
     }
     TAddress  operator++(int) {  // TAddress++
         TAddress result(*this);
-        address++;
+         ++(*this);
         return result;
     }
     TAddress& operator+=(const int& inc) {  // TAddress += integer
         address += inc;
         return *this;
     }
-    TAddress operator+(const int &inc) {    // TAddress + integer
+    const TAddress operator+(const int& inc) const {    // TAddress + integer
         TAddress result(*this);
         result.address += inc;
         return result;
@@ -162,7 +162,7 @@ class Modbus {
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
-        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, void* output= nullptr);   //For Master
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t startreg, void* output= nullptr);   //For Master
 
         bool readSlave(TAddress address, uint16_t numregs, FunctionCode fn);
         bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
