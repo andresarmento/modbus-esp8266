@@ -142,8 +142,6 @@ class Modbus {
 
         void bitsToBool(bool* dst, uint8_t* src, uint16_t numregs);
         void boolToBits(uint8_t* dst, bool* src, uint16_t numregs);
-
-        TRegister* searchRegister(TAddress addr);
     
     protected:
         //Reply Types
@@ -161,14 +159,24 @@ class Modbus {
         uint16_t  _len = 0;
         uint8_t   _reply = 0;
         bool cbEnabled = true;
+        TRegister* searchRegister(TAddress addr);
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
         void masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t startreg, void* output= nullptr);   //For Master
+        // frame - data received form slave
+        // sourceFrame - data sent fo slave
+        // startreg - local register to start put data to
+        // output - if not null put data to the buffer insted local registers. output assumed to by array of uint16_t or boolean
 
-        bool readSlave(TAddress address, uint16_t numregs, FunctionCode fn);
-        bool writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
-        bool writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn, uint16_t* data = nullptr);
+        bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
+        bool writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
+        bool writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, uint16_t* data = nullptr);
+        // startreg - local register to get data from
+        // to - slave register to write data to
+        // numregs - number of registers
+        // fn - Modbus function
+        // data - if null use local registers. Otherwise use data from array to erite to slave
 
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);

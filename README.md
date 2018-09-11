@@ -52,14 +52,14 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 ## Last Changes
 
 ```diff
-//Internal changes
+// Internal changes
 + Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
 + Change object's list implementation to *std::vector*
 + Modbus class refactoring
 + ModbusIP networking code refactoring and error reporting
 + Global registers storage to share between multiple Modbus* instances
 + Move rest of implementations from Modbus.h
-//Public API changes
+// Public API changes
 + Modbus master implementation
 + Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
 + Back to marking private for onSet, onGet, addReg and Reg methods
@@ -67,7 +67,12 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Extend register addressing to 0..65535
 + removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
 + readCoil, readHreg, readIsts, readIreg
-// ToDo
++ push\pullCoil, push\pullHreg, pullIsts, pullIreg
+// ToDo for 2.0
+- extend removeCoil/Hreg/... to remove multiple registers
+- implement pullCoilToIsts, pullHregToIreg, pushIstsToCoil, pushIregToHreg
+- optimize code around std::vector processing
+// ToDo later
 - ModbusSerial (over RS-485)
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function

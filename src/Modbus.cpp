@@ -321,27 +321,29 @@ bool Modbus::onSet(TAddress address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::readSlave(TAddress address, uint16_t numregs, FunctionCode fn) {
+bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
 	free(_frame);
 	_len = 5;
 	_frame = (uint8_t*) malloc(_len);
 	_frame[0] = fn;
-	_frame[1] = address.address >> 8;
-	_frame[2] = address.address & 0x00FF;
+	_frame[1] = address >> 8;
+	_frame[2] = address & 0x00FF;
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
 	return true;
 }
 
-bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn, bool* data) {
+bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, bool* data) {
 	free(_frame);
 	_len = 6 + numregs/8;
 	if (numregs % 8) _len++; //Add 1 to the message length for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = startreg.address >> 8;
-	    _frame[2] = startreg.address & 0x00FF;
+//	    _frame[1] = startreg.address >> 8;
+//	    _frame[2] = startreg.address & 0x00FF;
+	    _frame[1] = to >> 8;
+	    _frame[2] = to & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
@@ -358,14 +360,16 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t numregs, FunctionCode fn
 	return false;
 }
 
-bool Modbus::writeSlaveWords(TAddress startreg, uint16_t numregs, FunctionCode fn, uint16_t* data) {
+bool Modbus::writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, uint16_t* data) {
 	free(_frame);
 	_len = 6 + 2 * numregs;
 	_frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    _frame[1] = startreg.address >> 8;
-	    _frame[2] = startreg.address & 0x00FF;
+	    //_frame[1] = startreg.address >> 8;
+	    //_frame[2] = startreg.address & 0x00FF;
+	    _frame[1] = to >> 8;
+	    _frame[2] = to & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
