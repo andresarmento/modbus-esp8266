@@ -14,8 +14,9 @@ uint16_t cbDefault(TRegister* reg, uint16_t val) {
 }
 
 TRegister* Modbus::searchRegister(TAddress address) {
-    const TRegister tmp = {address, 0, cbDefault, cbDefault};
-    std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
+    //const TRegister tmp = {address, 0, cbDefault, cbDefault};
+    //std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
+    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(), [address](TRegister& addr){return addr.address == address;});
     if (it != _regs.end()) return &*it;
     return nullptr;
 }

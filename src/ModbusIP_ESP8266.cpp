@@ -41,12 +41,13 @@ IPAddress ModbusIP::eventSource() {		// Returns IP of current processing client 
 }
 
 TTransaction* ModbusIP::searchTransaction(uint16_t id) {
-   	TTransaction tmp;
-	tmp.transactionId = id;
-	tmp.timestamp = 0;
-	tmp.cb = nullptr;
-	tmp._frame = nullptr;
-	std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), tmp);
+   	//TTransaction tmp;
+	//tmp.transactionId = id;
+	//tmp.timestamp = 0;
+	//tmp.cb = nullptr;
+	//tmp._frame = nullptr;
+	//std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), tmp);
+	std::vector<TTransaction>::iterator it = std::find_if(_trans.begin(), _trans.end(), [id](TTransaction& trans){return trans.transactionId == id;});
    	if (it != _trans.end()) return &*it;
    	return nullptr;
 }
@@ -117,8 +118,9 @@ void ModbusIP::task() {
 								trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
 							}
 							free(trans->_frame);
-							std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
-							_trans.erase(it);
+							//std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
+							_trans.erase(std::remove( _trans.begin(), _trans.end(), *trans), _trans.end() );
+							//_trans.erase(it);
 						}
 					}
 					client[n]->flush();			// Not sure if we need flush rest of data available
@@ -376,4 +378,8 @@ bool ModbusIP::isTransaction(uint16_t id) { // Check if transaction is in progre
 bool ModbusIP::isConnected(IPAddress ip) {
 	int8_t p = getSlave(ip);
 	return  p != -1;// && client[p]->connected();
+}
+
+uint16_t ModbusIP::transactions() {
+	return _trans.capacity();
 }

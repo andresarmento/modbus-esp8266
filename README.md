@@ -68,10 +68,12 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
 + readCoil, readHreg, readIsts, readIreg
 + push\pullCoil, push\pullHreg, pullIsts, pullIreg
++ pullCoilToIsts, pullHregToIreg, pushIstsToCoil, pushIregToHreg
++ optimize code around std::vector processing
 // ToDo for 2.0
 - extend removeCoil/Hreg/... to remove multiple registers
-- implement pullCoilToIsts, pullHregToIreg, pushIstsToCoil, pushIregToHreg
-- optimize code around std::vector processing
+- add examples
+- code cleanup
 // ToDo later
 - ModbusSerial (over RS-485)
 - Modbus Read/Write File Records function
