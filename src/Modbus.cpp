@@ -418,7 +418,7 @@ void Modbus::bitsToBool(bool* dst, uint8_t* src, uint16_t numregs) {
 }
 
 //1 void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, void* output) {
-void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, void* output) {
+void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output) {
     uint8_t fcode  = frame[0];
     _reply = 0;
     if ((fcode & 0x80) != 0) {
@@ -426,6 +426,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, vo
 	    return;
     }
     //1 uint16_t field1 = (uint16_t)sourceFrame[1] << 8 | (uint16_t)sourceFrame[2];
+    //uint16_t field1 = startreg.address;
     uint16_t field2 = (uint16_t)sourceFrame[3] << 8 | (uint16_t)sourceFrame[4];
     uint8_t bytecount_calc;
     switch (fcode) {
@@ -438,7 +439,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, vo
             if (output) {
                 memcpy(output, frame + 2, 2 * field2);
             } else {
-                setMultipleWords(frame + 2, HREG(field1), field2);
+                //setMultipleWords(frame + 2, HREG(field1), field2);
+                setMultipleWords(frame + 2, startreg, field2);
             }
         break;
         case FC_READ_COILS:
@@ -452,7 +454,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, vo
             if (output) {
                 bitsToBool((bool*)output, frame + 2, field2);
             } else {
-                setMultipleBits(frame + 2, COIL(field1), field2);
+                //setMultipleBits(frame + 2, COIL(field1), field2);
+                setMultipleBits(frame + 2, startreg, field2);
             }
         break;
         case FC_READ_INPUT_STAT:
@@ -466,7 +469,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, vo
             if (output) {
                 bitsToBool((bool*)output, frame + 2, field2);
             } else {
-                setMultipleBits(frame + 2, ISTS(field1), field2);
+                //setMultipleBits(frame + 2, ISTS(field1), field2);
+                setMultipleBits(frame + 2, startreg, field2);
             }
         break;
         case FC_READ_INPUT_REGS:
@@ -478,7 +482,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, uint16_t field1, vo
             if (output) {
                 memcpy(output, frame + 2, 2 * field2);
             } else {
-                setMultipleWords(frame + 2, IREG(field1), field2);
+                //setMultipleWords(frame + 2, IREG(field1), field2);
+                setMultipleWords(frame + 2, startreg, field2);
             }
         break;
         case FC_WRITE_REG:
