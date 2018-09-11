@@ -60,14 +60,17 @@ uint16_t Modbus::Reg(TAddress address) {
         return 0;
 }
 
-bool Modbus::removeReg(TAddress address) {
-    TRegister* reg = searchRegister(address);
-    if (reg) {
-        _regs.erase(std::remove( _regs.begin(), _regs.end(), *reg), _regs.end() );
-        return true;
+bool Modbus::removeReg(TAddress address, uint16_t numregs) {
+    TRegister* reg;
+    bool atLeastOne = false;
+    for (uint16_t i = 0; i < numregs; i++) {
+        reg = searchRegister(address + i);
+        if (reg) {
+            atLeastOne = true;
+            _regs.erase(std::remove( _regs.begin(), _regs.end(), *reg), _regs.end() );
+        }
     }
-    return false;
-
+    return atLeastOne;
 }
 
 void Modbus::slavePDU(uint8_t* frame) {
@@ -516,8 +519,8 @@ bool Modbus::Hreg(uint16_t offset, uint16_t value) {
 uint16_t Modbus::Hreg(uint16_t offset) {
     return Reg(HREG(offset));
 }
-uint16_t Modbus::removeHreg(uint16_t offset) {
-    return removeReg(HREG(offset));
+uint16_t Modbus::removeHreg(uint16_t offset, uint16_t numregs) {
+    return removeReg(HREG(offset), numregs);
 }
 bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
     return addReg(COIL(offset), COIL_VAL(value), numregs);
@@ -546,14 +549,14 @@ bool Modbus::Ists(uint16_t offset) {
 uint16_t Modbus::Ireg(uint16_t offset) {
     return Reg(IREG(offset));
 }
-bool Modbus::removeCoil(uint16_t offset) {
-    return removeReg(COIL(offset));
+bool Modbus::removeCoil(uint16_t offset, uint16_t numregs) {
+    return removeReg(COIL(offset), numregs);
 }
-bool Modbus::removeIsts(uint16_t offset) {
-    return removeReg(ISTS(offset));
+bool Modbus::removeIsts(uint16_t offset, uint16_t numregs) {
+    return removeReg(ISTS(offset), numregs);
 }
-bool Modbus::removeIreg(uint16_t offset) {
-    return removeReg(IREG(offset));
+bool Modbus::removeIreg(uint16_t offset, uint16_t numregs) {
+    return removeReg(IREG(offset), numregs);
 }
 bool Modbus::onGetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
     return onGet(COIL(offset), cb, numregs);

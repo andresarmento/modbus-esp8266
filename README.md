@@ -70,8 +70,8 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + push\pullCoil, push\pullHreg, pullIsts, pullIreg
 + pullCoilToIsts, pullHregToIreg, pushIstsToCoil, pushIregToHreg
 + optimize code around std::vector processing
++ extend removeCoil/Hreg/... to remove multiple registers
 // ToDo for 2.0
-- extend removeCoil/Hreg/... to remove multiple registers
 - add examples
 - code cleanup
 // ToDo later
@@ -79,6 +79,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function
 - Modbus Serial line-specific functions
+- Create destructor for ModbusIP
 ```
 
 ## Contributions

@@ -32,10 +32,10 @@ uint16_t Ireg(uint16_t offset);
 ### Remove reg
 
 ```c
-bool removeHreg(uint16_t offset);
-bool removeCoil(uint16_t offset);
-bool removeIsts(uint16_t offset);
-bool removeIreg(uint16_t offset);
+bool removeHreg(uint16_t offset, uint16_t numregs = 1);
+bool removeCoil(uint16_t offset, uint16_t numregs = 1);
+bool removeIsts(uint16_t offset, uint16_t numregs = 1);
+bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 ```
 
 ### Query [multiple] regs from remote slave

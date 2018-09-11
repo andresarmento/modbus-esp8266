@@ -105,7 +105,7 @@ class Modbus {
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
         bool Hreg(uint16_t offset, uint16_t value);
         uint16_t Hreg(uint16_t offset);
-        uint16_t removeHreg(uint16_t offset);
+        uint16_t removeHreg(uint16_t offset, uint16_t numregs = 1);
         bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
         bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
         bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
@@ -115,9 +115,9 @@ class Modbus {
         bool Coil(uint16_t offset);
         bool Ists(uint16_t offset);
         uint16_t Ireg(uint16_t offset);
-        bool removeCoil(uint16_t offset);
-        bool removeIsts(uint16_t offset);
-        bool removeIreg(uint16_t offset);
+        bool removeCoil(uint16_t offset, uint16_t numregs = 1);
+        bool removeIsts(uint16_t offset, uint16_t numregs = 1);
+        bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 
         void cbEnable(bool state = true);
         void cbDisable();
@@ -181,7 +181,7 @@ class Modbus {
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);
         uint16_t Reg(TAddress address);
-        bool removeReg(TAddress address);
+        bool removeReg(TAddress address, uint16_t numregs = 1);
 
         bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
