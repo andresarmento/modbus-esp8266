@@ -45,6 +45,14 @@ pullIsts	KEYWORD2
 pushHreg	KEYWORD2
 pullHreg	KEYWORD2
 pullIreg	KEYWORD2
+pullHregToIreg  KEYWORD2
+pullCoilToIsts  KEYWORD2
+pushIstsToCoil  KEYWORD2
+pushIregToHreg  KEYWORD2
+removeHreg  KEYWORD2
+removeIreg  KEYWORD2
+removeCoil  KEYWORD2
+removeIsts  KEYWORD2
 
 # Constants and Macros (LITERAL1)
 BIT_VAL	LITERAL1
