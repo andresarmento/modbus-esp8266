@@ -7,16 +7,21 @@
 
 #ifdef MB_GLOBAL_REGS
 std::vector<TRegister> _regs;
+std::vector<TCallback> _callbacks;
 #endif
 
-uint16_t cbDefault(TRegister* reg, uint16_t val) {
-	return val;
+uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
+    std::vector<TCallback>::iterator it = std::find_if(_callbacks.begin(), _callbacks.end(),
+                                            [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;});
+    if (it != _callbacks.end()) return it->cb(reg, val);
+    return val;
 }
 
 TRegister* Modbus::searchRegister(TAddress address) {
     //const TRegister tmp = {address, 0, cbDefault, cbDefault};
     //std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
-    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(), [address](TRegister& addr){return addr.address == address;});
+    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(),
+                                            [address](TRegister& addr){return addr.address == address;});
     if (it != _regs.end()) return &*it;
     return nullptr;
 }
@@ -27,7 +32,7 @@ bool Modbus::addReg(TAddress address, uint16_t value, uint16_t numregs) {
    #endif
     for (uint16_t i = 0; i < numregs; i++) {
         if (!searchRegister(address + i))
-            _regs.push_back({address + i, value, cbDefault, cbDefault});
+            _regs.push_back({address + i, value});
     }
     //std::sort(_regs.begin(), _regs.end());
     return true;
@@ -38,7 +43,7 @@ bool Modbus::Reg(TAddress address, uint16_t value) {
     reg = searchRegister(address); //search for the register address
     if (reg) { //if found then assign the register value to the new value.
         if (cbEnabled) {
-            reg->value = reg->set(reg, value);
+            reg->value = callback(reg, value, TCallback::ON_SET);
         } else {
             reg->value = value;
         }
@@ -52,7 +57,7 @@ uint16_t Modbus::Reg(TAddress address) {
     reg = searchRegister(address);
     if(reg)
         if (cbEnabled) {
-            return reg->get(reg, reg->value);
+            return callback(reg, reg->value, TCallback::ON_GET);
         } else {
             return reg->value;
         }
@@ -67,6 +72,8 @@ bool Modbus::removeReg(TAddress address, uint16_t numregs) {
         reg = searchRegister(address + i);
         if (reg) {
             atLeastOne = true;
+            removeOnSet(address + i);
+            removeOnGet(address + i);
             _regs.erase(std::remove( _regs.begin(), _regs.end(), *reg), _regs.end() );
         }
     }
@@ -299,10 +306,13 @@ void Modbus::setMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numreg
 bool Modbus::onGet(TAddress address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
+    if (!cb) {
+        return removeOnGet(address);
+    }
 	while (numregs > 0) {
 		reg = searchRegister(address);
 		if (reg) {
-			reg->get = cb;
+            _callbacks.push_back({TCallback::ON_GET, address, cb});
 			atLeastOne = true;
 		}
 		address++;
@@ -313,16 +323,36 @@ bool Modbus::onGet(TAddress address, cbModbus cb, uint16_t numregs) {
 bool Modbus::onSet(TAddress address, cbModbus cb, uint16_t numregs) {
 	TRegister* reg;
 	bool atLeastOne = false;
+    if (!cb) {
+        return removeOnGet(address);
+    }
 	while (numregs > 0) {
 		reg = searchRegister(address);
 		if (reg) {
-			reg->set = cb;
+            _callbacks.push_back({TCallback::ON_SET, address, cb});
 			atLeastOne = true;
 		}
 		address++;
 		numregs--;
 	}
 	return atLeastOne;
+}
+
+bool Modbus::removeOnSet(TAddress address, cbModbus cb, uint16_t numregs) {
+    while(numregs--) {
+        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), [address, cb](TCallback entry){
+                        return entry.type == TCallback::ON_SET && entry.address == address && (!cb || entry.cb == cb);} ), _callbacks.end() );
+        address++;
+    }
+    return false;
+}
+bool Modbus::removeOnGet(TAddress address, cbModbus cb, uint16_t numregs) {
+    while(numregs--) {
+        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), [address, cb](TCallback entry){
+                        return entry.type == TCallback::ON_GET && entry.address == address && (!cb || entry.cb == cb);} ), _callbacks.end() );
+        address++;
+    }
+    return false;
 }
 
 bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
@@ -581,6 +611,31 @@ bool Modbus::onGetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
 }
 bool Modbus::onSetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
     return onSet(IREG(offset), cb, numregs);
+}
+
+bool Modbus::removeOnGetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnGet(COIL(offset), cb, numregs);
+}
+bool Modbus::removeOnSetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnSet(COIL(offset), cb, numregs);
+}
+bool Modbus::removeOnGetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnGet(HREG(offset), cb, numregs);
+}
+bool Modbus::removeOnSetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnSet(HREG(offset), cb, numregs);
+}
+bool Modbus::removeOnGetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnGet(ISTS(offset), cb, numregs);
+}
+bool Modbus::removeOnSetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnSet(ISTS(offset), cb, numregs);
+}
+bool Modbus::removeOnGetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnGet(IREG(offset), cb, numregs);
+}
+bool Modbus::removeOnSetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
+    return removeOnSet(IREG(offset), cb, numregs);
 }
 
 Modbus::~Modbus() {

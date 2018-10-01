@@ -81,10 +81,10 @@ Write multiple values from array to remote Coil/Hreg.
 ### Read values from multiple remote slave regs
 
 ```c
-	uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
-	uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Read values from remote Hreg/Coil/Ireg/Ists to array.
@@ -132,23 +132,36 @@ Should be called from onGet/onSet or transaction callback function. Returns IP a
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
 
 ```c
-bool onSetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onSetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onSetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onSetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onSetHreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onSetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onSetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
 Assign callback function on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onSetCoil(regId)` form to disconnect callback.
 
 
 ```c
-bool onGetCoil(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onGetHreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onGetIsts(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-bool onGetIreg(uint16_t address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+bool onGetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onGetHreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onGetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onGetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
 Assign callback function on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onGet(regId)` form to disconnect callback.
+
+```c
+bool removeOnGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+```
+
+Disconnect specific callback function or all callbacks of the type if cb=NULL.
 
 ### Macros
 

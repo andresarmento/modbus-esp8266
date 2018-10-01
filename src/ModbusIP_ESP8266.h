@@ -53,7 +53,7 @@ class ModbusIP : public Modbus {
 		};
 		uint8_t  raw[7];
 	};
-    MBAP_t _MBAP;
+	MBAP_t _MBAP;
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
@@ -80,9 +80,9 @@ class ModbusIP : public Modbus {
 	void task();
 	void begin(); 	// Depricated
 	uint16_t transactions();
-    void onConnect(cbModbusConnect cb = nullptr);
+	void onConnect(cbModbusConnect cb = nullptr);
 	void onDisconnect(cbModbusConnect cb = nullptr);
-    IPAddress eventSource();
+	IPAddress eventSource();
 
     uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);

@@ -23,6 +23,14 @@ onGetIreg	KEYWORD2
 onSetIreg	KEYWORD2
 onGetIsts	KEYWORD2
 onSetIsts	KEYWORD2
+removeOnGetCoil KEYWORD2
+removeOnSetCoil KEYWORD2
+removeOnGetHreg KEYWORD2
+removeOnSetHreg KEYWORD2
+removeOnGetIsts KEYWORD2
+removeOnSetIsts KEYWORD2
+removeOnGetIreg KEYWORD2
+removeOnSetIreg KEYWORD2
 addCoil	KEYWORD2
 addIsts	KEYWORD2
 addIreg	KEYWORD2

@@ -23,6 +23,9 @@
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
 #define ISTS_BOOL(v) (v==0xFF00)
 
+// For depricated (v1.xx) onSet/onGet format compatibility
+#define cbDefault nullptr
+
 typedef struct TRegister;
 
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
@@ -53,17 +56,22 @@ typedef struct TAddress {
    }
 };
 
+typedef struct TCallback {
+    enum CallbackType {ON_SET, ON_GET};
+    CallbackType type;
+    TAddress    address;
+    cbModbus    cb;
+};
+
 typedef struct TRegister {
     TAddress    address;
     uint16_t value;
-    cbModbus get;
-    cbModbus set;
+    //cbModbus get;
+    //cbModbus set;
     bool operator ==(const TRegister &obj) const {
 	    return address == obj.address;
 	}
 };
-
-uint16_t cbDefault(TRegister* reg, uint16_t val);
 
 class Modbus {
     public:
@@ -122,14 +130,24 @@ class Modbus {
         void cbEnable(bool state = true);
         void cbDisable();
         
-        bool onGetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSetCoil(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onGetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSetHreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onGetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSetIsts(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onGetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSetIreg(uint16_t offset, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+
+        bool removeOnGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+
     private:
 	    void readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
 	    void readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
@@ -154,11 +172,13 @@ class Modbus {
         };
     #ifndef MB_GLOBAL_REGS
         std::vector<TRegister> _regs;
+        std::vector<TCallback> _callbacks;
     #endif
         uint8_t*  _frame = nullptr;
         uint16_t  _len = 0;
         uint8_t   _reply = 0;
         bool cbEnabled = true;
+        uint16_t callback(TRegister* reg, uint16_t val, TCallback::CallbackType t);
         TRegister* searchRegister(TAddress addr);
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
@@ -183,6 +203,8 @@ class Modbus {
         uint16_t Reg(TAddress address);
         bool removeReg(TAddress address, uint16_t numregs = 1);
 
-        bool onGet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
-        bool onSet(TAddress address, cbModbus cb = cbDefault, uint16_t numregs = 1);
+        bool onGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+        bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
 };

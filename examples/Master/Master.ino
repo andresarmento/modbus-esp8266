@@ -21,7 +21,7 @@ IPAddress remote(192, 168, 30, 116);  // Address of Modbus Slave device
 #ifdef ESP8266
   #define USE_LED D4
  #else
-  $define UES_LED TX
+  #define UES_LED TX
  #endif
 
 ModbusIP mb;  //ModbusIP object
@@ -66,7 +66,7 @@ void setup() {
 
 void loop() {
   if (mb.isConnected(remote)) {   // Check if connection to Modbus Slave is established
-    mb.pullCoil(remote, LED_COIL);  // Initiate Read Coil from Modbus Slave
+    mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Slave
   } else {
     mb.connect(remote);           // Try to connect if no connection
     delay(100);                   // Additional deleay for conection
