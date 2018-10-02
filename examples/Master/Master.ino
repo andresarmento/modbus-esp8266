@@ -1,6 +1,6 @@
 /*
   Modbus-Arduino Example - Master (Modbus IP ESP8266/ESP32)
-  Control Led on D4/TX pin by remote Modbus devise using Read Single Coil Modbus Function
+  Control Led on D4/TX pin by remote Modbus device using Read Single Coil Modbus Function
 
   (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
   https://github.com/emelianov/modbus-esp8266
@@ -69,8 +69,8 @@ void loop() {
     mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Slave
   } else {
     mb.connect(remote);           // Try to connect if no connection
-    delay(100);                   // Additional deleay for conection
+    delay(100);                   // Additional delay for connection
   }
   mb.task();                      // Common local Modbus task
-  delay(100);                     // Pooling interval
+  delay(100);                     // Polling interval
 }
