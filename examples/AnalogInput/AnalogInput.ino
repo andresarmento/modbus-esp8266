@@ -43,7 +43,7 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    mb.begin();		//Sart Modbus IP
+    mb.begin();		//Start Modbus IP
     // Add SENSOR_IREG register - Use addIreg() for analog Inputs
     mb.addIreg(SENSOR_IREG);
 
