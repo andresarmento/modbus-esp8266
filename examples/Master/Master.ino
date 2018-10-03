@@ -21,7 +21,7 @@ IPAddress remote(192, 168, 30, 116);  // Address of Modbus Slave device
 #ifdef ESP8266
   #define USE_LED D4
  #else
-  $define UES_LED TX
+  #define UES_LED TX
  #endif
 
 ModbusIP mb;  //ModbusIP object
