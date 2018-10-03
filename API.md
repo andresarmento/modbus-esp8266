@@ -138,7 +138,7 @@ bool onSetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool onSetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
-Assign callback function on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onSetCoil(regId)` form to disconnect callback.
+Assign callback function on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter.
 
 
 ```c
@@ -148,7 +148,7 @@ bool onGetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool onGetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
-Assign callback function on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter. Call in `onGet(regId)` form to disconnect callback.
+Assign callback function on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter.
 
 ```c
 bool removeOnGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);

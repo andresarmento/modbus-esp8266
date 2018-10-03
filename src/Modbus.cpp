@@ -6,20 +6,25 @@
 #include "Modbus.h"
 
 #ifdef MB_GLOBAL_REGS
-std::vector<TRegister> _regs;
-std::vector<TCallback> _callbacks;
+ std::vector<TRegister> _regs;
+ std::vector<TCallback> _callbacks;
 #endif
 
 uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
-    std::vector<TCallback>::iterator it = std::find_if(_callbacks.begin(), _callbacks.end(),
+    uint16_t newVal = val;
+    std::vector<TCallback>::iterator it = _callbacks.begin();
+    do {
+        it = std::find_if(it, _callbacks.end(),
                                             [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;});
-    if (it != _callbacks.end()) return it->cb(reg, val);
-    return val;
+        if (it != _callbacks.end()) {
+            newVal = it->cb(reg, newVal);
+            it++;
+        }
+    } while (it != _callbacks.end());
+    return newVal;
 }
 
 TRegister* Modbus::searchRegister(TAddress address) {
-    //const TRegister tmp = {address, 0, cbDefault, cbDefault};
-    //std::vector<TRegister>::iterator it = std::find(_regs.begin(), _regs.end(), tmp);
     std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(),
                                             [address](TRegister& addr){return addr.address == address;});
     if (it != _regs.end()) return &*it;
