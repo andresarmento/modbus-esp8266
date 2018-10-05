@@ -14,8 +14,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
     uint16_t newVal = val;
     std::vector<TCallback>::iterator it = _callbacks.begin();
     do {
-        it = std::find_if(it, _callbacks.end(),
-                                            [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;});
+        it = std::find_if(it, _callbacks.end(), [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;});
         if (it != _callbacks.end()) {
             newVal = it->cb(reg, newVal);
             it++;
@@ -25,8 +24,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 }
 
 TRegister* Modbus::searchRegister(TAddress address) {
-    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(),
-                                            [address](TRegister& addr){return addr.address == address;});
+    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(), [address](TRegister& addr){return addr.address == address;});
     if (it != _regs.end()) return &*it;
     return nullptr;
 }
