@@ -411,7 +411,14 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, F
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
         if (data) {
-            memcpy(_frame + 6, data, numregs * 2);
+            //memcpy(_frame + 6, data, numregs * 2);
+            uint16_t* frame = (uint16_t*)(_frame + 6);
+            while(numregs) {
+                *frame = __bswap_16(*((uint16_t*)data));
+                frame = frame + 2;
+                data = data + 2;
+                numregs--;
+            }
         } else {
             getMultipleWords(_frame + 6, startreg, numregs);
         }
@@ -474,7 +481,14 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 break;
             }
             if (output) {
-                memcpy(output, frame + 2, 2 * field2);
+                //memcpy(output, frame + 2, 2 * field2);
+                frame = frame + 2;
+                while(field2) {
+                    *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
+                    frame = frame + 2;
+                    output = output + 2;
+                    field2--;
+                }
             } else {
                 //setMultipleWords(frame + 2, HREG(field1), field2);
                 setMultipleWords(frame + 2, startreg, field2);
@@ -517,7 +531,14 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 break;
             }
             if (output) {
-                memcpy(output, frame + 2, 2 * field2);
+                //memcpy(output, frame + 2, 2 * field2);
+                frame = frame + 2;
+                while(field2) {
+                    *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
+                    frame = frame + 2;
+                    output = output + 2;
+                    field2--;
+                }
             } else {
                 //setMultipleWords(frame + 2, IREG(field1), field2);
                 setMultipleWords(frame + 2, startreg, field2);

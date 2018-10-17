@@ -10,11 +10,6 @@
  #include <ESP8266WiFi.h>
 #else
  #include <WiFi.h>
- #include <byteswap.h>
-#endif
-
-#ifndef __bswap_16
- #define __bswap_16(num) ((uint16_t)num>>8) | ((uint16_t)num<<8)
 #endif
 
 #define MODBUSIP_PORT 	  502

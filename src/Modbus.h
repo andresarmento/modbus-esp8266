@@ -8,6 +8,14 @@
 #include "Arduino.h"
 #include <vector>
 #include <algorithm>
+#ifndef ESP8266
+ #include <byteswap.h>
+#endif
+
+#ifndef __bswap_16
+ #define __bswap_16(num) ((uint16_t)num>>8) | ((uint16_t)num<<8)
+#endif
+
 
 //#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32

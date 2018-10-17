@@ -203,7 +203,7 @@ void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout
 				cbDisconnect(ip);
 		}
 	}
-	_trans.erase( remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
+	_trans.erase(remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
 }
 
 int8_t ModbusIP::getFreeClient() {    // Returns free slot position
