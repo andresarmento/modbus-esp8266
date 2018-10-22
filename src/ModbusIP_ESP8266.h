@@ -52,7 +52,7 @@ class ModbusIP : public Modbus {
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
-	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
+	WiFiClient client[MODBUSIP_MAX_CLIENTS];
 	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
