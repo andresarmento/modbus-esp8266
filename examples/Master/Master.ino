@@ -69,7 +69,6 @@ void loop() {
     mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Slave
   } else {
     mb.connect(remote);           // Try to connect if no connection
-    delay(100);                   // Additional delay for connection
   }
   mb.task();                      // Common local Modbus task
   delay(100);                     // Polling interval

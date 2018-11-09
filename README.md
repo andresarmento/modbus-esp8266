@@ -73,6 +73,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + extend removeCoil/Hreg/... to remove multiple registers
 + multiple callbacks => memory usage optimization
 + add removeOnSetCoil\... methods
++ add read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
 // ToDo for 2.0
 - add examples
 - code cleanup
