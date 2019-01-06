@@ -392,6 +392,6 @@ uint16_t ModbusIP::transactions() {
 	return _trans.capacity();
 }
 
-void ModbusIP::autoConnect(bool enabled = true) {
+void ModbusIP::autoConnect(bool enabled) {
 	autoConnectMode = enabled;
 }
