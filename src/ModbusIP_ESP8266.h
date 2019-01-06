@@ -52,7 +52,7 @@ class ModbusIP : public Modbus {
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
-	WiFiClient client[MODBUSIP_MAX_CLIENTS];
+	WiFiClient* client[MODBUSIP_MAX_CLIENTS];
 	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
@@ -62,7 +62,7 @@ class ModbusIP : public Modbus {
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
-	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr);
+	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr, bool waitResponse = true);
 
 	public:
 	ModbusIP();
