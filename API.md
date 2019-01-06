@@ -195,6 +195,12 @@ bool isTransaction(uint16_t id);
 bool isConnected(IPAddress ip);
 ```
 
+```c
+void autoConnect(bool enabled);
+```
+
+Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call.
+
 ### Callback example
 
 ```c

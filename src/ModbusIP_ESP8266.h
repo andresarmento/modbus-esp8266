@@ -56,6 +56,7 @@ class ModbusIP : public Modbus {
 	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
+	bool autoConnectMode = false;
 
 	TTransaction* searchTransaction(uint16_t id);
 	void cleanup(); 	// Free clients if not connected and remove timedout transactions
@@ -78,6 +79,7 @@ class ModbusIP : public Modbus {
 	void onConnect(cbModbusConnect cb = nullptr);
 	void onDisconnect(cbModbusConnect cb = nullptr);
 	IPAddress eventSource();
+	void autoConnect(bool enabled = true);
 
     uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);

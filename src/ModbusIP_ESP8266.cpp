@@ -147,7 +147,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 #endif
 	int8_t p = getSlave(ip);
 	if (p == -1 || !client[p]->connected())
-		return false;
+		return autoConnectMode?connect(ip):false;
 	transactionId++;
 	if (!transactionId) transactionId = 1;
 	_MBAP.transactionId	= __bswap_16(transactionId);
@@ -390,4 +390,8 @@ bool ModbusIP::isConnected(IPAddress ip) {
 
 uint16_t ModbusIP::transactions() {
 	return _trans.capacity();
+}
+
+void ModbusIP::autoConnect(bool enabled = true) {
+	autoConnectMode = enabled;
 }
