@@ -49,7 +49,6 @@ void loop() {
     mb.readHreg(remote, REG, &res);  // Initiate Read Coil from Modbus Slave
   } else {
     mb.connect(remote);           // Try to connect if no connection
-    delay(100);                   // Additional deleay for conection
   }
   mb.task();                      // Common local Modbus task
   delay(100);                     // Pulling interval

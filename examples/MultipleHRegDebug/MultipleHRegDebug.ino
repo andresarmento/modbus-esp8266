@@ -6,11 +6,7 @@
   http://github.com/andresarmento/modbus-arduino
 
   Current version
-<<<<<<< HEAD
   (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
-=======
-  (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
->>>>>>> std-list
   https://github.com/emelianov/modbus-esp8266
 */
 
@@ -54,15 +50,11 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
-<<<<<<< HEAD
  #ifdef ESP8266
   Serial.begin(74880);
  #else
   Serial.begin(115200);
  #endif
-=======
-  Serial.begin(74880);
->>>>>>> std-list
  
   WiFi.begin("ssid", "pass");
   
@@ -79,11 +71,7 @@ void setup() {
   mb.onConnect(cbConn);   // Add callback on connection event
   mb.begin();
 
-<<<<<<< HEAD
   if (!mb.addHreg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Hregs
-=======
-  if (!mb.addHReg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Coils. The same as mb.addCoil(COIL_BASE, false, LEN)
->>>>>>> std-list
   mb.onGetHreg(0, cbRead, LEN); // Add callback on Coils value get
   mb.onSetHreg(0, cbWrite, LEN);
 }
@@ -91,9 +79,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-<<<<<<< HEAD
    delay(100);
-=======
-   yield();
->>>>>>> std-list
 }

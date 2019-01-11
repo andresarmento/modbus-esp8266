@@ -34,10 +34,10 @@
 // For depricated (v1.xx) onSet/onGet format compatibility
 #define cbDefault nullptr
 
-typedef struct TRegister;
+struct TRegister;
 
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
-typedef struct TAddress {
+struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG};
     RegType type;
     uint16_t address;
@@ -61,17 +61,29 @@ typedef struct TAddress {
         TAddress result(*this);
         result.address += inc;
         return result;
-   }
+    }
+    bool isCoil() {
+       return type == COIL;
+    }
+    bool isIsts() {
+       return type == ISTS;
+    }
+    bool isIreg() {
+        return type == IREG;
+    }
+    bool isHreg() {
+        return type == HREG;
+    }
 };
 
-typedef struct TCallback {
+struct TCallback {
     enum CallbackType {ON_SET, ON_GET};
     CallbackType type;
     TAddress    address;
     cbModbus    cb;
 };
 
-typedef struct TRegister {
+struct TRegister {
     TAddress    address;
     uint16_t value;
     //cbModbus get;

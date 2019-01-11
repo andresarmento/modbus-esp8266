@@ -5,6 +5,7 @@ ModbusIP	KEYWORD1
 Modbus	KEYWORD1
 TRegister	KEYWORD1
 TTransaction	KEYWORD1
+TAddress    KEYWORD1
 
 # Methods and Functions (KEYWORD2)
 master	KEYWORD2
