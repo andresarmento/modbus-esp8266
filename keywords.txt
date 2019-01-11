@@ -62,6 +62,7 @@ removeHreg  KEYWORD2
 removeIreg  KEYWORD2
 removeCoil  KEYWORD2
 removeIsts  KEYWORD2
+autoConnect KEYWORD2
 
 # Constants and Macros (LITERAL1)
 BIT_VAL	LITERAL1

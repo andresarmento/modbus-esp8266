@@ -388,10 +388,6 @@ bool ModbusIP::isConnected(IPAddress ip) {
 	return  p != -1 && client[p]->connected();
 }
 
-uint16_t ModbusIP::transactions() {
-	return _trans.capacity();
-}
-
 void ModbusIP::autoConnect(bool enabled) {
 	autoConnectMode = enabled;
 }

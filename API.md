@@ -49,7 +49,7 @@ uint16_t pullHregToIreg(IPAddress ip, uint16_t offset, uint16_t startreg, uint16
 uint16_t pullCoilToIsts(IPAddress ip, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 ```
 
-Result is saved to local registers. Method returns corresponding transaction id. [ip/from] - slave, [to] - local
+Result is saved to local registers. Method returns corresponding transaction id. [ip/from] or [ip/offset] - slave, [to] or [startreg] - local
 
 ### Send [multiple] regs to remote slave
 
@@ -88,6 +88,12 @@ uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numre
 ```
 
 Read values from remote Hreg/Coil/Ireg/Ists to array.
+
+```c
+void autoConnect(bool enabled = true);
+```
+
+Set mode for automatic connect on read*\write*\push*\pull* calls. Disabled by default.
 
 ### Callbacks
 

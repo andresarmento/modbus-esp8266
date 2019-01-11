@@ -1,9 +1,5 @@
 # Modbus Master-Slave Library for ESP8266/ESP32 v2.0
 
-# Status: Release Candidate
-
-*Be careful using current version in production. Stable version from 'releases' page is recommended.*
-
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
@@ -24,7 +20,6 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 * Operates as
   * slave
   * master
-* Fully async operations. No loop locks.
 * Supports Modbus IP (TCP)
 * Reply exception messages for all supported functions
 * Modbus functions supported:
@@ -72,8 +67,9 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + optimize code around std::vector processing
 + extend removeCoil/Hreg/... to remove multiple registers
 + multiple callbacks => memory usage optimization
-+ add removeOnSetCoil\... methods
-+ add read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
++ added removeOnSetCoil\... methods
++ added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
++ added ability to auto connect to slave. Setting is global. Disabled by default.
 // ToDo for 2.0
 - add examples
 - code cleanup
