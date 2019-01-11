@@ -17,7 +17,7 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-//Modbus Registers Offsets (0-9999)
+//Modbus Registers Offsets
 const int LED_COIL = 100;
 //Used Pins
 const int ledPin = 0; //GPIO0

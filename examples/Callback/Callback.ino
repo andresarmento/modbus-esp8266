@@ -17,7 +17,7 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-//Modbus Registers Offsets (0-65535)
+//Modbus Registers Offsets
 const int LED_COIL = 100;
 //Used Pins
 #ifdef ESP8266

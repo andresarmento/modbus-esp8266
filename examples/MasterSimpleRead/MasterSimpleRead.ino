@@ -13,7 +13,7 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-const int REG = 528;               // Modbus Hreg Offset (0-9999)
+const int REG = 528;               // Modbus Hreg Offset
 IPAddress remote(192, 168, 30, 13);  // Address of Modbus Slave device
 const int LOOP_COUNT = 10;
 

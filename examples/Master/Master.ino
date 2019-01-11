@@ -14,7 +14,7 @@
 #include <ModbusIP_ESP8266.h>
 
 
-const int LED_COIL = 1;               // Modbus Coil Offset (0-9999)
+const int LED_COIL = 1;               // Modbus Coil Offset
 IPAddress remote(192, 168, 30, 116);  // Address of Modbus Slave device
 
 //Used Pins

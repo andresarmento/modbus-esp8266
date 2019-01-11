@@ -17,7 +17,7 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-//Modbus Registers Offsets (0-9999)
+//Modbus Registers Offsets
 const int SENSOR_IREG = 100;
 
 //ModbusIP object
