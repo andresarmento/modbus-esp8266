@@ -5,7 +5,7 @@ used in industrial automation and can be used in other areas, such as home autom
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
 
-In the current version the library allows the ESP8266/ESP32 operate async as a master and/or slave, supporting Modbus IP via wireless network. For more information about Modbus see:
+In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network. For more information about Modbus see:
 
 http://pt.wikipedia.org/wiki/Modbus
 http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
@@ -70,8 +70,8 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + added removeOnSetCoil\... methods
 + added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
 + added ability to auto connect to slave. Setting is global. Disabled by default.
-// ToDo for 2.0
-- add examples
+// ToDo for 2.0.1
+- modify examples
 - code cleanup
 // ToDo later
 - ModbusSerial (over RS-485)
