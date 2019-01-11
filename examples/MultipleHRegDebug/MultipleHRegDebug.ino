@@ -25,7 +25,7 @@ ModbusIP mb;
 // Callback function to read corresponding DI
 uint16_t cbRead(TRegister* reg, uint16_t val) {
   Serial.print("Read. Reg RAW#: ");
-  Serial.print(reg->address);
+  Serial.print(reg->address.address);
   Serial.print(" Old: ");
   Serial.print(reg->value);
   Serial.print(" New: ");
@@ -35,7 +35,7 @@ uint16_t cbRead(TRegister* reg, uint16_t val) {
 // Callback function to write-protect DI
 uint16_t cbWrite(TRegister* reg, uint16_t val) {
   Serial.print("Write. Reg RAW#: ");
-  Serial.print(reg->address);
+  Serial.print(reg->address.address);
   Serial.print(" Old: ");
   Serial.print(reg->value);
   Serial.print(" New: ");

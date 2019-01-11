@@ -24,15 +24,15 @@
   uint8_t pinList[] = {12, 13, 14, 14, 16, 17, 18, 21, 22, 23};
 #endif
 #define LEN sizeof(pinList)/sizeof(uint8_t)
-
+#define COIL_BASE 0
 //ModbusIP object
 ModbusIP mb;
 
 // Callback function to read corresponding DI
 uint16_t cbRead(TRegister* reg, uint16_t val) {
-  if(reg->address < COIL_BASE)
+  if(reg->address.address < COIL_BASE)
     return 0;
-  uint8_t offset = reg->address - COIL_BASE;
+  uint8_t offset = reg->address.address - COIL_BASE;
   if(offset >= LEN)
     return 0; 
   return COIL_VAL(digitalRead(pinList[offset]));
