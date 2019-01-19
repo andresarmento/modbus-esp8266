@@ -195,11 +195,11 @@ bool ifExpired(TTransaction& t) {
 void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout transactions
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (client[i] && !client[i]->connected()) {
-			IPAddress ip = client[i]->remoteIP();
+			//IPAddress ip = client[i]->remoteIP();
 			delete client[i];
 			client[i] = nullptr;
 			if (cbDisconnect && cbEnabled) 
-				cbDisconnect(ip);
+				cbDisconnect(IPADDR_NONE);
 		}
 	}
 	//_trans.erase(remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
