@@ -70,7 +70,10 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + added removeOnSetCoil\... methods
 + added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
 + added ability to auto connect to slave. Setting is global. Disabled by default.
-// ToDo for 2.0.1
+// 2.0.1
++ Fix readCoil\Hreg\Ists\Ireg not read value from slave
++ Fix cresh on disconnect with Arduino Core 2.5.x
+// ToDo for 2.0.2
 - modify examples
 - code cleanup
 // ToDo later
