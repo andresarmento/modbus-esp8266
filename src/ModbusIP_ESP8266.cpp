@@ -250,7 +250,7 @@ uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_
 uint16_t ModbusIP::readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
 	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	readSlave(offset, numregs, FC_READ_COILS);
-	return send(ip, COIL(offset), cb, unit, value, cb);
+	return send(ip, COIL(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb, uint8_t unit) {
@@ -267,19 +267,19 @@ uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uin
 uint16_t ModbusIP::readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
 	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	readSlave(offset, numregs, FC_READ_REGS);
-	return send(ip, HREG(offset), cb, unit, value, cb);
+	return send(ip, HREG(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
 	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	readSlave(offset, numregs, FC_READ_INPUT_STAT);
-	return send(ip, ISTS(offset), cb, unit, value, cb);
+	return send(ip, ISTS(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
 	if (numregs < 0x0001 || numregs > 0x007B) return false;
 	readSlave(offset, numregs, FC_READ_INPUT_REGS);
-	return send(ip, IREG(offset), cb, unit, value, cb);
+	return send(ip, IREG(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) {
