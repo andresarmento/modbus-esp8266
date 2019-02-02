@@ -142,8 +142,10 @@ void ModbusIP::task() {
  // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
 #ifdef MODBUSIP_MAX_TRANSACIONS
-	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
+	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) {
+Serial.println(_trans.size());
 		return false;
+}
 #endif
 	int8_t p = getSlave(ip);
 	if (p == -1 || !client[p]->connected())
@@ -160,7 +162,8 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 	if (client[p]->write(sbuf, send_len) != send_len)
 		return false;
-	if (waitResponse) {
+	client[p]->flush();
+	if (waitResponse || true) {
 		TTransaction tmp;
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
@@ -390,4 +393,13 @@ bool ModbusIP::isConnected(IPAddress ip) {
 
 void ModbusIP::autoConnect(bool enabled) {
 	autoConnectMode = enabled;
+}
+
+bool ModbusIP::disconnect(IPAddress ip) {
+	int8_t p = getSlave(ip);
+	if (p != -1) client[p]->stop();
+}
+
+void ModbusIP::dropTransactions() {
+	_trans.resize(0);
 }

@@ -127,7 +127,8 @@ class Modbus {
             EX_DATA_MISMACH         = 0xE2, // Custom. Inpud data size mismach
             EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transaction
             EX_TIMEOUT              = 0xE4, // Custom. Operation not finished within reasonable time
-            EX_CONNECTION_LOST      = 0xE5  // Custom. Connection with device lost
+            EX_CONNECTION_LOST      = 0xE5, // Custom. Connection with device lost
+            EX_CANCEL               = 0xE6  // Custom. Transaction/request canceled
         };
         ~Modbus();
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);

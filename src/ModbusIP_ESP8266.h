@@ -32,7 +32,7 @@ typedef struct TTransaction {
 	uint8_t*	_frame = nullptr;
 	void*		data = nullptr;
 	TAddress	startreg;
-    bool operator ==(const TTransaction &obj) const {
+	bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
 	}
 };
@@ -70,7 +70,7 @@ class ModbusIP : public Modbus {
 	bool isTransaction(uint16_t id);
 	bool isConnected(IPAddress ip);
 	bool connect(IPAddress ip);
-	bool disconnect(IPAddress addr) {}  // Not implemented yet
+	bool disconnect(IPAddress ip);
 	void slave();
 	void master();
 	void task();
@@ -79,8 +79,9 @@ class ModbusIP : public Modbus {
 	void onDisconnect(cbModbusConnect cb = nullptr);
 	IPAddress eventSource();
 	void autoConnect(bool enabled = true);
+	void dropTransactions();
 
-    uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
