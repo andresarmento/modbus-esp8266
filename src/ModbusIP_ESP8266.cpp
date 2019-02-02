@@ -6,7 +6,7 @@
 #include "ModbusIP_ESP8266.h"
 
 ModbusIP::ModbusIP() {
-	_trans.reserve(MODBUSIP_MAX_TRANSACIONS);
+	//_trans.reserve(MODBUSIP_MAX_TRANSACIONS);
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
 		client[i] = nullptr;
 }
@@ -63,7 +63,7 @@ void ModbusIP::task() {
 				}
 			}
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
-			currentClient->flush();
+			//currentClient->flush();
 			currentClient->stop();
 			delete currentClient;
 		}
@@ -78,22 +78,26 @@ void ModbusIP::task() {
 		_len--; // Do not count with last byte from MBAP
 		
 		if (__bswap_16(_MBAP.protocolId) != 0) {   //Check if MODBUSIP packet. __bswap is usless there.
-			client[n]->flush();
+			client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+			client[n]->flush();	
 			continue;	// for (n)
 		}
 		if (_len > MODBUSIP_MAXFRAME) {	//Length is over MODBUSIP_MAXFRAME
 			exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-			client[n]->flush();
+			client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+			//client[n]->flush();
 		} else {
 			free(_frame);
 			_frame = (uint8_t*) malloc(_len);
 			if (!_frame) {
 				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-				client[n]->flush();
+				client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+				//client[n]->flush();
 			} else {
 				if (client[n]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
 					exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-					client[n]->flush();
+					client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+					//client[n]->flush();
 				} else {
 					if (client[n]->localPort() == MODBUSIP_PORT) {
 						// Process incoming frame as slave
@@ -119,7 +123,8 @@ void ModbusIP::task() {
 								_trans.erase(it);
 						}
 					}
-					client[n]->flush();			// Not sure if we need flush rest of data available
+					//client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+					//client[n]->flush();			// Not sure if we need flush rest of data available
 				}
 			}
 		}
@@ -131,7 +136,9 @@ void ModbusIP::task() {
 			memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 			memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 			client[n]->write(sbuf, send_len);
+			//client[n]->flush();
 		}
+		client[n]->flush();
 		free(_frame);
 		_frame = nullptr;
 		_len = 0;

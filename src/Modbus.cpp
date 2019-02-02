@@ -88,6 +88,7 @@ void Modbus::slavePDU(uint8_t* frame) {
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
     uint16_t bytecount_calc;
+    uint16_t k;
     switch (fcode) {
         case FC_WRITE_REG:
             //field1 = reg, field2 = value
@@ -113,15 +114,17 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 break;
             }
-            for (int k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
+            for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
                 if (!searchRegister(HREG(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     break;
                 }
             }
-            setMultipleWords(frame + 6, HREG(field1), field2);
-            successResponce(HREG(field1), field2, fcode);
-            _reply = REPLY_NORMAL;
+            if (k >= field2) {
+                setMultipleWords(frame + 6, HREG(field1), field2);
+                successResponce(HREG(field1), field2, fcode);
+                _reply = REPLY_NORMAL;
+            }
         break;
 
         case FC_READ_COILS:
@@ -164,15 +167,17 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 break;
             }
-            for (int k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
+            for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
                 if (!searchRegister(COIL(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     break;
                 }
             }
-            setMultipleBits(frame + 6, COIL(field1), field2);
-            successResponce(COIL(field1), field2, fcode);
-            _reply = REPLY_NORMAL;
+            if (k >= field2) {
+                setMultipleBits(frame + 6, COIL(field1), field2);
+                successResponce(COIL(field1), field2, fcode);
+                _reply = REPLY_NORMAL;
+            }
         break;
 
         default:
