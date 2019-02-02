@@ -203,9 +203,9 @@ class Modbus {
         void exceptionResponse(FunctionCode fn, ResultCode excode);
         void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
         void slavePDU(uint8_t* frame);    //For Slave
-        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output= nullptr);   //For Master
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output = nullptr);   //For Master
         // frame - data received form slave
-        // sourceFrame - data sent fo slave
+        // sourceFrame - data have sent fo slave
         // startreg - local register to start put data to
         // output - if not null put data to the buffer insted local registers. output assumed to by array of uint16_t or boolean
 
