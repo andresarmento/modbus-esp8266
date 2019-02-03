@@ -73,15 +73,19 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 // 2.0.1
 + Fix readCoil\Hreg\Ists\Ireg not read value from slave
 + Fix cresh on disconnect with Arduino Core 2.5.x
-// ToDo for 2.0.2
-- modify examples
-- code cleanup
+// 2.1.0
++ dropTransactions()
++ Fix slave error response on write multiple Hreg\Coils
++ Implement disconnect()
+- Modify slave task() for high query rate
+- Create destructor for ModbusIP
+- Modify examples
 // ToDo later
+- code cleanup
 - ModbusSerial (over RS-485)
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function
 - Modbus Serial line-specific functions
-- Create destructor for ModbusIP
 ```
 
 ## Contributions

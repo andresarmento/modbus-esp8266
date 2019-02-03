@@ -64,6 +64,7 @@ class ModbusIP : public Modbus {
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
 	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr, bool waitResponse = true);
+	// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
 	// ip - slave ip address
 	// startreg - first local register to save returned data to (miningless for write to slave operations)
 	// cb - transaction callback function
@@ -71,6 +72,7 @@ class ModbusIP : public Modbus {
 	// data - if not null use buffer to save returned data instead of local registers
 	public:
 	ModbusIP();
+	~ModbusIP();
 	bool isTransaction(uint16_t id);
 	bool isConnected(IPAddress ip);
 	bool connect(IPAddress ip);

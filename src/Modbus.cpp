@@ -469,7 +469,7 @@ void Modbus::bitsToBool(bool* dst, uint8_t* src, uint16_t numregs) {
 //1 void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, void* output) {
 void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output) {
     uint8_t fcode  = frame[0];
-    _reply = 0;
+    _reply = EX_SUCCESS;
     if ((fcode & 0x80) != 0) {
 	    _reply = _frame[1];
 	    return;

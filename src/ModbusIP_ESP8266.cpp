@@ -73,28 +73,28 @@ void ModbusIP::task() {
 		if (!client[n]->connected()) continue;
 		if (client[n]->available() < sizeof(_MBAP) + 1) continue;
 
-		client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	//Get MBAP
-		_len = __bswap_16(_MBAP.length);
-		_len--; // Do not count with last byte from MBAP
+		client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
-		if (__bswap_16(_MBAP.protocolId) != 0) {   //Check if MODBUSIP packet. __bswap is usless there.
+		if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
 			client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
-			client[n]->flush();	
+			//client[n]->flush();
 			continue;	// for (n)
 		}
-		if (_len > MODBUSIP_MAXFRAME) {	//Length is over MODBUSIP_MAXFRAME
+		_len = __bswap_16(_MBAP.length);
+		_len--; // Do not count with last byte from MBAP
+		if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 			exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-			client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+			client[n]->readBytes((uint8_t*)nullptr, _len);
 			//client[n]->flush();
 		} else {
 			free(_frame);
 			_frame = (uint8_t*) malloc(_len);
 			if (!_frame) {
 				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-				client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
+				client[n]->readBytes((uint8_t*)nullptr, _len);
 				//client[n]->flush();
 			} else {
-				if (client[n]->readBytes(_frame, _len) < _len) {	//Try to read MODBUS frame
+				if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 					exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
 					client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
 					//client[n]->flush();
@@ -128,9 +128,9 @@ void ModbusIP::task() {
 				}
 			}
 		}
-		if (client[n]->localPort() != MODBUSIP_PORT) _reply = REPLY_OFF;	// No replay if it was request to master
+		if (client[n]->localPort() != MODBUSIP_PORT) _reply = REPLY_OFF;	// No replay if it was responce to master
 		if (_reply != REPLY_OFF) {
-			_MBAP.length = __bswap_16(_len+1);     //_len+1 for last byte from MBAP					
+			_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
 			size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 			uint8_t sbuf[send_len];				
 			memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
@@ -142,17 +142,18 @@ void ModbusIP::task() {
 		free(_frame);
 		_frame = nullptr;
 		_len = 0;
+		//n--;
 	}
+	//for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++)
+	//	if (client[n] && client[n]->connected())
+	//		client[n]->flush();
 	n = -1;
 }
 
- // Prepare and send ModbusIP frame. _frame buffer should be filled with Modbus data
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
 #ifdef MODBUSIP_MAX_TRANSACIONS
-	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) {
-Serial.println(_trans.size());
+	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
 		return false;
-}
 #endif
 	int8_t p = getSlave(ip);
 	if (p == -1 || !client[p]->connected())
@@ -390,7 +391,7 @@ uint16_t ModbusIP::pullCoilToIsts(IPAddress ip, uint16_t from, uint16_t to, uint
 	return send(ip, ISTS(to), cb, unit);
 }
 
-bool ModbusIP::isTransaction(uint16_t id) { // Check if transaction is in progress (by ID)
+bool ModbusIP::isTransaction(uint16_t id) {
 	return searchTransaction(id) != nullptr;
 }
 bool ModbusIP::isConnected(IPAddress ip) {
@@ -408,5 +409,19 @@ bool ModbusIP::disconnect(IPAddress ip) {
 }
 
 void ModbusIP::dropTransactions() {
-	_trans.resize(0);
+	for (auto &t : _trans) {
+		if (t.cb)
+			t.cb(EX_CANCEL, t.transactionId, nullptr);
+		free(t._frame);
+	}
+	_trans.clear();
+}
+
+ModbusIP::~ModbusIP() {
+	free(_frame);
+	dropTransactions();
+	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
+		client[i]->stop();
+		delete client[i];
+	}
 }
