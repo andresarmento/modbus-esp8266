@@ -60,7 +60,7 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.begin();
+  mb.slave();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
@@ -70,5 +70,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   delay(100);
+   delay(10);
 }

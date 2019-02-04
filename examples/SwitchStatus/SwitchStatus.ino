@@ -38,7 +38,7 @@ void setup() {
       Serial.print(".");
     }
     //Config Modbus IP
-    mb.begin();
+    mb.slave();
     //Set ledPin mode
     pinMode(switchPin, INPUT);
     // Add SWITCH_ISTS register - Use addIsts() for digital inputs
@@ -51,5 +51,5 @@ void loop() {
 
    //Attach switchPin to SWITCH_ISTS register
    mb.Ists(SWITCH_ISTS, digitalRead(switchPin));
-   delay(100);
+   delay(10);
 }

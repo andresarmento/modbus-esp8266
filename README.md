@@ -71,15 +71,15 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + added ability to auto connect to slave. Setting is global. Disabled by default.
 // 2.0.1
 + Fix readCoil\Hreg\Ists\Ireg not read value from slave
-+ Fix cresh on disconnect with Arduino Core 2.5.x
++ Fix crash on disconnect with Arduino Core 2.5.x
 // 2.1.0
-+ Fix slave error response on write multiple Hreg\Coils
++ Fix slave error response on write multiple Hregs\Coils
 + Fix writeCoil() for multiple coils
 + dropTransactions()
 + disconnect()
 + ~ModbusIP()
 + task() cleanup
-- Modify examples
++ Modify examples
 // 2.2.0
 - code cleanup
 - Implement Private Reg/Coil

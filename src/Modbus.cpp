@@ -1,7 +1,7 @@
 /*
     Modbus.cpp - Modbus Base Library Implementation
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
 

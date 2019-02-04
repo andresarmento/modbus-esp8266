@@ -71,5 +71,5 @@ void loop() {
     mb.connect(remote);           // Try to connect if no connection
   }
   mb.task();                      // Common local Modbus task
-  delay(100);                     // Polling interval
+  delay(10);                     // Polling interval
 }

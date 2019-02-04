@@ -1,7 +1,7 @@
 /*
     ModbusIP_ESP8266.cpp - ModbusIP Library Implementation
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "ModbusIP_ESP8266.h"
 
@@ -49,6 +49,7 @@ TTransaction* ModbusIP::searchTransaction(uint16_t id) {
 
 
 void ModbusIP::task() {
+	MBAP_t _MBAP;
 	cleanup();
 	if (server) {
 		while (server->hasClient()) {
@@ -151,6 +152,7 @@ void ModbusIP::task() {
 }
 
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
+	MBAP_t _MBAP;
 #ifdef MODBUSIP_MAX_TRANSACIONS
 	if (this->_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return false;
 #endif

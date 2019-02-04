@@ -1,7 +1,7 @@
 /*
     ModbusIP_ESP8266.h - Header for ModbusIP Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 
@@ -49,7 +49,7 @@ class ModbusIP : public Modbus {
 		};
 		uint8_t  raw[7];
 	};
-	MBAP_t _MBAP;
+	//MBAP_t _MBAP;
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;

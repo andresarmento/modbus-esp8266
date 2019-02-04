@@ -44,7 +44,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.begin();
+  mb.slave();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);
@@ -56,5 +56,5 @@ void loop() {
 
    //Attach ledPin to LED_COIL register
    digitalWrite(ledPin, mb.Coil(LED_COIL));
-   delay(100);
+   delay(10);
 }

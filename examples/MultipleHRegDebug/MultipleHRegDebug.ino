@@ -69,7 +69,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.begin();
+  mb.slave();
 
   if (!mb.addHreg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Hregs
   mb.onGetHreg(0, cbRead, LEN); // Add callback on Coils value get
@@ -79,5 +79,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   delay(100);
+   delay(10);
 }

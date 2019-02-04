@@ -201,8 +201,8 @@ class Modbus {
         bool cbEnabled = true;
         uint16_t callback(TRegister* reg, uint16_t val, TCallback::CallbackType t);
         TRegister* searchRegister(TAddress addr);
-        void exceptionResponse(FunctionCode fn, ResultCode excode);
-        void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);
+        void exceptionResponse(FunctionCode fn, ResultCode excode); // Fills _frame with response
+        void successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn);  // Fills frame with response
         void slavePDU(uint8_t* frame);    //For Slave
         void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output = nullptr);   //For Master
         // frame - data received form slave

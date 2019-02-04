@@ -44,12 +44,12 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.begin();
+  mb.slave();
   mb.addHreg(TEST_HREG, 0xABCD);
 }
  
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   delay(100);
+   delay(10);
 }

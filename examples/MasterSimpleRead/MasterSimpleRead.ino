@@ -52,7 +52,7 @@ void loop() {
   }
   mb.task();                      // Common local Modbus task
   delay(100);                     // Pulling interval
-  if (show--) {                   // Display Slave register value one time per second (with default settings)
+  if (!show--) {                   // Display Slave register value one time per second (with default settings)
     Serial.println(res);
     show = LOOP_COUNT;
   }

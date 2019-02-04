@@ -69,7 +69,7 @@ void setup() {
   for (uint8_t i = 0; i < LEN; i++)
     pinMode(pinList[i], INPUT);
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.begin();
+  mb.slave();
 
   mb.addCoil(COIL_BASE, COIL_VAL(false), LEN); // Add Coils.
   mb.onGetCoil(COIL_BASE, cbRead, LEN); // Add callback on Coils value get
@@ -79,5 +79,5 @@ void setup() {
 void loop() {
    //Call once inside loop() - all magic here
    mb.task();
-   delay(100);
+   delay(10);
 }
