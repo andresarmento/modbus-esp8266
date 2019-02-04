@@ -196,9 +196,10 @@ void slave();
 ```c
 void master();
 bool connect(IPAddress ip);
-bool disconnect(IPAddress ip);  // Not implemented yet.
+bool disconnect(IPAddress ip);
 bool isTransaction(uint16_t id);
 bool isConnected(IPAddress ip);
+void dropTransactions();
 ```
 
 ```c
@@ -209,7 +210,7 @@ Select behavior of executing read/write/pull/push. If autoConnect disabled (defa
 
 ### Callback example
 
-```c
+```arduino
 ModbusIP mb;
 bool coil = false; // Define external variable to get/set value
 uint16_t cbCoilSet(TRegister* reg, uint16_t val) { // 'reg' is pointer to reg structure to modify, 'val' is new register value

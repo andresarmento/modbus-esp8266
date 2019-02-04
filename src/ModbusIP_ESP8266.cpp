@@ -152,8 +152,7 @@ void ModbusIP::task() {
 
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
 #ifdef MODBUSIP_MAX_TRANSACIONS
-	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS)
-		return false;
+	if (this->_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return false;
 #endif
 	int8_t p = getSlave(ip);
 	if (p == -1 || !client[p]->connected())
@@ -171,7 +170,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 	if (client[p]->write(sbuf, send_len) != send_len)
 		return false;
 	client[p]->flush();
-	if (waitResponse || true) {
+	if (waitResponse) {
 		TTransaction tmp;
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
@@ -194,16 +193,8 @@ void ModbusIP::onDisconnect(cbModbusConnect cb) {
 		cbDisconnect = cb;
 }
 
-bool ifExpired(TTransaction& t) {
-	if (millis() - t.timestamp > MODBUSIP_TIMEOUT) {
-		//if (t.cb)
-		//	t.cb(Modbus::EX_TIMEOUT, t.transactionId, nullptr);
-		//free(t._frame);
-		return true;
-	}
-	return false;
-}
-void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout transactions
+void ModbusIP::cleanup() {
+	// Free clients if not connected
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (client[i] && !client[i]->connected()) {
 			//IPAddress ip = client[i]->remoteIP();
@@ -213,20 +204,19 @@ void ModbusIP::cleanup() { 	// Free clients if not connected and remove timedout
 				cbDisconnect(IPADDR_NONE);
 		}
 	}
-	//_trans.erase(remove_if( _trans.begin(), _trans.end(), ifExpired ), _trans.end() );
-	std::vector<TTransaction>::iterator it = std::find_if(_trans.begin(), _trans.end(), ifExpired);
-	while (it != _trans.end()) {
-		if (it->cb)
-			it->cb(Modbus::EX_TIMEOUT, it->transactionId, nullptr);
-		free(it->_frame);
-		_trans.erase(it);
-		it = std::find_if(it, _trans.end(), ifExpired);
+	// Remove timedout transactions and forced event
+	for (auto it = _trans.begin(); it != _trans.end();) {
+		if (millis() - it->timestamp > MODBUSIP_TIMEOUT || it->forcedEvent != Modbus::EX_SUCCESS) {
+			Modbus::ResultCode res = (it->forcedEvent != Modbus::EX_SUCCESS)?it->forcedEvent:Modbus::EX_TIMEOUT;
+			it->cb(res, it->transactionId, nullptr);
+			free(it->_frame);
+			it = _trans.erase(it);
+		} else
+			it++;
 	}
-
 }
 
-int8_t ModbusIP::getFreeClient() {    // Returns free slot position
-	//clientsCleanup();
+int8_t ModbusIP::getFreeClient() {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
 		if (!client[i])
 			return i;
@@ -409,17 +399,13 @@ bool ModbusIP::disconnect(IPAddress ip) {
 }
 
 void ModbusIP::dropTransactions() {
-	for (auto &t : _trans) {
-		if (t.cb)
-			t.cb(EX_CANCEL, t.transactionId, nullptr);
-		free(t._frame);
-	}
-	_trans.clear();
+	for (auto &t : _trans) t.forcedEvent = EX_CANCEL;
 }
 
 ModbusIP::~ModbusIP() {
 	free(_frame);
 	dropTransactions();
+	cleanup();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		client[i]->stop();
 		delete client[i];

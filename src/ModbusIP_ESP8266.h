@@ -32,6 +32,7 @@ typedef struct TTransaction {
 	uint8_t*	_frame = nullptr;
 	void*		data = nullptr;
 	TAddress	startreg;
+	Modbus::ResultCode forcedEvent = Modbus::EX_SUCCESS;	// EX_SUCCESS means no forced event here. Forced EX_SUCCESS is not possible.
 	bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
 	}
@@ -59,7 +60,7 @@ class ModbusIP : public Modbus {
 	bool autoConnectMode = false;
 
 	TTransaction* searchTransaction(uint16_t id);
-	void cleanup(); 	// Free clients if not connected and remove timedout transactions
+	void cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
