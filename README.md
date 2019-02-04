@@ -70,16 +70,17 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
 + added ability to auto connect to slave. Setting is global. Disabled by default.
 // 2.0.1
-+ Fix readCoil\Hreg\Ists\Ireg not read value from slave
++ Master. Fix readCoil\Hreg\Ists\Ireg not read value from slave
 + Fix crash on disconnect with Arduino Core 2.5.x
 // 2.1.0
-+ Fix slave error response on write multiple Hregs\Coils
-+ Fix writeCoil() for multiple coils
-+ dropTransactions()
-+ disconnect()
++ Slave. Fix error response on write multiple Hregs\Coils
++ Slave. Fix writeCoil() for multiple coils
++ Master. dropTransactions()
++ Master. disconnect()
 + ~ModbusIP()
 + task() cleanup
 + Modify examples
++ Slave. Allow only single incoming master connection per IP
 // 2.2.0
 - code cleanup
 - Implement Private Reg/Coil

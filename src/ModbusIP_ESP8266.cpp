@@ -57,6 +57,15 @@ void ModbusIP::task() {
 			if (!currentClient || !currentClient->connected())
 				continue;
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
+				#ifdef MODBUSIP_UNIQUE_CLIENTS
+				n = getMaster(currentClient->remoteIP());
+				if (n != -1) {
+					client[n]->flush();
+					client[n]->stop();
+					delete client[n];
+					client[n] = nullptr;
+				}
+				#endif
 				n = getFreeClient();
 				if (n > -1) {
 					client[n] = currentClient;
@@ -154,7 +163,7 @@ void ModbusIP::task() {
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
 	MBAP_t _MBAP;
 #ifdef MODBUSIP_MAX_TRANSACIONS
-	if (this->_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return false;
+	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return false;
 #endif
 	int8_t p = getSlave(ip);
 	if (p == -1 || !client[p]->connected())
