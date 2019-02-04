@@ -391,7 +391,8 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, Fu
         _frame[5] = _len - 6;
         _frame[_len - 1] = 0;  //Clean last probably partial byte
         if (data) {
-            bitsToBool(data, _frame + 6, numregs);
+            //bitsToBool(data, _frame + 6, numregs);
+            boolToBits(_frame + 6, data, numregs);
         } else {
             getMultipleBits(_frame + 6, startreg, numregs);
         }

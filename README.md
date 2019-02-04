@@ -1,4 +1,4 @@
-# Modbus Master-Slave Library for ESP8266/ESP32 v2.0
+# Modbus Master-Slave Library for ESP8266/ESP32 v2.1
 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
@@ -47,14 +47,13 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 ## Last Changes
 
 ```diff
-// Internal changes
+// 2.0.0
 + Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
 + Change object's list implementation to *std::vector*
 + Modbus class refactoring
 + ModbusIP networking code refactoring and error reporting
 + Global registers storage to share between multiple Modbus* instances
 + Move rest of implementations from Modbus.h
-// Public API changes
 + Modbus master implementation
 + Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
 + Back to marking private for onSet, onGet, addReg and Reg methods
@@ -74,15 +73,19 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + Fix readCoil\Hreg\Ists\Ireg not read value from slave
 + Fix cresh on disconnect with Arduino Core 2.5.x
 // 2.1.0
-+ dropTransactions()
 + Fix slave error response on write multiple Hreg\Coils
-+ Implement disconnect()
-- Modify slave task() for high query rate
-- Create destructor for ModbusIP
++ Fix writeCoil() for multiple coils
++ dropTransactions()
++ disconnect()
++ ~ModbusIP()
++ task() cleanup
 - Modify examples
-// ToDo later
+// 2.2.0
 - code cleanup
-- ModbusSerial (over RS-485)
+- Implement Private Reg/Coil
+// 3.0.0
+- ModbusRTU (over RS-485)
+// ToDo later
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function
 - Modbus Serial line-specific functions
