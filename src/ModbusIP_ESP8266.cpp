@@ -61,7 +61,7 @@ void ModbusIP::task() {
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
 					client[n]->flush();
-					client[n]->stop();
+					//client[n]->stop();
 					delete client[n];
 					client[n] = nullptr;
 				}
@@ -74,7 +74,7 @@ void ModbusIP::task() {
 			}
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
 			//currentClient->flush();
-			currentClient->stop();
+			//currentClient->stop();
 			delete currentClient;
 		}
 	}
@@ -191,6 +191,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 		tmp.startreg = startreg;
 		_trans.push_back(tmp);
 		_frame = nullptr;
+		_len = 0;
 	}
 	return transactionId;
 }
@@ -209,6 +210,7 @@ void ModbusIP::cleanup() {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (client[i] && !client[i]->connected()) {
 			//IPAddress ip = client[i]->remoteIP();
+			//client[i]->stop();
 			delete client[i];
 			client[i] = nullptr;
 			if (cbDisconnect && cbEnabled) 
@@ -406,7 +408,12 @@ void ModbusIP::autoConnect(bool enabled) {
 
 bool ModbusIP::disconnect(IPAddress ip) {
 	int8_t p = getSlave(ip);
-	if (p != -1) client[p]->stop();
+	//if (p != -1) client[p]->stop();
+	if (p != -1) {
+		delete client[p];
+		client[p] = nullptr;
+	}
+	return true;
 }
 
 void ModbusIP::dropTransactions() {
@@ -418,7 +425,8 @@ ModbusIP::~ModbusIP() {
 	dropTransactions();
 	cleanup();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
-		client[i]->stop();
+		//client[i]->stop();
 		delete client[i];
+		client[i] = nullptr;
 	}
 }
