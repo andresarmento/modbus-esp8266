@@ -43,6 +43,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 1. When using Modbus IP the transport protocol is TCP (port 502).
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
+4. By default library limits incoming connection to one connection per unique IP address. This done to eliminate stale connections that taking place some times.
 
 ## Last Changes
 

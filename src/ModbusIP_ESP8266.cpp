@@ -58,6 +58,7 @@ void ModbusIP::task() {
 				continue;
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#ifdef MODBUSIP_UNIQUE_CLIENTS
+				// Disconnect previous connection from same IP if present
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
 					client[n]->flush();
