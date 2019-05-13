@@ -408,7 +408,6 @@ void ModbusIP::autoConnect(bool enabled) {
 
 bool ModbusIP::disconnect(IPAddress ip) {
 	int8_t p = getSlave(ip);
-	//if (p != -1) client[p]->stop();
 	if (p != -1) {
 		delete client[p];
 		client[p] = nullptr;
@@ -425,7 +424,6 @@ ModbusIP::~ModbusIP() {
 	dropTransactions();
 	cleanup();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
-		//client[i]->stop();
 		delete client[i];
 		client[i] = nullptr;
 	}
