@@ -19,7 +19,7 @@
 
 //#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
-#define MB_MAX_FRAME   128
+#define MB_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
 #define IREG(n) (TAddress){TAddress::IREG, n}
@@ -86,8 +86,6 @@ struct TCallback {
 struct TRegister {
     TAddress    address;
     uint16_t value;
-    //cbModbus get;
-    //cbModbus set;
     bool operator ==(const TRegister &obj) const {
 	    return address == obj.address;
 	}

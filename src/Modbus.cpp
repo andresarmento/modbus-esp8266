@@ -382,8 +382,6 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, Fu
     _frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-//	    _frame[1] = startreg.address >> 8;
-//	    _frame[2] = startreg.address & 0x00FF;
 	    _frame[1] = to >> 8;
 	    _frame[2] = to & 0x00FF;
 	    _frame[3] = numregs >> 8;
@@ -391,7 +389,6 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, Fu
         _frame[5] = _len - 6;
         _frame[_len - 1] = 0;  //Clean last probably partial byte
         if (data) {
-            //bitsToBool(data, _frame + 6, numregs);
             boolToBits(_frame + 6, data, numregs);
         } else {
             getMultipleBits(_frame + 6, startreg, numregs);
@@ -409,15 +406,12 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, F
 	_frame = (uint8_t*) malloc(_len);
     if (_frame) {
 	    _frame[0] = fn;
-	    //_frame[1] = startreg.address >> 8;
-	    //_frame[2] = startreg.address & 0x00FF;
 	    _frame[1] = to >> 8;
 	    _frame[2] = to & 0x00FF;
 	    _frame[3] = numregs >> 8;
 	    _frame[4] = numregs & 0x00FF;
         _frame[5] = _len - 6;
         if (data) {
-            //memcpy(_frame + 6, data, numregs * 2);
             uint16_t* frame = (uint16_t*)(_frame + 6);
             while(numregs) {
                 *frame = __bswap_16(*((uint16_t*)data));
@@ -487,7 +481,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 break;
             }
             if (output) {
-                //memcpy(output, frame + 2, 2 * field2);
                 frame = frame + 2;
                 while(field2) {
                     *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
@@ -496,7 +489,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                     field2--;
                 }
             } else {
-                //setMultipleWords(frame + 2, HREG(field1), field2);
                 setMultipleWords(frame + 2, startreg, field2);
             }
         break;
@@ -511,7 +503,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             if (output) {
                 bitsToBool((bool*)output, frame + 2, field2);
             } else {
-                //setMultipleBits(frame + 2, COIL(field1), field2);
                 setMultipleBits(frame + 2, startreg, field2);
             }
         break;
@@ -526,7 +517,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             if (output) {
                 bitsToBool((bool*)output, frame + 2, field2);
             } else {
-                //setMultipleBits(frame + 2, ISTS(field1), field2);
                 setMultipleBits(frame + 2, startreg, field2);
             }
         break;
@@ -537,7 +527,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 break;
             }
             if (output) {
-                //memcpy(output, frame + 2, 2 * field2);
                 frame = frame + 2;
                 while(field2) {
                     *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
@@ -546,7 +535,6 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                     field2--;
                 }
             } else {
-                //setMultipleWords(frame + 2, IREG(field1), field2);
                 setMultipleWords(frame + 2, startreg, field2);
             }
         break;

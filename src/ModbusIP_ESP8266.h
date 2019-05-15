@@ -50,7 +50,6 @@ class ModbusIP : public Modbus {
 		};
 		uint8_t  raw[7];
 	};
-	//MBAP_t _MBAP;
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;

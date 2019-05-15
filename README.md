@@ -1,11 +1,15 @@
-# Modbus Master-Slave Library for ESP8266/ESP32 v2.1
+# Modbus Master-Slave Library for ESP8266/ESP32 v3.0
+
+**Relase state: Development**
+
+Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
 
-In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network. For more information about Modbus see:
+In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network and Modbus RTU over serial. For more information about Modbus see:
 
 http://pt.wikipedia.org/wiki/Modbus
 http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf
@@ -20,7 +24,9 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 * Operates as
   * slave
   * master
-* Supports Modbus IP (TCP)
+* Supports
+  * Modbus IP (TCP)
+  * Modbus RTU (RS-485)
 * Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
@@ -81,11 +87,9 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + task() cleanup
 + Modify examples
 + Slave. Allow only single incoming master connection per IP
-// 2.2.0
-- code cleanup
-- Implement Private Reg/Coil
 // 3.0.0
-- ModbusRTU (over RS-485)
++ ModbusRTU Slave
+- ModbusRTU Master
 // ToDo later
 - Modbus Read/Write File Records function
 - Modbus Write Mask Register function
