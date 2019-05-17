@@ -5,6 +5,10 @@
 */
 #include "ModbusRTU.h"
 
+/* calcCrc optimisation required:
+1. Move inside class code
+2. Merge CRC tables to one and move it to PROGMEM
+*/
 uint16_t calcCrc(uint8_t address, uint8_t* pduFrame, uint8_t pduLen) {
 	uint8_t CRCHi = 0xFF, CRCLo = 0x0FF, Index;
 
@@ -155,7 +159,7 @@ void ModbusRTUSlave::task() {
     }
 
     if (_len == 0) return;
-
+    Serial.println(_len);
     uint8_t i;
     //_frame = (uint8_t*) malloc(_len);
     _frame = (uint8_t*) malloc(MB_MAX_FRAME);

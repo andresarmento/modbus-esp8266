@@ -1,6 +1,6 @@
 # Modbus Master-Slave Library for ESP8266/ESP32
 
-## API
+## Common API
 
 ### Add [multiple] regs
 
@@ -11,7 +11,7 @@ bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 ```
 
-### Write reg
+### Write local reg
 
 ```c
 bool Hreg(uint16_t offset, uint16_t value);
@@ -20,7 +20,7 @@ bool Ists(uint16_t offset, bool value);
 bool Ireg(uint16_t offset, uint16_t value);
 ```
 
-### Read reg
+### Read local reg
 
 ```c
 uint16_t Hreg(uint16_t offset);
@@ -37,6 +37,45 @@ bool removeCoil(uint16_t offset, uint16_t numregs = 1);
 bool removeIsts(uint16_t offset, uint16_t numregs = 1);
 bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 ```
+
+```c
+void task();
+```
+
+Processing routine. Should be periodically called form loop().
+
+### Modbus RTU Specific API
+
+```c
+void begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
+void begin(HardwareSerial* port, uint32_t baud, int16_t txPin=-1);
+```
+
+txPin is not implemented yet.
+
+### ModBus IP Slave specific API
+
+```c
+void begin(); // Depricated. Use slave() instead.
+void slave();
+```
+
+### ModBus IP Master specific
+
+```c
+void master();
+bool connect(IPAddress ip);
+bool disconnect(IPAddress ip);
+bool isTransaction(uint16_t id);
+bool isConnected(IPAddress ip);
+void dropTransactions();
+```
+
+```c
+void autoConnect(bool enabled);
+```
+
+Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call.
 
 ### Query [multiple] regs from remote slave
 
@@ -95,7 +134,7 @@ void autoConnect(bool enabled = true);
 
 Set mode for automatic connect on read*\write*\push*\pull* calls. Disabled by default.
 
-### Callbacks
+## Callbacks API
 
 ```c
 void cbEnable(bool state = TRUE);
@@ -109,13 +148,13 @@ void onConnect(cbModbusConnect cb);
 void onDisonnect(cbModbusConnect cb);
 ```
 
-Assign callback function on new incoming connection event.
+*Modbus IP Slave* Assign callback function on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
-Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
+*Modbus IP Slave* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
 
 ```c
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
@@ -133,7 +172,7 @@ Transaction end callback function definition. *data* is currently reserved.
 IPAddress eventSource();
 ```
 
-Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
+*Modbus IP Master/Slave* Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
 
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
 
@@ -177,36 +216,6 @@ Disconnect specific callback function or all callbacks of the type if cb=NULL.
 #define ISTS_VAL(v)
 #define ISTS_BOOL(v)
 ```
-
-### ModBus IP specific
-
-```c
-void task();
-```
-
-### ModBus IP Slave specific
-
-```c
-void begin(); // Depricated. Use slave() instead.
-void slave();
-```
-
-### ModBus IP Master specific
-
-```c
-void master();
-bool connect(IPAddress ip);
-bool disconnect(IPAddress ip);
-bool isTransaction(uint16_t id);
-bool isConnected(IPAddress ip);
-void dropTransactions();
-```
-
-```c
-void autoConnect(bool enabled);
-```
-
-Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call.
 
 ### Callback example
 

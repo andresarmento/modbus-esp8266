@@ -1,6 +1,8 @@
 # Syntax Coloring Map For ModbusIP-ESP8266
 
 # Datatypes (KEYWORD1)
+ModbusRTUSlave  KEYWORD1
+ModbusRTUMaster KEYWORD1
 ModbusIP	KEYWORD1
 Modbus	KEYWORD1
 TRegister	KEYWORD1
