@@ -17,9 +17,9 @@
 #endif
 
 
-//#define MB_GLOBAL_REGS
+#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
-#define MB_MAX_FRAME   256
+#define MB_MAX_FRAME   128
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
 #define IREG(n) (TAddress){TAddress::IREG, n}
@@ -101,12 +101,13 @@ class Modbus {
             FC_READ_INPUT_REGS  = 0x04, // Read Input Registers
             FC_WRITE_COIL       = 0x05, // Write Single Coil (Output)
             FC_WRITE_REG        = 0x06, // Preset Single Register
+            FC_DIAGNOSTICS      = 0x08, // Not implemented. Diagnostics (Serial Line only)
             FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
             FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
-            FC_READ_FILE_REC    = 0x14, // Not implemented
-            FC_WRITE_FILE_REC   = 0x15, // Not implemented
-            FC_MASKWRITE_REG    = 0x16, // Not implemented
-            FC_READWRITE_REGS   = 0x17  // Not implemented
+            FC_READ_FILE_REC    = 0x14, // Not implemented. Read File Record
+            FC_WRITE_FILE_REC   = 0x15, // Not implemented. Write File Record
+            FC_MASKWRITE_REG    = 0x16, // Not implemented. Mask Write Register
+            FC_READWRITE_REGS   = 0x17  // Not implemented. Read/Write Multiple registers
         };
         //Exception Codes
         //Custom result codes used internally and for callbacks but never used for Modbus responce
@@ -115,7 +116,7 @@ class Modbus {
             EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
             EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not exists
             EX_ILLEGAL_VALUE        = 0x03, // Output Value not in Range
-            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Deice Fails to process request
+            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Device Fails to process request
             EX_ACKNOWLEDGE          = 0x05, // Not used
             EX_SLAVE_DEVICE_BUSY    = 0x06, // Not used
             EX_MEMORY_PARITY_ERROR  = 0x08, // Not used

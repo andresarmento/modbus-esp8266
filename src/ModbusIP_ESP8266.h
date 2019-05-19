@@ -108,4 +108,15 @@ class ModbusIP : public Modbus {
 	uint16_t pullCoilToIsts(IPAddress ip, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	/*
+	uint16_t maskHreg(IPAddress ip, uint16_t offset, uint16_t andMask, uint16_t orMask, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t pushPullHreg(IPAddress ip,
+		uint16_t from, uint16_t to, uint16_t numregs = 1,
+		uint16_t to, uint16_t from, uint16_t numregs = 1,
+		cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readWriteHreg(IPAddress ip,
+		uint16_t readOffset, uint16_t* value, uint16_t numregs = 1,
+		uint16_t writeOffset, uint16_t* value, uint16_t numregs = 1,
+		cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	*/
 };
