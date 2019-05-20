@@ -1,7 +1,6 @@
 /*
-    ModbusSerial.h - Header for ModbusSerial Library
-    Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+    ModbusRTU.h - Header for ModbusRTU Library
+    Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 
@@ -21,6 +20,8 @@
 
 uint16_t calcCrc(uint16_t address, uint8_t* pduframe, uint8_t pdulen);
 
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
+
 class ModbusRTU : public Modbus {
     protected:
         Stream* _port;
@@ -29,7 +30,21 @@ class ModbusRTU : public Modbus {
         unsigned int _t35; 	// frame delay in uS
 		unsigned int _t;	// frame delay in mS
 		uint32_t t = 0;
+		bool isMaster = false;
+		uint8_t  _slaveId;
+		uint32_t _timestamp = 0;
+		cbTransaction _cb = nullptr;
+		void* _data = nullptr;
+		uint8_t* _sentFrame = nullptr;
+		TAddress _sentReg = COIL(0);
+		bool send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data = nullptr, bool waitResponse = true);
     public:
+	/*
+	Bits per Byte:	1 start bit
+					8 data bits, least significant bit sent first
+					1 bit for parity completion or stop bit
+					1 stop bit
+	*/
     #ifdef MB_SOFTWARE_SERIAL
         bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
     #else
@@ -39,22 +54,12 @@ class ModbusRTU : public Modbus {
 	 	bool begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin=-1);
 	 #endif
     #endif
-        virtual void task() = 0;
-};
-
-class ModbusRTUSlave : public ModbusRTU {
-    private:
-        uint8_t  _slaveId;
-    public:
+        void task();
+		void master() {isMaster = true;};
+		void slave(uint8_t slaveId) {};
         bool setSlaveId(uint8_t slaveId);
         uint8_t getSlaveId();
-        void task() override;
-};
 /*
-class ModbusRTUMaster : public ModbusRTU {
-    public:
-    void task();
-
 	uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 	uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 	uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
@@ -75,7 +80,10 @@ class ModbusRTUMaster : public ModbusRTU {
 	uint16_t pullCoilToIsts(uint8_t slaveId, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t pushIstsToCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t pushIregToHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
-}
+*/
+};
+
+/*
 // Table of CRC values
 const uint16_t _auchCRC[] PROGMEM = {
 	0x0000, 0xC1C0, 0x81C1, 0x4001, 0x01C3, 0xC003, 0x8002, 0x41C2, 0x01C6, 0xC006, 0x8007, 0x41C7, 0x0005, 0xC1C5, 0x81C4

@@ -1,7 +1,6 @@
 /*
-    ModbusSerial.cpp - Source for Modbus Serial Library
-    Copyright (C) 2014 André Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+    ModbusRTU.cpp - Source for ModbusRTU Library
+    Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include <ModbusRTU.h>
 
@@ -26,12 +25,12 @@ uint16_t calcCrc(uint8_t address, uint8_t* pduFrame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
-bool ModbusRTUSlave::setSlaveId(uint8_t slaveId){
+bool ModbusRTU::setSlaveId(uint8_t slaveId){
     _slaveId = slaveId;
     return true;
 }
 
-uint8_t ModbusRTUSlave::getSlaveId() {
+uint8_t ModbusRTU::getSlaveId() {
     return _slaveId;
 }
 
@@ -65,13 +64,47 @@ bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int1
         _t15 = 15000000/baud; // 1T * 1.5 = T1.5
         _t35 = 35000000/baud; // 1T * 3.5 = T3.5
         _t = (_t35 / 1000) + 1;
-        Serial.print(_t);
     }
 
     return true;
 }
 
-void ModbusRTUSlave::task() {
+bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
+// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
+// slaveId - slave id
+// startreg - first local register to save returned data to (miningless for write to slave operations)
+// cb - transaction callback function
+// data - if not null use buffer to save returned data instead of local registers
+    if (_slaveId) return false; // Break if waiting for previous request result
+    uint16_t crc = calcCrc(slaveId, _frame, _len);
+    if (_txPin >= 0) {
+        digitalWrite(_txPin, HIGH);
+        delay(1);
+    }
+    _port->write(slaveId);  //Send slaveId
+    for (uint8_t i = 0 ; i < _len ; i++) _port->write(_frame[i]); // Send PDU
+    //Send CRC
+    _port->write(crc >> 8);
+    _port->write(crc & 0xFF);
+    _port->flush();
+    delay(_t);
+    if (_txPin >= 0) {
+        digitalWrite(_txPin, LOW);
+    }
+	if (waitResponse) {
+        _slaveId = slaveId;
+		_timestamp = millis();
+		_cb = cb;
+		_data = data;
+		_sentFrame = _frame;
+		_sentReg = startreg;
+		_frame = nullptr;
+		_len = 0;
+	}
+	return true;
+}
+
+void ModbusRTU::task() {
     if (_port->available() > _len)	{
         _len = _port->available();
         t = millis();
@@ -82,6 +115,11 @@ void ModbusRTUSlave::task() {
 
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
+    if (isMaster && _slaveId == 0) {    // Check is slaveId is set
+        for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if is not expected
+        _len = 0;
+        return;
+    }
     if (address != MB_BROADCAST && address != _slaveId) {     // SlaveId Check
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if SlaveId doesn't mach
         _len = 0;
@@ -103,10 +141,23 @@ void ModbusRTUSlave::task() {
         _frame = nullptr;
         return;
     }
+    if (isMaster) {
+        _reply = EX_SUCCESS;
+        if ((_frame[0] & 0x7F) == _sentFrame[0]) { // Check if function code the same as requested
+			// Procass incoming frame as master
+			masterPDU(_frame, _sentFrame, _sentReg, _data);
+		} else {
+			_reply = EX_UNEXPECTED_RESPONSE;
+		}
+		if (cbEnabled && _cb) {
+			_cb((ResultCode)_reply, 0, nullptr);
+		}
+        _reply = Modbus::REPLY_OFF;    // No reply if master
+    } else {
+        slavePDU(_frame);
+        if (address == MB_BROADCAST) _reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
+    }
 
-    slavePDU(_frame);
-
-    if (address == MB_BROADCAST) _reply = Modbus::REPLY_OFF;    //No reply to Broadcasts
     if (_reply != Modbus::REPLY_OFF) {
         if (_txPin >= 0) {
             digitalWrite(_txPin, HIGH);

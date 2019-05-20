@@ -186,7 +186,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
 		tmp.cb = cb;
-		tmp.data = data;
+		tmp.data = data;	// BUG: Should data be saved? It may lead to memory leak or double free.
 		tmp._frame = _frame;
 		tmp.startreg = startreg;
 		_trans.push_back(tmp);
