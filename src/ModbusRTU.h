@@ -3,7 +3,6 @@
     Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
-
 #include "Modbus.h"
 
 #define MB_SOFTWARE_SERIAL
@@ -19,16 +18,12 @@
 #define MODBUSRTU_TIMEOUT 1000
 //#define MB_STATIC_FRAME 1
 
-uint16_t calcCrc(uint16_t address, uint8_t* pduframe, uint8_t pdulen);
-
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 
 class ModbusRTU : public Modbus {
     protected:
         Stream* _port;
         int   _txPin;
-        unsigned int _t15; 	// inter character time out in uS
-        unsigned int _t35; 	// frame delay in uS
 		unsigned int _t;	// frame delay in mS
 		uint32_t t = 0;
 		bool isMaster = false;
@@ -38,20 +33,21 @@ class ModbusRTU : public Modbus {
 		void* _data = nullptr;
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
-		bool send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data = nullptr, bool waitResponse = true, uint8_t unit = 0);
+		bool send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
 		// slaveId - slave id
 		// startreg - first local register to save returned data to (miningless for write to slave operations)
 		// cb - transaction callback function
 		// data - if not null use buffer to save returned data instead of local registers
 		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
+		uint16_t crc(uint8_t address, uint8_t* frame, uint8_t pdulen);
     public:
-	/*
-	Bits per Byte:	1 start bit
-					8 data bits, least significant bit sent first
-					1 bit for parity completion or stop bit
-					1 stop bit
-	*/
+		/*
+		Bits per Byte:	1 start bit
+						8 data bits, least significant bit sent first
+						1 bit for parity completion or stop bit
+						1 stop bit
+		*/
     #ifdef MB_SOFTWARE_SERIAL
         bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
     #else
@@ -66,9 +62,9 @@ class ModbusRTU : public Modbus {
 		void slave(uint8_t slaveId) {};
         bool setSlaveId(uint8_t slaveId);
         uint8_t getSlaveId();
+		uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+		uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 /*
-	uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
-	uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 	uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
@@ -92,7 +88,7 @@ class ModbusRTU : public Modbus {
 
 
 // Table of CRC values
-const uint16_t _auchCRC[] PROGMEM = {
+static const uint16_t _auchCRC[] PROGMEM = {
 	0x0000, 0xC1C0, 0x81C1, 0x4001, 0x01C3, 0xC003, 0x8002, 0x41C2, 0x01C6, 0xC006, 0x8007, 0x41C7, 0x0005, 0xC1C5, 0x81C4,
 	0x4004, 0x01CC, 0xC00C, 0x800D, 0x41CD, 0x000F, 0xC1CF, 0x81CE, 0x400E, 0x000A, 0xC1CA, 0x81CB, 0x400B, 0x01C9, 0xC009,
 	0x8008, 0x41C8, 0x01D8, 0xC018, 0x8019, 0x41D9, 0x001B, 0xC1DB, 0x81DA, 0x401A, 0x001E, 0xC1DE, 0x81DF, 0x401F, 0x01DD,
