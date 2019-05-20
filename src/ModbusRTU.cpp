@@ -6,20 +6,19 @@
 
 /* calcCrc optimisation required:
 1. Move inside class code
-2. Merge CRC tables to one and move it to PROGMEM
-3. in task() probably don't read crc to buffer?
+2. in task() probably don't read crc to buffer?
 */
+
 uint16_t calcCrc(uint8_t address, uint8_t* pduFrame, uint8_t pduLen) {
-	uint8_t CRCHi = 0xFF, CRCLo = 0x0FF, Index;
-
-    Index = CRCHi ^ address;
-    CRCHi = CRCLo ^ _auchCRCHi[Index];
-    CRCLo = _auchCRCLo[Index];
-
+	uint8_t Index = 0xFF ^ address;
+	uint16_t val = pgm_read_word(_auchCRC + Index);
+    uint8_t CRCHi = 0xFF ^ highByte(val);	// Hi
+    uint8_t CRCLo = lowByte(val);	//Low
     while (pduLen--) {
         Index = CRCHi ^ *pduFrame++;
-        CRCHi = CRCLo ^ _auchCRCHi[Index];
-        CRCLo = _auchCRCLo[Index];
+        val = pgm_read_word(_auchCRC + Index);
+        CRCHi = CRCLo ^ highByte(val);	// Hi
+        CRCLo = lowByte(val);	//Low
     }
 
     return (CRCHi << 8) | CRCLo;
@@ -57,24 +56,14 @@ bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int1
     }
 
     if (baud > 19200) {
-        _t15 = 750;
-        _t35 = 1750;
         _t = 2;
     } else {
-        _t15 = 15000000/baud; // 1T * 1.5 = T1.5
-        _t35 = 35000000/baud; // 1T * 3.5 = T3.5
-        _t = (_t35 / 1000) + 1;
+        _t = (35000/baud) + 1;
     }
-
     return true;
 }
 
-bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
-// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
-// slaveId - slave id
-// startreg - first local register to save returned data to (miningless for write to slave operations)
-// cb - transaction callback function
-// data - if not null use buffer to save returned data instead of local registers
+bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse, uint8_t unit) {
     if (_slaveId) return false; // Break if waiting for previous request result
     uint16_t crc = calcCrc(slaveId, _frame, _len);
     if (_txPin >= 0) {
@@ -110,7 +99,10 @@ void ModbusRTU::task() {
         t = millis();
         return;
     }
-    if (_len == 0) return;  // No data
+    if (_len == 0) {    // No data
+        if (isMaster) cleanup();
+        return;  
+    }
     if (millis() - t < _t) return;  // Wait data whitespace
 
     uint8_t address = _port->read(); //first byte of frame = address
@@ -120,7 +112,7 @@ void ModbusRTU::task() {
         _len = 0;
         return;
     }
-    if (address != MB_BROADCAST && address != _slaveId) {     // SlaveId Check
+    if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // SlaveId Check
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if SlaveId doesn't mach
         _len = 0;
         return;
@@ -155,7 +147,7 @@ void ModbusRTU::task() {
         _reply = Modbus::REPLY_OFF;    // No reply if master
     } else {
         slavePDU(_frame);
-        if (address == MB_BROADCAST) _reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
+        if (address == MODBUSRTU_BROADCAST) _reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
     }
 
     if (_reply != Modbus::REPLY_OFF) {
@@ -179,4 +171,17 @@ void ModbusRTU::task() {
     _len = 0;
     free(_frame);
     _frame = nullptr;
+}
+
+bool ModbusRTU::cleanup() {
+	// Remove timedouted request and forced event
+	if (millis() - _timestamp > MODBUSRTU_TIMEOUT) {
+		_cb(Modbus::EX_TIMEOUT, 0, nullptr);
+		free(_sentFrame);
+        _sentFrame = nullptr;
+        _data = nullptr;
+		_slaveId = 0;
+        return true;
+	}
+    return false;
 }
