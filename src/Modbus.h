@@ -37,6 +37,7 @@
 struct TRegister;
 
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
+
 struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG};
     RegType type;
@@ -228,3 +229,5 @@ class Modbus {
         bool removeOnSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
 };
+
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests

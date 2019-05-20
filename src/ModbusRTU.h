@@ -18,7 +18,7 @@
 #define MODBUSRTU_TIMEOUT 1000
 //#define MB_STATIC_FRAME 1
 
-typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
+//typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 
 class ModbusRTU : public Modbus {
     protected:
@@ -58,12 +58,14 @@ class ModbusRTU : public Modbus {
 	 #endif
     #endif
         void task();
-		void master() {isMaster = true;};
-		void slave(uint8_t slaveId) {};
+		void master() { isMaster = true; };
+		void slave(uint8_t slaveId) {_slaveId = slaveId;};
+		uint8_t slave() { return _slaveId; }
         bool setSlaveId(uint8_t slaveId);
         uint8_t getSlaveId();
 		uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 		uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
+		uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 /*
 	uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 	uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);

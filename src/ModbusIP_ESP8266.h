@@ -24,7 +24,7 @@
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
-typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
+//typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 
 typedef struct TTransaction {
 	uint16_t	transactionId;

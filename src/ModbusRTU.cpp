@@ -195,3 +195,8 @@ uint16_t ModbusRTU::writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTr
 	readSlave(offset, COIL_VAL(value), FC_WRITE_COIL);
 	return send(slaveId, COIL(offset), cb, nullptr, cb);
 }
+uint16_t ModbusRTU::readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
+	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	readSlave(offset, numregs, FC_READ_COILS);
+	return send(slaveId, COIL(offset), cb, value);
+}
