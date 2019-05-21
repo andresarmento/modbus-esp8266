@@ -1,4 +1,4 @@
-# Modbus RTU and IP Master-Slave Library for ESP8266/ESP32 v3.0
+# ModbusRTU and ModbusIP Master-Slave Library for ESP8266/ESP32 v3.0
 
 **Release state: DEVELOPMENT** Everything including API is subject to be changed during this stage.
 
@@ -51,24 +51,29 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Read Multiple HRegs/IRegs for ESP master is limited to 63 per query.
 5. ModbusRTU at this moment working on 9600 only for some reason.
-6. Probably it's possible to use ModbusRTU with AVR using <vector> from https://github.com/maniacbug/StandardCplusplus
+6. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from https://github.com/maniacbug/StandardCplusplus
 
 ## Last Changes
 
 ```diff
-// 3.0.0
+// 3.0.0-DEVEL
 + ModbusRTU Slave
 + ModbusRTU Master
-+ Tested with ESP8266
++ Test with SoftwareSerial on ESP8266
 + CRC tables stored in PROGMEM
-- Test with ESP32
++ Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
++ ModbusRTU examples added
+- Test with HardwareSerial on ESP8266
+- Test on ESP32
+- Test TX control pin
+- Test multiple Modbus* instances
 - Documentation changes
-- Add examples
 // ToDo later
-- Modbus Read/Write File Records function (0x14/0x15)
-- Modbus Write Mask Register function (0x16)
-- Modbus Read/Write Registers function (0x17)
-- Modbus Serial line-specific functions (0x08)
+- 0x14 - Read File Records function
+- 0x15 - Write File Records function
+- 0x16 - Write Mask Register function
+- 0x17 - Read/Write Registers function
+- 0x08 - Serial Diagnostics functions
 // 2.1.0
 + Slave. Fix error response on write multiple Hregs\Coils
 + Slave. Fix writeCoil() for multiple coils

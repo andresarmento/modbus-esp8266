@@ -147,7 +147,12 @@ class Modbus {
         bool removeCoil(uint16_t offset, uint16_t numregs = 1);
         bool removeIsts(uint16_t offset, uint16_t numregs = 1);
         bool removeIreg(uint16_t offset, uint16_t numregs = 1);
-
+        /*
+        bool Hreg(uint16_t offset, uint16_t* value);
+        bool Coil(uint16_t offset, bool* value);
+        bool Ists(uint16_t offset, bool* value);
+        bool Ireg(uint16_t offset, uint16_t* value);
+        */
         void cbEnable(bool state = true);
         void cbDisable();
         
