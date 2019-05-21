@@ -59,8 +59,10 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + ModbusRTU Slave
 + ModbusRTU Master
 + Tested with ESP8266
++ CRC tables stored in PROGMEM
 - Test with ESP32
 - Documentation changes
+- Add examples
 // ToDo later
 - Modbus Read/Write File Records function (0x14/0x15)
 - Modbus Write Mask Register function (0x16)

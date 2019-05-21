@@ -1,5 +1,5 @@
 /*
-    ModbusRTU.h - ModbusRTU Library
+    ModbusRTU Library for ESP8266/ESP32
     Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
@@ -17,14 +17,13 @@
 
 template <typename S>
 // Possible declarations are
-// ModbusRTU<HardwareSerial> mb(Serial);
-// ModbusRTU<SoftwareSerial> mb(SoftSerial);
+// ModbusRTU<HardwareSerial> mb();
+// ModbusRTU<SoftwareSerial> mb();
 class ModbusRTU : public Modbus {
     protected:
         S* _port;
         int   _txPin;
-		uint32_t _t15;
-		unsigned int _t;	// frame delay in mS
+		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;
 		bool isMaster = false;
 		uint8_t  _slaveId;
