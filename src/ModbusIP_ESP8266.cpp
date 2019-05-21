@@ -256,13 +256,13 @@ uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransa
 }
 
 uint16_t ModbusIP::writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	writeSlaveBits(COIL(offset), offset, numregs, FC_WRITE_COILS, value);
 	return send(ip, COIL(offset), cb, unit, nullptr, cb);
 }
 
 uint16_t ModbusIP::readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	readSlave(offset, numregs, FC_READ_COILS);
 	return send(ip, COIL(offset), cb, unit, value);
 }
@@ -273,31 +273,31 @@ uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTr
 }
 
 uint16_t ModbusIP::writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	writeSlaveWords(HREG(offset), offset, numregs, FC_WRITE_REGS, value);
 	return send(ip, HREG(offset), cb, unit, nullptr, cb);
 }
 
 uint16_t ModbusIP::readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	readSlave(offset, numregs, FC_READ_REGS);
 	return send(ip, HREG(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	readSlave(offset, numregs, FC_READ_INPUT_STAT);
 	return send(ip, ISTS(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	readSlave(offset, numregs, FC_READ_INPUT_REGS);
 	return send(ip, IREG(offset), cb, unit, value);
 }
 
 uint16_t ModbusIP::pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	if (!searchRegister(COIL(from))) return false;
 	if (numregs == 1) {
 		readSlave(to, COIL_VAL(Coil(from)), FC_WRITE_COIL);
@@ -308,7 +308,7 @@ uint16_t ModbusIP::pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t n
 }
 
 uint16_t ModbusIP::pullCoil(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addCoil(to, numregs);
 	#endif
@@ -317,7 +317,7 @@ uint16_t ModbusIP::pullCoil(IPAddress ip, uint16_t from, uint16_t to, uint16_t n
 }
 
 uint16_t ModbusIP::pullIsts(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addIsts(to, numregs);
 	#endif
@@ -326,7 +326,7 @@ uint16_t ModbusIP::pullIsts(IPAddress ip, uint16_t from, uint16_t to, uint16_t n
 }
 
 uint16_t ModbusIP::pushHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	if (!searchRegister(HREG(from))) return false;
 	if (numregs == 1) {
 		readSlave(to, Hreg(from), FC_WRITE_REG);
@@ -337,7 +337,7 @@ uint16_t ModbusIP::pushHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t n
 }
 
 uint16_t ModbusIP::pullHreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addHreg(to, numregs);
 	#endif
@@ -346,7 +346,7 @@ uint16_t ModbusIP::pullHreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t n
 }
 
 uint16_t ModbusIP::pullIreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addIreg(to, numregs);
 	#endif
@@ -355,7 +355,7 @@ uint16_t ModbusIP::pullIreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t n
 }
 
 uint16_t ModbusIP::pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	if (!searchRegister(IREG(from))) return false;
 	if (numregs == 1) {
 		readSlave(to, Ireg(from), FC_WRITE_REG);
@@ -366,7 +366,7 @@ uint16_t ModbusIP::pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint
 }
 
 uint16_t ModbusIP::pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	if (!searchRegister(ISTS(from))) return false;
 	if (numregs == 1) {
 		readSlave(to, ISTS_VAL(Ists(from)), FC_WRITE_COIL);
@@ -377,7 +377,7 @@ uint16_t ModbusIP::pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint
 }
 
 uint16_t ModbusIP::pullHregToIreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addIreg(to, numregs);
 	#endif
@@ -386,7 +386,7 @@ uint16_t ModbusIP::pullHregToIreg(IPAddress ip, uint16_t from, uint16_t to, uint
 }
 
 uint16_t ModbusIP::pullCoilToIsts(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	#ifdef MODBUSIP_ADD_REG
 	 addIsts(to, numregs);
 	#endif
