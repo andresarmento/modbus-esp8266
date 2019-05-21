@@ -1,6 +1,6 @@
 # Modbus RTU and IP Master-Slave Library for ESP8266/ESP32 v3.0
 
-**Release state: DEVELOPMENT** Everything including API is subject to be changed diring stage.
+**Release state: DEVELOPMENT** Everything including API is subject to be changed during this stage.
 
 Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
