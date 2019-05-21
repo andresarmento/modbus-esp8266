@@ -49,6 +49,9 @@ Processing routine. Should be periodically called form loop().
 ```c
 void begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
 void begin(HardwareSerial* port, uint32_t baud, int16_t txPin=-1);
+void master();
+void slave(uint8_t slaveId);
+uint8_t slave();
 ```
 
 txPin is not implemented yet.
@@ -137,7 +140,7 @@ Set mode for automatic connect on read*\write*\push*\pull* calls. Disabled by de
 ## Callbacks API
 
 ```c
-void cbEnable(bool state = TRUE);
+void cbEnable(bool state = true);
 void cbDisable();
 ```
 

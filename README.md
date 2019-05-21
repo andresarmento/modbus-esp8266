@@ -1,6 +1,6 @@
-# Modbus Master-Slave Library for ESP8266/ESP32 v3.0
+# Modbus RTU and IP Master-Slave Library for ESP8266/ESP32 v3.0
 
-**Relase state: Development**
+**Release state: DEVELOPMENT** Everything including API is subject to be changed diring stage.
 
 Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
@@ -50,10 +50,34 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Read Multiple HRegs/IRegs for ESP master is limited to 63 per query.
+5. ModbusRTU at this moment working on 9600 only for some reason.
 
 ## Last Changes
 
 ```diff
+// 3.0.0
++ ModbusRTU Slave
++ ModbusRTU Master
++ Tested with ESP8266
+- Test with ESP32
+- Documentation changes
+// ToDo later
+- Modbus Read/Write File Records function (0x14/0x15)
+- Modbus Write Mask Register function (0x16)
+- Modbus Read/Write Registers function (0x17)
+- Modbus Serial line-specific functions (0x08)
+// 2.1.0
++ Slave. Fix error response on write multiple Hregs\Coils
++ Slave. Fix writeCoil() for multiple coils
++ Master. dropTransactions()
++ Master. disconnect()
++ ~ModbusIP()
++ task() cleanup
++ Modify examples
++ Slave. Allow only single incoming master connection per IP
+// 2.0.1
++ Master. Fix readCoil\Hreg\Ists\Ireg not read value from slave
++ Fix crash on disconnect with Arduino Core 2.5.x
 // 2.0.0
 + Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
 + Change object's list implementation to *std::vector*
@@ -76,25 +100,6 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 + added removeOnSetCoil\... methods
 + added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
 + added ability to auto connect to slave. Setting is global. Disabled by default.
-// 2.0.1
-+ Master. Fix readCoil\Hreg\Ists\Ireg not read value from slave
-+ Fix crash on disconnect with Arduino Core 2.5.x
-// 2.1.0
-+ Slave. Fix error response on write multiple Hregs\Coils
-+ Slave. Fix writeCoil() for multiple coils
-+ Master. dropTransactions()
-+ Master. disconnect()
-+ ~ModbusIP()
-+ task() cleanup
-+ Modify examples
-+ Slave. Allow only single incoming master connection per IP
-// 3.0.0
-+ ModbusRTU Slave
-- ModbusRTU Master
-// ToDo later
-- Modbus Read/Write File Records function
-- Modbus Write Mask Register function
-- Modbus Serial line-specific functions
 ```
 
 ## Contributions
