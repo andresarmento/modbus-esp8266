@@ -47,14 +47,15 @@ Processing routine. Should be periodically called form loop().
 ### Modbus RTU Specific API
 
 ```c
-void begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
-void begin(HardwareSerial* port, uint32_t baud, int16_t txPin=-1);
+bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
+bool begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin=-1);
+bool begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
 void master();
 void slave(uint8_t slaveId);
 uint8_t slave();
 ```
 
-txPin is not implemented yet.
+txPin is not tested yet.
 
 ### ModBus IP Slave specific API
 

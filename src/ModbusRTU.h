@@ -22,7 +22,7 @@ template <typename S>
 class ModbusRTU : public Modbus {
     protected:
         S* _port;
-        int   _txPin;
+        int16_t   _txPin;
 		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;
 		bool isMaster = false;
@@ -32,12 +32,14 @@ class ModbusRTU : public Modbus {
 		void* _data = nullptr;
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
+		uint16_t maxRegs = 0x007B;
 		bool send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
 		// slaveId - slave id
 		// startreg - first local register to save returned data to (miningless for write to slave operations)
 		// cb - transaction callback function
 		// data - if not null use buffer to save returned data instead of local registers
+		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
 		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
 		uint16_t crc(uint8_t address, uint8_t* frame, uint8_t pdulen);
     public:
@@ -46,8 +48,9 @@ class ModbusRTU : public Modbus {
 						8 data bits, least significant bit sent first
 						1 bit for parity completion or stop bit
 						1 stop bit
+		SERIAL_8N2
+		SERIAL_8E1
 		*/
-	
         bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
 	 #ifdef ESP8266
         bool begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
@@ -58,8 +61,6 @@ class ModbusRTU : public Modbus {
 		void master() { isMaster = true; };
 		void slave(uint8_t slaveId) {_slaveId = slaveId;};
 		uint8_t slave() { return _slaveId; }
-        bool setSlaveId(uint8_t slaveId);
-        uint8_t getSlaveId();
 		uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 		uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 		uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
@@ -119,17 +120,6 @@ uint16_t ModbusRTU<S>::crc(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
-template <typename S>
-bool ModbusRTU<S>::setSlaveId(uint8_t slaveId){
-    _slaveId = slaveId;
-    return true;
-}
-
-template <typename S>
-uint8_t ModbusRTU<S>::getSlaveId() {
-    return _slaveId;
-}
-
 #ifdef ESP8266
 template <>
 bool ModbusRTU<HardwareSerial>::begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin) {
@@ -139,6 +129,7 @@ template <>
 bool ModbusRTU<HardwareSerial>::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin) {
     port->begin(baud);
 #endif
+	maxRegs = port->setRxBufferSize(256) / 2 - 2;
     port->begin(baud);
     _port = port;
     _txPin = txPin;
@@ -156,39 +147,54 @@ bool ModbusRTU<HardwareSerial>::begin(HardwareSerial* port, uint32_t baud, uint1
 
 template <>
 bool ModbusRTU<SoftwareSerial>::begin(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
-    port->begin(baud);
     _port = port;
     _txPin = txPin;
-    if (txPin >= 0) {
-        pinMode(txPin, OUTPUT);
-        digitalWrite(txPin, LOW);
-    }
+    _port->begin(baud);
+    if (txPin >= 0)
+        _port->setTransmitEnablePin(txPin);
     if (baud > 19200) {
         _t = 2;
+		//_port->enableIntTx(false);
     } else {
         _t = (35000/baud) + 1;
     }
     return true;
 }
 
-template <typename S>
-bool ModbusRTU<S>::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
-    if (_slaveId) return false; // Break if waiting for previous request result
+template <>
+bool ModbusRTU<SoftwareSerial>::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
+    uint16_t newCrc = crc(slaveId, _frame, _len);
+    _port->write(slaveId);  	//Send slaveId
+    _port->write(_frame, len); 	// Send PDU
+    _port->write(newCrc >> 8);	//Send CRC 
+    _port->write(newCrc & 0xFF);//Send CRC
+    _port->flush();
+    delay(_t);
+	return true;
+}
+
+template <>
+bool ModbusRTU<HardwareSerial>::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     uint16_t newCrc = crc(slaveId, _frame, _len);
     if (_txPin >= 0) {
         digitalWrite(_txPin, HIGH);
         delay(1);
     }
-    _port->write(slaveId);  //Send slaveId
-    for (uint8_t i = 0 ; i < _len ; i++) _port->write(_frame[i]); // Send PDU
-    //Send CRC
-    _port->write(newCrc >> 8);
-    _port->write(newCrc & 0xFF);
+    _port->write(slaveId);  	//Send slaveId
+    _port->write(_frame, len); 	// Send PDU
+    _port->write(newCrc >> 8);	//Send CRC 
+    _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
     delay(_t);
-    if (_txPin >= 0) {
+    if (_txPin >= 0)
         digitalWrite(_txPin, LOW);
-    }
+	return true;
+}
+
+template <typename S>
+bool ModbusRTU<S>::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
+    if (_slaveId) return false; // Break if waiting for previous request result
+	rawSend(slaveId, _frame, _len);
 	if (waitResponse) {
         _slaveId = slaveId;
 		_timestamp = millis();
@@ -261,24 +267,8 @@ void ModbusRTU<S>::task() {
         slavePDU(_frame);
         if (address == MODBUSRTU_BROADCAST) _reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
     }
-
-    if (_reply != Modbus::REPLY_OFF) {
-        if (_txPin >= 0) {
-            digitalWrite(_txPin, HIGH);
-            delay(1);
-        }
-        _port->write(_slaveId);  //Send slaveId
-        for (uint8_t i = 0 ; i < _len ; i++) _port->write(_frame[i]); // Send PDU
-         //Send CRC
-        uint16_t newCrc = crc(_slaveId, _frame, _len);
-        _port->write(newCrc >> 8);
-        _port->write(newCrc & 0xFF);
-        _port->flush();
-        delay(_t); //delayMicroseconds(_t35);
-        if (_txPin >= 0) {
-            digitalWrite(_txPin, LOW);
-        }
-    }
+    if (_reply != Modbus::REPLY_OFF)
+		rawSend(_slaveId, _frame, _len);
     // Cleanup
     _len = 0;
     free(_frame);
@@ -332,7 +322,7 @@ uint16_t ModbusRTU<S>::writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* val
 
 template <typename S>
 uint16_t ModbusRTU<S>::readHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	readSlave(offset, numregs, FC_READ_REGS);
 	return send(slaveId, HREG(offset), cb, value);
 }
@@ -346,7 +336,7 @@ uint16_t ModbusRTU<S>::readIsts(uint8_t slaveId, uint16_t offset, bool* value, u
 
 template <typename S>
 uint16_t ModbusRTU<S>::readIreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	readSlave(offset, numregs, FC_READ_INPUT_REGS);
 	return send(slaveId, IREG(offset), cb, value);
 }
@@ -397,7 +387,7 @@ uint16_t ModbusRTU<S>::pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uin
 
 template <typename S>
 uint16_t ModbusRTU<S>::pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
 	 addHreg(to, numregs);
 	#endif
@@ -407,7 +397,7 @@ uint16_t ModbusRTU<S>::pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uin
 
 template <typename S>
 uint16_t ModbusRTU<S>::pullIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
 	 addIreg(to, numregs);
 	#endif
@@ -441,7 +431,7 @@ uint16_t ModbusRTU<S>::pushIstsToCoil(uint8_t slaveId, uint16_t to, uint16_t fro
 
 template <typename S>
 uint16_t ModbusRTU<S>::pullHregToIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007B) return false;
+	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
 	 addIreg(to, numregs);
 	#endif

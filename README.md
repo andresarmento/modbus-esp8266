@@ -51,6 +51,7 @@ http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Read Multiple HRegs/IRegs for ESP master is limited to 63 per query.
 5. ModbusRTU at this moment working on 9600 only for some reason.
+6. Probably it's possible to use ModbusRTU with AVR using <vector> from https://github.com/maniacbug/StandardCplusplus
 
 ## Last Changes
 
