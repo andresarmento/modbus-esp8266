@@ -162,9 +162,9 @@ bool ModbusRTU<SoftwareSerial>::begin(SoftwareSerial* port, uint32_t baud, int16
 
 template <>
 bool ModbusRTU<SoftwareSerial>::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
-    uint16_t newCrc = crc(slaveId, _frame, _len);
+    uint16_t newCrc = crc(slaveId, frame, len);
     _port->write(slaveId);  	//Send slaveId
-    _port->write(_frame, len); 	// Send PDU
+    _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC 
     _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
@@ -174,13 +174,13 @@ bool ModbusRTU<SoftwareSerial>::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t
 
 template <>
 bool ModbusRTU<HardwareSerial>::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
-    uint16_t newCrc = crc(slaveId, _frame, _len);
+    uint16_t newCrc = crc(slaveId, frame, len);
     if (_txPin >= 0) {
         digitalWrite(_txPin, HIGH);
         delay(1);
     }
     _port->write(slaveId);  	//Send slaveId
-    _port->write(_frame, len); 	// Send PDU
+    _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC 
     _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
@@ -240,6 +240,7 @@ void ModbusRTU<S>::task() {
       return;
     }
     for (uint8_t i=0 ; i < _len ; i++) _frame[i] = _port->read();   // read data + crc
+	//_port->readBytes(_frame, _len);
     u_int frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc(address, _frame, _len)) {  // CRC Check
