@@ -12,10 +12,13 @@ The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called
 In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network and Modbus RTU over serial. For more information about Modbus see:
 
 [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
+
 [MODBUS APPLICATION PROTOCOL SPECIFICATION
 V1.1b](http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf)
+
 [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE
 V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
+
 [MODBUS over Serial Line
 Specification and Implementation Guide
 V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
@@ -62,13 +65,12 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 // 3.0.0-DEVEL
 + ModbusRTU Slave
 + ModbusRTU Master
-+ Test with SoftwareSerial on ESP8266
++ Test on ESP8266
 + CRC tables stored in PROGMEM
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
 - Optimize CRC calculation
 - Check real Serial buffer size
-- Test with HardwareSerial on ESP8266
 - Test on ESP32
 - Test TX control pin
 - Test multiple Modbus* instances
