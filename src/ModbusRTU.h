@@ -5,7 +5,9 @@
 #pragma once
 #include <Modbus.h>
 #include <HardwareSerial.h>
-#include <SoftwareSerial.h>
+#if defined(ESP8266)
+ #include <SoftwareSerial.h>
+#endif
 
 #define MODBUSRTU_BROADCAST 0
 #define MB_RESERVE 248
@@ -37,10 +39,10 @@ class ModbusRTU : public Modbus {
 		// data - if not null use buffer to save returned data instead of local registers
 		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
 		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
-		uint16_t crc(uint8_t address, uint8_t* frame, uint8_t pdulen);
+		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
     public:
-        bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
-	 #ifdef ESP8266
+	 #if defined(ESP8266)
+	 	bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
         bool begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1);
 	 #else
 	 	bool begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin=-1);

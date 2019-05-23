@@ -27,7 +27,7 @@ static const uint16_t _auchCRC[] PROGMEM = {
 	0x4040, 0x0000
 };
 
-uint16_t ModbusRTU::crc(uint8_t address, uint8_t* frame, uint8_t pduLen) {
+uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
 	uint8_t i = 0xFF ^ address;
 	uint16_t val = pgm_read_word(_auchCRC + i);
     uint8_t CRCHi = 0xFF ^ highByte(val);	// Hi
@@ -63,6 +63,7 @@ bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int1
     return true;
 }
 
+#if defined(ESP8266)
 bool ModbusRTU::begin(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
 	port->begin(baud);
     _port = port;
@@ -76,9 +77,10 @@ bool ModbusRTU::begin(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
     }
     return true;
 }
+#endif
 
 bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
-    uint16_t newCrc = crc(slaveId, frame, len);
+    uint16_t newCrc = crc16(slaveId, frame, len);
     if (_txPin >= 0) {
         digitalWrite(_txPin, HIGH);
         delay(1);
@@ -145,7 +147,7 @@ void ModbusRTU::task() {
 	//_port->readBytes(_frame, _len);
     u_int frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
-    if (frameCrc != crc(address, _frame, _len)) {  // CRC Check
+    if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
         _len = 0;   // Cleanup if wrong crc
         free(_frame);
         _frame = nullptr;

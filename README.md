@@ -65,11 +65,13 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 // 3.0.0-DEVEL
 + ModbusRTU Slave
 + ModbusRTU Master
-+ Test on ESP8266
-+ CRC tables stored in PROGMEM
++ Registers are now shared between Modbus* instances by default.
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
-- Optimize CRC calculation
++ CRC tables stored in PROGMEM
++ Test on ESP8266
+- Optimize CRC calculation for ESP8266
+- Use in-rom CRC calculation function for ESP32
 - Check real Serial buffer size
 - Test on ESP32
 - Test TX control pin
