@@ -11,15 +11,12 @@ The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called
 
 In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network and Modbus RTU over serial. For more information about Modbus see:
 
-[Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
-
-[MODBUS APPLICATION PROTOCOL SPECIFICATION
+* [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
+* [MODBUS APPLICATION PROTOCOL SPECIFICATION
 V1.1b](http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf)
-
-[MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE
+* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE
 V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
-
-[MODBUS over Serial Line
+* [MODBUS over Serial Line
 Specification and Implementation Guide
 V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 
@@ -45,8 +42,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Master connect
-  * Master/Slave disconnect
+  * Master connect (ModbusIP)
+  * Master/Slave disconnect (ModbusIP)
   * Read specific Register
   * Write specific Register
   * Slave transaction finish
@@ -56,7 +53,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 1. When using Modbus IP the transport protocol is TCP (port 502).
 2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
-4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Read Multiple HRegs/IRegs for ESP master is limited to 63 per query.
+4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Coils - to 1008, Read Multiple HRegs/IRegs for ESP master is limited to 63, Coils/Istss - to 1008 per query.
 5. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [Standard C++ for Arduino (port of uClibc++)](https://github.com/maniacbug/StandardCplusplus).
 
 ## Last Changes
@@ -65,7 +62,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 // 3.0.0-DEVEL
 + ModbusRTU Slave
 + ModbusRTU Master
-+ Registers are now shared between Modbus* instances by default.
++ Registers are now shared between Modbus* instances by default
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
 + CRC tables stored in PROGMEM
@@ -76,7 +73,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 - Test on ESP32
 - Test TX control pin
 - Test multiple Modbus* instances
-- Documentation changes
+- Implement eventSource() for ModbusRTU
++ Documentation changes
 // ToDo later
 - 0x14 - Read File Records function
 - 0x15 - Write File Records function
