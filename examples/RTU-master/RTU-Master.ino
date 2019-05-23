@@ -10,7 +10,7 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial S(D1, D2, false, 128);
-ModbusRTU<SoftwareSerial> mb;
+ModbusRTU mb;
 
 bool cbWrite(Modbus::ResultCode event, uint16_t transactionId, void* data) {
   Serial.printf_P("Request result: 0x%02X, Mem: %d\n", event, ESP.getFreeHeap());
