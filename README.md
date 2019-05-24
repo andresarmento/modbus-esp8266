@@ -8,6 +8,8 @@
 
 Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
+---
+
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
@@ -71,10 +73,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + ModbusRTU examples added
 + CRC tables stored in PROGMEM
 + Test on ESP8266
-- Optimize CRC calculation for ESP8266
-- Use in-rom CRC calculation function for ESP32
 - Check real Serial buffer size
-- Test on ESP32
++ Test on ESP32
 - Test TX control pin
 - Test multiple Modbus* instances
 - Implement eventSource() for ModbusRTU
