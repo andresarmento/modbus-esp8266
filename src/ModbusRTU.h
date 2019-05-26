@@ -1,6 +1,8 @@
 /*
     ModbusRTU Library for ESP8266/ESP32
     Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
+	https://github.com/emelianov/modbus-esp8266
+	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
 #pragma once
 #include <Modbus.h>

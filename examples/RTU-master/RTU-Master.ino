@@ -4,12 +4,15 @@
   
   (c)2019 Alexander Emelianov (a.m.emelianov@gmail.com)
   https://github.com/emelianov/modbus-esp8266
+  This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
 
 #include <ModbusRTU.h>
-#include <SoftwareSerial.h>
+#ifdef ESP8266
+ #include <SoftwareSerial.h>
+ SoftwareSerial S(D1, D2, false, 256);
+#endif
 
-SoftwareSerial S(D1, D2, false, 128);
 ModbusRTU mb;
 
 bool cbWrite(Modbus::ResultCode event, uint16_t transactionId, void* data) {
@@ -19,7 +22,13 @@ bool cbWrite(Modbus::ResultCode event, uint16_t transactionId, void* data) {
 
 void setup() {
   Serial.begin(115200);
-  mb.begin(&S, 9600);
+ #ifdef ESP8266
+  S.begin(9600, SWSERIAL_8N1);
+  mb.begin(&S);
+ #else
+  Serial1.begin(9600, SERIAL_8N1, 17, 18);
+  mb.begin(&Serial1)
+ #endif
   mb.master();
 }
 
