@@ -233,6 +233,8 @@ class Modbus {
         bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool removeOnSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+
+        virtual uint32_t eventSource() {return 0;}
 };
 
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests

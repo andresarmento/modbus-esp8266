@@ -53,6 +53,7 @@ class ModbusRTU : public Modbus {
 		void master() { isMaster = true; };
 		void slave(uint8_t slaveId) {_slaveId = slaveId;};
 		uint8_t slave() { return _slaveId; }
+		uint32_t eventSource() override {return _slaveId;}
 		uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
 		uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 		uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);

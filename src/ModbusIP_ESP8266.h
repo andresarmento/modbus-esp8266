@@ -82,7 +82,7 @@ class ModbusIP : public Modbus {
 	void begin(); 	// Depricated
 	void onConnect(cbModbusConnect cb = nullptr);
 	void onDisconnect(cbModbusConnect cb = nullptr);
-	IPAddress eventSource();
+	uint32_t eventSource() override;
 	void autoConnect(bool enabled = true);
 	void dropTransactions();
 

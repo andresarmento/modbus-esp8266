@@ -201,12 +201,16 @@ typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, 
 Transaction end callback function definition. For ModbusIP *data* is currently reserved. For ModbusRTU *transactionId* is also reserved.
 
 ```c
-IPAddress eventSource();
+uint32_t eventSource();
 ```
 
-*Modbus IP Master/Slave* Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
+Should be called from onGet/onSet or transaction callback function.
+
+*Modbus IP Master/Slave* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
 
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
+
+*Modbus RTU Master/Slave* Returns slave id. 
 
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);

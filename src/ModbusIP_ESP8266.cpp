@@ -35,10 +35,10 @@ bool ModbusIP::connect(IPAddress ip) {
 	return client[p]->connect(ip, MODBUSIP_PORT);
 }
 
-IPAddress ModbusIP::eventSource() {		// Returns IP of current processing client query
+uint32_t ModbusIP::eventSource() {		// Returns IP of current processing client query
 	if (n >= 0 && n < MODBUSIP_MAX_CLIENTS && client[n])
-		return client[n]->remoteIP();
-	return INADDR_NONE;
+		return (uint32_t)client[n]->remoteIP();
+	return (uint32_t)INADDR_NONE;
 }
 
 TTransaction* ModbusIP::searchTransaction(uint16_t id) {
