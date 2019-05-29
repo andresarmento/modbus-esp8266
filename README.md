@@ -77,7 +77,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + Test on ESP32
 - Test TX control pin
 - Test multiple Modbus* instances
-- Implement eventSource() for ModbusRTU
++ Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
 + Documentation changes
 // ToDo later
 - 0x14 - Read File Records function
