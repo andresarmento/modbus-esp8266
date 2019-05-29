@@ -93,9 +93,9 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     _port->write(newCrc >> 8);	//Send CRC 
     _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
-    delay(_t);
     if (_txPin >= 0)
         digitalWrite(_txPin, LOW);
+	delay(_t);
 	return true;
 }
 
