@@ -14,7 +14,8 @@
 ModbusRTU mb;
 
 void setup() {
-  mb.begin(&Serial, 9600, SERIAL_8N1);
+  Serial.begin(9600, SERIAL_8N1)
+  mb.begin(&Serial);
   mb.slave(SLAVE_ID);
   mb.addHreg(REGN);
   mb.Hreg(REGN, 100);

@@ -44,11 +44,9 @@ class ModbusRTU : public Modbus {
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
     public:
 	 #if defined(ESP8266)
-	 	bool begin(SoftwareSerial* port, uint32_t baud=0, int16_t txPin=-1);
-        bool begin(HardwareSerial* port, uint32_t baud=0, SerialConfig format=SERIAL_8N1, int16_t txPin=-1);
-	 #else
-	 	bool begin(HardwareSerial* port, uint32_t baud=0, uint16_t format=SERIAL_8N1, int16_t txPin=-1);
+	 	bool begin(SoftwareSerial* port, int16_t txPin=-1);
 	 #endif
+	 	bool begin(HardwareSerial* port, int16_t txPin=-1);
         void task();
 		void master() { isMaster = true; };
 		void slave(uint8_t slaveId) {_slaveId = slaveId;};

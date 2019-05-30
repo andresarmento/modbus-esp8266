@@ -47,12 +47,11 @@ Processing routine. Should be periodically called form loop().
 ### Modbus RTU Specific API
 
 ```c
-bool begin(SoftwareSerial* port, uint32_t baud, int16_t txPin=-1);
-bool begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin=-1); // for ESP32
-bool begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin=-1); // for ESP8266
+bool begin(SoftwareSerial* port, int16_t txPin=-1); // For ESP8266 only
+bool begin(HardwareSerial* port, int16_t txPin=-1);
 ```
 
-Initialize Serial port only. txPin support is not tested yet.
+Assing Serial port. txPin support is not tested on ESP8266 yet.
 
 ```c
 void master();

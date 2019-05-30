@@ -43,13 +43,9 @@ uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
-#if defined(ESP8266)
-bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, SerialConfig format, int16_t txPin) {
-#else
-bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int16_t txPin) {
-#endif
-    if (baud) port->begin(baud, format);
-	else baud = port->baudRate();
+
+bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
+	uint32_t baud = port->baudRate();
 	maxRegs = port->setRxBufferSize(256) / 2 - 3;
     _port = port;
     _txPin = txPin;
@@ -66,9 +62,8 @@ bool ModbusRTU::begin(HardwareSerial* port, uint32_t baud, uint16_t format, int1
 }
 
 #if defined(ESP8266)
-bool ModbusRTU::begin(SoftwareSerial* port, uint32_t baud, int16_t txPin) {
-    if (baud) port->begin(baud);
-	else baud = port->baudRate();
+bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin) {
+	uint32_t baud = port->baudRate();
     _port = port;
     if (txPin >= 0)
         port->setTransmitEnablePin(txPin);

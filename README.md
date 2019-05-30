@@ -72,10 +72,11 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
 + CRC tables stored in PROGMEM
-+ Test on ESP8266
++ ESP8266. Tested
 - Check real Serial buffer size
-+ Test on ESP32
-- Test TX control pin
++ ESP32. Tested
++ ESP32. Tested TX control pin with MAX-485
+- ESP8266. Test TX control pin
 - Test multiple Modbus* instances
 + Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
 + Documentation changes
