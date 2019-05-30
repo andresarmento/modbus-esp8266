@@ -61,6 +61,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Coils - to 1008, Read Multiple HRegs/IRegs for ESP master is limited to 63, Coils/Istss - to 1008 per query.
 5. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [Standard C++ for Arduino (port of uClibc++)](https://github.com/maniacbug/StandardCplusplus).
+6. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017 only up to 9600 for some reason.
 
 ## Last Changes
 
