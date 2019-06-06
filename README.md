@@ -56,12 +56,11 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 
 ## Notes:
 
-1. When using Modbus IP the transport protocol is TCP (port 502).
-2. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-3. For API specefication refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
-4. Modbus RTU maximum incoming frame size is limited by Serial buffer size (128 bytes for ESP8266 HardwareSerial, user-specified for SoftwareSerial). That is HardwareSerial limits Write Multiple HRegs for ESP slave device is limited to 63 registers, Coils - to 1008, Read Multiple HRegs/IRegs for ESP master is limited to 63, Coils/Istss - to 1008 per query.
-5. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [Standard C++ for Arduino (port of uClibc++)](https://github.com/maniacbug/StandardCplusplus).
-6. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017 only up to 9600 for some reason.
+1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
+2. For API refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
+3. Modbus RTU maximum incoming frame size is determinated by HardwareSerial buffer size. For SoftwareSerial buffer must be set to 256 bytes.
+4. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [Standard C++ for Arduino (port of uClibc++)](https://github.com/maniacbug/StandardCplusplus).
+5. RS-485 transivers based on MAX-485 is working on at least up to 57600. XY-017/XY-485 working only up to 9600 for some reason.
 
 ## Last Changes
 
@@ -73,11 +72,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
 + CRC tables stored in PROGMEM
-+ ESP8266. Tested
-- Check real Serial buffer size
-+ ESP32. Tested
-+ ESP32. Tested TX control pin with MAX-485
-- ESP8266. Test TX control pin
++ TX control pin support to work with MAX-485
 - Test multiple Modbus* instances
 + Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
 + Documentation changes

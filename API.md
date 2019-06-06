@@ -51,7 +51,7 @@ bool begin(SoftwareSerial* port, int16_t txPin=-1); // For ESP8266 only
 bool begin(HardwareSerial* port, int16_t txPin=-1);
 ```
 
-Assing Serial port. txPin support is not tested on ESP8266 yet.
+Assing Serial port. txPin controls transmit enable for MAX-485.
 
 ```c
 void master();
