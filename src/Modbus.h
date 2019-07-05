@@ -19,7 +19,7 @@
 
 #define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
-#define MB_MAX_FRAME   128
+#define MODBUS_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
 #define IREG(n) (TAddress){TAddress::IREG, n}

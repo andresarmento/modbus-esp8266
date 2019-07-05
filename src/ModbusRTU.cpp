@@ -46,7 +46,7 @@ uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
 
 bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
 	uint32_t baud = port->baudRate();
-	maxRegs = port->setRxBufferSize(256) / 2 - 3;
+	maxRegs = port->setRxBufferSize(MODBUS_MAX_FRAME) / 2 - 3;
     _port = port;
     _txPin = txPin;
     if (txPin >= 0) {
