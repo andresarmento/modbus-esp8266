@@ -56,6 +56,7 @@ class ModbusIP : public Modbus {
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 	bool autoConnectMode = false;
+	uint16_t slavePort = 0;
 
 	TTransaction* searchTransaction(uint16_t id);
 	void cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
@@ -74,9 +75,9 @@ class ModbusIP : public Modbus {
 	~ModbusIP();
 	bool isTransaction(uint16_t id);
 	bool isConnected(IPAddress ip);
-	bool connect(IPAddress ip);
+	bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
 	bool disconnect(IPAddress ip);
-	void slave();
+	void slave(uint16_t port = MODBUSIP_PORT);
 	void master();
 	void task();
 	void begin(); 	// Depricated

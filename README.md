@@ -76,6 +76,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 - Test multiple Modbus* instances
 + Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
 + Documentation changes
++ Allow to specify local TCP port for Slave (default is 502)
++ Allow to specify TCP port for remote Slave connection (default is 502)
 // ToDo later
 - 0x14 - Read File Records function
 - 0x15 - Write File Records function

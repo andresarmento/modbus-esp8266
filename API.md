@@ -70,14 +70,14 @@ Slave mode. Returns configured slave id. Master mode. Returns slave id for activ
 
 ```c
 void begin(); // Depricated. Use slave() instead.
-void slave();
+void slave(uint16_t port = MODBUSIP_PORT);
 ```
 
 ### ModBus IP Master specific
 
 ```c
 void master();
-bool connect(IPAddress ip);
+bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
 bool disconnect(IPAddress ip);
 bool isTransaction(uint16_t id);
 bool isConnected(IPAddress ip);

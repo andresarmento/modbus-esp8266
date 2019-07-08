@@ -15,8 +15,9 @@ void ModbusIP::master() {
 
 }
 
-void ModbusIP::slave() {
-	server = new WiFiServer(MODBUSIP_PORT);
+void ModbusIP::slave(uint16_t port) {
+	slavePort = port;
+	server = new WiFiServer(slavePort);
 	server->begin();
 }
 
@@ -24,7 +25,7 @@ void ModbusIP::begin() {
 	slave();
 }
 
-bool ModbusIP::connect(IPAddress ip) {
+bool ModbusIP::connect(IPAddress ip, uint16_t port) {
 	//cleanup();
 	if(getSlave(ip) != -1)
 		return true;
@@ -32,7 +33,7 @@ bool ModbusIP::connect(IPAddress ip) {
 	if (p == -1)
 		return false;
 	client[p] = new WiFiClient();
-	return client[p]->connect(ip, MODBUSIP_PORT);
+	return client[p]->connect(ip, port);
 }
 
 uint32_t ModbusIP::eventSource() {		// Returns IP of current processing client query
@@ -109,7 +110,7 @@ void ModbusIP::task() {
 					client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
 					//client[n]->flush();
 				} else {
-					if (client[n]->localPort() == MODBUSIP_PORT) {
+					if (client[n]->localPort() == slavePort) {
 						// Process incoming frame as slave
 						slavePDU(_frame);
 					} else {
@@ -138,7 +139,7 @@ void ModbusIP::task() {
 				}
 			}
 		}
-		if (client[n]->localPort() != MODBUSIP_PORT) _reply = REPLY_OFF;	// No replay if it was responce to master
+		if (client[n]->localPort() != slavePort) _reply = REPLY_OFF;	// No replay if it was responce to master
 		if (_reply != REPLY_OFF) {
 			_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
 			size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
@@ -238,14 +239,14 @@ int8_t ModbusIP::getFreeClient() {
 
 int8_t ModbusIP::getSlave(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() != MODBUSIP_PORT)
+		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() != slavePort)
 			return i;
 	return -1;
 }
 
 int8_t ModbusIP::getMaster(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() == MODBUSIP_PORT)
+		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() == slavePort)
 			return i;
 	return -1;
 }
