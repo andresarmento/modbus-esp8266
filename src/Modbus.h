@@ -17,9 +17,9 @@
 #endif
 
 
-//#define MB_GLOBAL_REGS
+#define MB_GLOBAL_REGS
 #define MB_MAX_REGS     32
-#define MB_MAX_FRAME   128
+#define MODBUS_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
 #define IREG(n) (TAddress){TAddress::IREG, n}
@@ -37,6 +37,7 @@
 struct TRegister;
 
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
+
 struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG};
     RegType type;
@@ -86,8 +87,6 @@ struct TCallback {
 struct TRegister {
     TAddress    address;
     uint16_t value;
-    //cbModbus get;
-    //cbModbus set;
     bool operator ==(const TRegister &obj) const {
 	    return address == obj.address;
 	}
@@ -103,12 +102,13 @@ class Modbus {
             FC_READ_INPUT_REGS  = 0x04, // Read Input Registers
             FC_WRITE_COIL       = 0x05, // Write Single Coil (Output)
             FC_WRITE_REG        = 0x06, // Preset Single Register
+            FC_DIAGNOSTICS      = 0x08, // Not implemented. Diagnostics (Serial Line only)
             FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
             FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
-            FC_READ_FILE_REC    = 0x14, // Not implemented
-            FC_WRITE_FILE_REC   = 0x15, // Not implemented
-            FC_MASKWRITE_REG    = 0x16, // Not implemented
-            FC_READWRITE_REGS   = 0x17  // Not implemented
+            FC_READ_FILE_REC    = 0x14, // Not implemented. Read File Record
+            FC_WRITE_FILE_REC   = 0x15, // Not implemented. Write File Record
+            FC_MASKWRITE_REG    = 0x16, // Not implemented. Mask Write Register
+            FC_READWRITE_REGS   = 0x17  // Not implemented. Read/Write Multiple registers
         };
         //Exception Codes
         //Custom result codes used internally and for callbacks but never used for Modbus responce
@@ -117,7 +117,7 @@ class Modbus {
             EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
             EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not exists
             EX_ILLEGAL_VALUE        = 0x03, // Output Value not in Range
-            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Deice Fails to process request
+            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Device Fails to process request
             EX_ACKNOWLEDGE          = 0x05, // Not used
             EX_SLAVE_DEVICE_BUSY    = 0x06, // Not used
             EX_MEMORY_PARITY_ERROR  = 0x08, // Not used
@@ -147,7 +147,12 @@ class Modbus {
         bool removeCoil(uint16_t offset, uint16_t numregs = 1);
         bool removeIsts(uint16_t offset, uint16_t numregs = 1);
         bool removeIreg(uint16_t offset, uint16_t numregs = 1);
-
+        /*
+        bool Hreg(uint16_t offset, uint16_t* value);
+        bool Coil(uint16_t offset, bool* value);
+        bool Ists(uint16_t offset, bool* value);
+        bool Ireg(uint16_t offset, uint16_t* value);
+        */
         void cbEnable(bool state = true);
         void cbDisable();
         
@@ -228,4 +233,8 @@ class Modbus {
         bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool removeOnSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+
+        virtual uint32_t eventSource() {return 0;}
 };
+
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests

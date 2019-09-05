@@ -24,8 +24,6 @@
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
-typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
-
 typedef struct TTransaction {
 	uint16_t	transactionId;
 	uint32_t	timestamp;
@@ -50,7 +48,6 @@ class ModbusIP : public Modbus {
 		};
 		uint8_t  raw[7];
 	};
-	//MBAP_t _MBAP;
 	cbModbusConnect cbConnect = nullptr;
 	cbModbusConnect cbDisconnect = nullptr;
 	WiFiServer* server = nullptr;
@@ -59,6 +56,7 @@ class ModbusIP : public Modbus {
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 	bool autoConnectMode = false;
+	uint16_t slavePort = 0;
 
 	TTransaction* searchTransaction(uint16_t id);
 	void cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
@@ -77,15 +75,15 @@ class ModbusIP : public Modbus {
 	~ModbusIP();
 	bool isTransaction(uint16_t id);
 	bool isConnected(IPAddress ip);
-	bool connect(IPAddress ip);
+	bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
 	bool disconnect(IPAddress ip);
-	void slave();
+	void slave(uint16_t port = MODBUSIP_PORT);
 	void master();
 	void task();
 	void begin(); 	// Depricated
 	void onConnect(cbModbusConnect cb = nullptr);
 	void onDisconnect(cbModbusConnect cb = nullptr);
-	IPAddress eventSource();
+	uint32_t eventSource() override;
 	void autoConnect(bool enabled = true);
 	void dropTransactions();
 
@@ -109,4 +107,19 @@ class ModbusIP : public Modbus {
 	uint16_t pullCoilToIsts(IPAddress ip, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	/*
+	uint16_t maskHreg(IPAddress ip, uint16_t offset, uint16_t andMask, uint16_t orMask, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t pushPullIreg
+	uint16_t pushPullHreg
+	uint16_t pushIregPullToHreg
+	uint16_t pushHregPullToIreg
+	uint16_t pushPullHreg(IPAddress ip,
+		uint16_t from, uint16_t to, uint16_t numregs = 1,
+		uint16_t to, uint16_t from, uint16_t numregs = 1,
+		cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readWriteHreg(IPAddress ip,
+		uint16_t readOffset, uint16_t* value, uint16_t numregs = 1,
+		uint16_t writeOffset, uint16_t* value, uint16_t numregs = 1,
+		cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	*/
 };

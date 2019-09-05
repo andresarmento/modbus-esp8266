@@ -1,6 +1,6 @@
 # Modbus Master-Slave Library for ESP8266/ESP32
 
-## API
+## Common API
 
 ### Add [multiple] regs
 
@@ -11,7 +11,7 @@ bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
 bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 ```
 
-### Write reg
+### Write local reg
 
 ```c
 bool Hreg(uint16_t offset, uint16_t value);
@@ -20,7 +20,7 @@ bool Ists(uint16_t offset, bool value);
 bool Ireg(uint16_t offset, uint16_t value);
 ```
 
-### Read reg
+### Read local reg
 
 ```c
 uint16_t Hreg(uint16_t offset);
@@ -38,6 +38,58 @@ bool removeIsts(uint16_t offset, uint16_t numregs = 1);
 bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 ```
 
+```c
+void task();
+```
+
+Processing routine. Should be periodically called form loop().
+
+### Modbus RTU Specific API
+
+```c
+bool begin(SoftwareSerial* port, int16_t txPin=-1); // For ESP8266 only
+bool begin(HardwareSerial* port, int16_t txPin=-1);
+```
+
+Assing Serial port. txPin controls transmit enable for MAX-485.
+
+```c
+void master();
+void slave(uint8_t slaveId);
+```
+
+Select and initialize master or slave mode to work. Switching between modes is not supported. Call is not returning error in this case but behaviour is unpredictible.
+
+```c
+uint8_t slave();
+```
+
+Slave mode. Returns configured slave id. Master mode. Returns slave id for active request or 0 if no request in-progress.
+
+### ModBus IP Slave specific API
+
+```c
+void begin(); // Depricated. Use slave() instead.
+void slave(uint16_t port = MODBUSIP_PORT);
+```
+
+### ModBus IP Master specific
+
+```c
+void master();
+bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
+bool disconnect(IPAddress ip);
+bool isTransaction(uint16_t id);
+bool isConnected(IPAddress ip);
+void dropTransactions();
+```
+
+```c
+void autoConnect(bool enabled);
+```
+
+Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call. Disabled by default.
+
 ### Query [multiple] regs from remote slave
 
 ```c
@@ -47,6 +99,13 @@ uint16_t pullHreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs = 1
 uint16_t pullIreg(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pullHregToIreg(IPAddress ip, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pullCoilToIsts(IPAddress ip, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
+
+uint16_t pullCoil(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullIsts(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullHregToIreg(uint8_t slaveId, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pullCoilToIsts(uint8_t slaveId, uint16_t offset, uint16_t startreg, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Result is saved to local registers. Method returns corresponding transaction id. [ip/from] or [ip/offset] - slave, [to] or [startreg] - local
@@ -57,7 +116,13 @@ Result is saved to local registers. Method returns corresponding transaction id.
 uint16_t pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pushHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
-uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
+uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = 
+MODBUSIP_UNIT);
+
+uint16_t pushCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pushIstsToCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t pushIregToHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value. [ip/to] - slave, [from] - local
@@ -67,6 +132,9 @@ Write Register/Coil or Write Multiple Registers/Coils Modbus function selected a
 ```c
 uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t value, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
+
+uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb = nullptr);
+uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 ```
 
 Write single value to remote Hreg/Coil.
@@ -74,6 +142,9 @@ Write single value to remote Hreg/Coil.
 ```c
 uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t writeHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
+
+uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Write multiple values from array to remote Coil/Hreg.
@@ -85,20 +156,19 @@ uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs =
 uint16_t readIsts(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t readHreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
+
+uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readIsts(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
+uint16_t readIreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
 Read values from remote Hreg/Coil/Ireg/Ists to array.
 
-```c
-void autoConnect(bool enabled = true);
-```
-
-Set mode for automatic connect on read*\write*\push*\pull* calls. Disabled by default.
-
-### Callbacks
+## Callbacks API
 
 ```c
-void cbEnable(bool state = TRUE);
+void cbEnable(bool state = true);
 void cbDisable();
 ```
 
@@ -109,13 +179,13 @@ void onConnect(cbModbusConnect cb);
 void onDisonnect(cbModbusConnect cb);
 ```
 
-Assign callback function on new incoming connection event.
+*Modbus IP Slave* Assign callback function on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
-Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
+*Modbus IP Slave* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
 
 ```c
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
@@ -127,15 +197,19 @@ Get/Set register callback function definition. Pointer to TRegister structure (s
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 ```
 
-Transaction end callback function definition. *data* is currently reserved.
+Transaction end callback function definition. For ModbusIP *data* is currently reserved. For ModbusRTU *transactionId* is also reserved.
 
 ```c
-IPAddress eventSource();
+uint32_t eventSource();
 ```
 
-Should be called from onGet/onSet or transaction callback function. Returns IP address of remote requesting operation or INADDR_NONE for local.
+Should be called from onGet/onSet or transaction callback function.
+
+*Modbus IP Master/Slave* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
 
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
+
+*Modbus RTU Master/Slave* Returns slave id. 
 
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -177,36 +251,6 @@ Disconnect specific callback function or all callbacks of the type if cb=NULL.
 #define ISTS_VAL(v)
 #define ISTS_BOOL(v)
 ```
-
-### ModBus IP specific
-
-```c
-void task();
-```
-
-### ModBus IP Slave specific
-
-```c
-void begin(); // Depricated. Use slave() instead.
-void slave();
-```
-
-### ModBus IP Master specific
-
-```c
-void master();
-bool connect(IPAddress ip);
-bool disconnect(IPAddress ip);
-bool isTransaction(uint16_t id);
-bool isConnected(IPAddress ip);
-void dropTransactions();
-```
-
-```c
-void autoConnect(bool enabled);
-```
-
-Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call.
 
 ### Callback example
 
