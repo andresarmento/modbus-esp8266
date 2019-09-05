@@ -8,7 +8,7 @@
 #include "Arduino.h"
 #include <vector>
 #include <algorithm>
-#ifndef ESP8266
+#ifdef ARDUINO_ARCH_ESP32
  #include <byteswap.h>
 #endif
 
