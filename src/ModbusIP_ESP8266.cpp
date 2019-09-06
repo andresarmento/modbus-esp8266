@@ -62,7 +62,6 @@ void ModbusIP::task() {
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
 					client[n]->flush();
-					//client[n]->stop();
 					delete client[n];
 					client[n] = nullptr;
 				}
@@ -74,8 +73,6 @@ void ModbusIP::task() {
 				}
 			}
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
-			//currentClient->flush();
-			//currentClient->stop();
 			delete currentClient;
 		}
 	}
@@ -87,37 +84,29 @@ void ModbusIP::task() {
 		client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 		if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
-			//client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
-			while (client[n]->available())
+			while (client[n]->available())	// Drop all incoming if wrong packet
 				client[n]->read();
-			//client[n]->flush();
 			continue;	// for (n)
 		}
 		_len = __bswap_16(_MBAP.length);
 		_len--; // Do not count with last byte from MBAP
 		if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 			exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-			_len--;
-			//client[n]->readBytes((uint8_t*)nullptr, _len);
-			for (uint8_t i = 0; i < _len; i++)
+			_len--;	// Subtract for read byte
+			for (uint8_t i = 0; i < _len; i++)	// Drop rest of packet
 				client[n]->read();
-			//client[n]->flush();
 		} else {
 			free(_frame);
 			_frame = (uint8_t*) malloc(_len);
 			if (!_frame) {
 				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-				//client[n]->readBytes((uint8_t*)nullptr, _len);
-				for (uint8_t i = 0; i < _len; i++)
+				for (uint8_t i = 0; i < _len; i++)	// Drop packet
 					client[n]->read();
-				//client[n]->flush();
 			} else {
 				if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 					exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-					//client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
-					while (client[n]->available())
+					while (client[n]->available())	// Drop all incoming (if any)
 						client[n]->read();
-					//client[n]->flush();
 				} else {
 					if (client[n]->localPort() == slavePort) {
 						// Process incoming frame as slave
@@ -143,8 +132,6 @@ void ModbusIP::task() {
 								_trans.erase(it);
 						}
 					}
-					//client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
-					//client[n]->flush();			// Not sure if we need flush rest of data available
 				}
 			}
 		}
@@ -158,15 +145,10 @@ void ModbusIP::task() {
 			client[n]->write(sbuf, send_len);
 			client[n]->flush();
 		}
-		//client[n]->flush();
 		free(_frame);
 		_frame = nullptr;
 		_len = 0;
-		//n--;
 	}
-	//for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++)
-	//	if (client[n] && client[n]->connected())
-	//		client[n]->flush();
 	n = -1;
 }
 
