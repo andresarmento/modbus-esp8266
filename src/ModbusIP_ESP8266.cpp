@@ -97,6 +97,7 @@ void ModbusIP::task() {
 		_len--; // Do not count with last byte from MBAP
 		if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 			exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
+			_len--;
 			//client[n]->readBytes((uint8_t*)nullptr, _len);
 			for (uint8_t i = 0; i < _len; i++)
 				client[n]->read();
@@ -114,7 +115,7 @@ void ModbusIP::task() {
 				if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 					exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
 					//client[n]->readBytes((uint8_t*)nullptr, client[n]->available());
-					for (uint8_t i = 0; i < _len; i++)
+					while (client[n]->available())
 						client[n]->read();
 					//client[n]->flush();
 				} else {
@@ -132,7 +133,7 @@ void ModbusIP::task() {
 							} else {
 								_reply = EX_UNEXPECTED_RESPONSE;
 							}
-							if (cbEnabled && trans->cb) {
+							if (trans->cb) {
 								trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
 							}
 							free(trans->_frame);
@@ -155,7 +156,7 @@ void ModbusIP::task() {
 			memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 			memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 			client[n]->write(sbuf, send_len);
-			//client[n]->flush();
+			client[n]->flush();
 		}
 		//client[n]->flush();
 		free(_frame);
