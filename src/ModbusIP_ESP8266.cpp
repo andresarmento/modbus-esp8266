@@ -62,7 +62,6 @@ void ModbusIP::task() {
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
 					client[n]->flush();
-					//client[n]->stop();
 					delete client[n];
 					client[n] = nullptr;
 				}
@@ -74,82 +73,82 @@ void ModbusIP::task() {
 				}
 			}
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
-			//currentClient->flush();
-			//currentClient->stop();
 			delete currentClient;
 		}
 	}
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (!client[n]) continue;
 		if (!client[n]->connected()) continue;
-		if (client[n]->available() < sizeof(_MBAP) + 1) continue;
-
-		client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
-		if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
-			while (client[n]->available())
-				client[n]->read();
-			continue;	// for (n)
-		}
-		_len = __bswap_16(_MBAP.length);
-		_len--; // Do not count with last byte from MBAP
-		if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
-			exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-			for (uint8_t i = 0; i < _len; i++)
-				client[n]->read();
-		} else {
-			free(_frame);
-			_frame = (uint8_t*) malloc(_len);
-			if (!_frame) {
+		while (client[n]->available() > sizeof(_MBAP)) {
+			client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
+		
+			if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
+				while (client[n]->available())	// Drop all incoming if wrong packet
+					client[n]->read();
+					continue;
+			}
+			_len = __bswap_16(_MBAP.length);
+			_len--; // Do not count with last byte from MBAP
+			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-				for (uint8_t i = 0; i < _len; i++)
+				_len--;	// Subtract for read byte
+				for (uint8_t i = 0; i < _len; i++)	// Drop rest of packet
 					client[n]->read();
 			} else {
-				if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
-					exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-					while (client[n]->available())
+				free(_frame);
+				_frame = (uint8_t*) malloc(_len);
+				if (!_frame) {
+					exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
+					for (uint8_t i = 0; i < _len; i++)	// Drop packet
 						client[n]->read();
 				} else {
-					if (client[n]->localPort() == slavePort) {
-						// Process incoming frame as slave
-						slavePDU(_frame);
+					if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
+						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
+						while (client[n]->available())	// Drop all incoming (if any)
+							client[n]->read();
 					} else {
-						// Process reply to master request
-						_reply = EX_SUCCESS;
-						TTransaction* trans = searchTransaction(__bswap_16(_MBAP.transactionId));
-						if (trans) { // if valid transaction id
-							if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
-								// Procass incoming frame as master
-								masterPDU(_frame, trans->_frame, trans->startreg, trans->data);
-							} else {
-								_reply = EX_UNEXPECTED_RESPONSE;
+						if (client[n]->localPort() == slavePort) {
+							// Process incoming frame as slave
+							slavePDU(_frame);
+						} else {
+							// Process reply to master request
+							_reply = EX_SUCCESS;
+							TTransaction* trans = searchTransaction(__bswap_16(_MBAP.transactionId));
+							if (trans) { // if valid transaction id
+								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
+									// Procass incoming frame as master
+									masterPDU(_frame, trans->_frame, trans->startreg, trans->data);
+								} else {
+									_reply = EX_UNEXPECTED_RESPONSE;
+								}
+								if (trans->cb) {
+									trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
+								}
+								free(trans->_frame);
+								//_trans.erase(std::remove(_trans.begin(), _trans.end(), *trans), _trans.end() );
+								std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
+								if (it != _trans.end())
+									_trans.erase(it);
 							}
-							if (cbEnabled && trans->cb) {
-								trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
-							}
-							free(trans->_frame);
-							//_trans.erase(std::remove(_trans.begin(), _trans.end(), *trans), _trans.end() );
-							std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
-							if (it != _trans.end())
-								_trans.erase(it);
 						}
 					}
 				}
 			}
+			if (client[n]->localPort() != slavePort) _reply = REPLY_OFF;	// No replay if it was responce to master
+			if (_reply != REPLY_OFF) {
+				_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
+				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
+				uint8_t sbuf[send_len];				
+				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+				client[n]->write(sbuf, send_len);
+				client[n]->flush();
+			}
+			free(_frame);
+			_frame = nullptr;
+			_len = 0;
 		}
-		if (client[n]->localPort() != slavePort) _reply = REPLY_OFF;	// No replay if it was responce to master
-		if (_reply != REPLY_OFF) {
-			_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
-			size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
-			uint8_t sbuf[send_len];				
-			memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
-			memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-			client[n]->write(sbuf, send_len);
-			//client[n]->flush();
-		}
-		free(_frame);
-		_frame = nullptr;
-		_len = 0;
 	}
 	n = -1;
 }
