@@ -27,7 +27,7 @@ void setup() {
   mb.begin(&S);
  #else
   Serial1.begin(9600, SERIAL_8N1, 17, 18);
-  mb.begin(&Serial1)
+  mb.begin(&Serial1);
  #endif
   mb.master();
 }
