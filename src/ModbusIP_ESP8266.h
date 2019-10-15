@@ -20,6 +20,7 @@
 #define MODBUSIP_MAX_CLIENTS	  4
 #define MODBUSIP_ADD_REG  1
 #define MODBUSIP_UNIQUE_CLIENTS
+#define MODBUSIP_MAX_READMS 100
 
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);

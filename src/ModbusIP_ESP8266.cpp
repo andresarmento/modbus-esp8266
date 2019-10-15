@@ -79,8 +79,8 @@ void ModbusIP::task() {
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (!client[n]) continue;
 		if (!client[n]->connected()) continue;
-		
-		while (client[n]->available() > sizeof(_MBAP)) {
+		unt32_t readStart = millis();
+		while (millis() - readStart < MODBUSIP_MAX_READMS &&  client[n]->available() > sizeof(_MBAP)) {
 			client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
@@ -93,20 +93,20 @@ void ModbusIP::task() {
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
 				_len--;	// Subtract for read byte
-				for (uint8_t i = 0; i < _len; i++)	// Drop rest of packet
+				for (uint8_t i = 0; client[n]->available() && i < _len; i++)	// Drop rest of packet
 					client[n]->read();
 			} else {
 				free(_frame);
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
 					exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-					for (uint8_t i = 0; i < _len; i++)	// Drop packet
+					for (uint8_t i = 0; client[n]->available() && i < _len; i++)	// Drop packet
 						client[n]->read();
 				} else {
 					if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-						while (client[n]->available())	// Drop all incoming (if any)
-							client[n]->read();
+						//while (client[n]->available())	// Drop all incoming (if any)
+						//	client[n]->read();
 					} else {
 						if (client[n]->localPort() == slavePort) {
 							// Process incoming frame as slave
