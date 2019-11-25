@@ -137,6 +137,7 @@ void ModbusRTU::task() {
         return;
     }
 
+	free(_frame);	//Just in case
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {  // Fail to allocate buffer
       for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip packet if can't allocate buffer

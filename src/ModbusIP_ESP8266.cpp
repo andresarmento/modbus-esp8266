@@ -79,7 +79,7 @@ void ModbusIP::task() {
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (!client[n]) continue;
 		if (!client[n]->connected()) continue;
-		unt32_t readStart = millis();
+		uint32_t readStart = millis();
 		while (millis() - readStart < MODBUSIP_MAX_READMS &&  client[n]->available() > sizeof(_MBAP)) {
 			client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
@@ -145,8 +145,10 @@ void ModbusIP::task() {
 				client[n]->write(sbuf, send_len);
 				client[n]->flush();
 			}
-			free(_frame);
-			_frame = nullptr;
+			if (_frame) {
+				free(_frame);
+				_frame = nullptr;
+			}
 			_len = 0;
 		}
 	}

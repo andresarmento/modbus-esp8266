@@ -179,10 +179,10 @@ class Modbus {
 	    void readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
         
         void setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
-        void setMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
+        void setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numoutputs);
         
         void getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs);
-        void getMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs);
+        void getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs);
 
         void bitsToBool(bool* dst, uint8_t* src, uint16_t numregs);
         void boolToBits(uint8_t* dst, bool* src, uint16_t numregs);

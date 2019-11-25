@@ -121,7 +121,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 }
             }
             if (k >= field2) {
-                setMultipleWords(frame + 6, HREG(field1), field2);
+                setMultipleWords((uint16_t*)(frame + 6), HREG(field1), field2);
                 successResponce(HREG(field1), field2, fcode);
                 _reply = REPLY_NORMAL;
             }
@@ -222,15 +222,10 @@ void Modbus::getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs
 	}
 }
 
-void Modbus::getMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs) {
-    uint16_t val;
-    uint16_t i = 0;
-	while(numregs--) {
-        val = Reg(startreg + i);  //retrieve the value from the register bank for the current register
-        frame[i * 2]  = val >> 8;       //write the high byte of the register value
-        frame[i * 2 + 1] = val & 0xFF;  //write the low byte of the register value
-        i++;
-	}
+void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
+    for (uint8_t i = 0; i < numregs; i++) {
+        frame[i] = __bswap_16(Reg(startreg + i));
+    }
 }
 
 void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
@@ -283,7 +278,7 @@ void Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     }
     _frame[0] = fn;
     _frame[1] = _len - 2;   //byte count
-    getMultipleWords(_frame + 2, startreg, numregs);
+    getMultipleWords((uint16_t*)(_frame + 2), startreg, numregs);
     _reply = REPLY_NORMAL;
 }
 
@@ -301,14 +296,10 @@ void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutp
 	}
 }
 
-void Modbus::setMultipleWords(uint8_t* frame, TAddress startreg, uint16_t numregs) {
-    uint16_t val;
-    uint16_t i = 0;
-	while(numregs--) {
-        val = (uint16_t)frame[i*2] << 8 | (uint16_t)frame[i*2 + 1];
-        Reg(startreg + i, val);
-        i++;
-	}
+void Modbus::setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
+    for (uint8_t i = 0; i < numregs; i++) {
+        Reg(startreg + i, __bswap_16(frame[i]));
+    }
 }
 
 bool Modbus::onGet(TAddress address, cbModbus cb, uint16_t numregs) {
@@ -413,14 +404,11 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, F
         _frame[5] = _len - 6;
         if (data) {
             uint16_t* frame = (uint16_t*)(_frame + 6);
-            while(numregs) {
-                *frame = __bswap_16(*((uint16_t*)data));
-                frame = frame + 2;
-                data = data + 2;
-                numregs--;
+            for (uint8_t i = 0; i < numregs; i++) {
+                frame[i] = __bswap_16(data[i]);
             }
         } else {
-            getMultipleWords(_frame + 6, startreg, numregs);
+            getMultipleWords((uint16_t*)(_frame + 6), startreg, numregs);
         }
         return true;
     }
@@ -486,7 +474,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                     field2--;
                 }
             } else {
-                setMultipleWords(frame + 2, startreg, field2);
+                setMultipleWords((uint16_t*)(frame + 2), startreg, field2);
             }
         break;
         case FC_READ_COILS:
@@ -532,7 +520,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                     field2--;
                 }
             } else {
-                setMultipleWords(frame + 2, startreg, field2);
+                setMultipleWords((uint16_t*)(frame + 2), startreg, field2);
             }
         break;
         case FC_WRITE_REG:
