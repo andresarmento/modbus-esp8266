@@ -43,6 +43,11 @@ uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
+bool ModbusRTU::begin(Stream* port) {
+    _port = port;
+    _t = 2;
+    return true;
+}
 
 bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
 	uint32_t baud = port->baudRate();
@@ -126,7 +131,7 @@ void ModbusRTU::task() {
 
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
-    if (isMaster && _slaveId == 0) {    // Check is slaveId is set
+    if (isMaster && _slaveId == 0) {    // Check if slaveId is set
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if is not expected
         _len = 0;
         return;
@@ -144,14 +149,15 @@ void ModbusRTU::task() {
       _len = 0;
       return;
     }
-    for (uint8_t i=0 ; i < _len ; i++) _frame[i] = _port->read();   // read data + crc
+    for (uint8_t i=0 ; i < _len ; i++)
+		_frame[i] = _port->read();   // read data + crc
 	//_port->readBytes(_frame, _len);
     u_int frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
-        _len = 0;   // Cleanup if wrong crc
         free(_frame);
         _frame = nullptr;
+		_len = 0;   // Cleanup if wrong crc
         return;
     }
     if (isMaster) {
@@ -175,16 +181,17 @@ void ModbusRTU::task() {
     if (_reply != Modbus::REPLY_OFF)
 		rawSend(_slaveId, _frame, _len);
     // Cleanup
-    _len = 0;
     free(_frame);
     _frame = nullptr;
+    _len = 0;
 }
 
 
 bool ModbusRTU::cleanup() {
 	// Remove timeouted request and forced event
 	if (_slaveId && (millis() - _timestamp > MODBUSRTU_TIMEOUT)) {
-		_cb(Modbus::EX_TIMEOUT, 0, nullptr);
+		if (_cb)
+			_cb(Modbus::EX_TIMEOUT, 0, nullptr);
 		free(_sentFrame);
         _sentFrame = nullptr;
         _data = nullptr;

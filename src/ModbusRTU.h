@@ -22,7 +22,7 @@
 class ModbusRTU : public Modbus {
     protected:
         Stream* _port;
-        int16_t   _txPin;
+        int16_t   _txPin = -1;
 		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;
 		bool isMaster = false;
@@ -47,6 +47,7 @@ class ModbusRTU : public Modbus {
 	 	bool begin(SoftwareSerial* port, int16_t txPin=-1);
 	 #endif
 	 	bool begin(HardwareSerial* port, int16_t txPin=-1);
+		bool begin(Stream* port);
         void task();
 		void master() { isMaster = true; };
 		void slave(uint8_t slaveId) {_slaveId = slaveId;};

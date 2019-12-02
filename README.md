@@ -1,10 +1,10 @@
 # ModbusRTU and ModbusIP Master-Slave Library for ESP8266/ESP32 v3.0
 
-|If this project is helpfull for you projects you can give me a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
+|If this project is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
 
 
-**Release state: DEVELOPMENT** Everything including API is subject to be changed during this stage.
+**Release state: DEVELOPMENT**
 
 Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
@@ -73,17 +73,19 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + ModbusRTU examples added
 + CRC tables stored in PROGMEM
 + TX control pin support to work with MAX-485
-- Test multiple Modbus* instances
++ Test multiple Modbus* instances
 + Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
 + Documentation changes
 + Allow to specify local TCP port for Slave (default is 502)
 + Allow to specify TCP port for remote Slave connection (default is 502)
++ Master\Client. Fix crash on Write Multiple Hregs
++ Master\Client. Fix crash on no callback function on read\write remote.
+- Add tests.
 // ToDo later
 - 0x14 - Read File Records function
 - 0x15 - Write File Records function
 - 0x16 - Write Mask Register function
 - 0x17 - Read/Write Registers function
-- 0x08 - Serial Diagnostics functions
 // 2.1.0
 + Slave. Fix error response on write multiple Hregs\Coils
 + Slave. Fix writeCoil() for multiple coils
