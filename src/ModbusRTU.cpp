@@ -165,7 +165,7 @@ void ModbusRTU::task() {
         if ((_frame[0] & 0x7F) == _sentFrame[0]) { // Check if function code the same as requested
 			// Procass incoming frame as master
 			masterPDU(_frame, _sentFrame, _sentReg, _data);
-            if (cbEnabled && _cb) {
+            if (_cb) {
 			    _cb((ResultCode)_reply, 0, nullptr);
 		    }
             free(_sentFrame);
@@ -176,7 +176,8 @@ void ModbusRTU::task() {
         _reply = Modbus::REPLY_OFF;    // No reply if master
     } else {
         slavePDU(_frame);
-        if (address == MODBUSRTU_BROADCAST) _reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
+        if (address == MODBUSRTU_BROADCAST)
+			_reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
     }
     if (_reply != Modbus::REPLY_OFF)
 		rawSend(_slaveId, _frame, _len);
