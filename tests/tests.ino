@@ -1,15 +1,12 @@
-/*
-    Modbus Library for ESP8266/ESP32
-    Functional tests
-    Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
-	https://github.com/emelianov/modbus-esp8266
-	This code is licensed under the BSD New License. See LICENSE.txt for more info.
-*/
-
 #include <ModbusRTU.h>
 #include <StreamBuf.h>
 #include "common.h"
-#include "reg.h"
+#include "write.h"
+#include "read.h"
+
+
+uint8_t stage = 0;
+uint16_t readHreg = 0;
 
 #define SLAVE_ID 1
 #define HREG_ID 10
@@ -32,6 +29,11 @@ writeSingle(SLAVE_ID, COIL(HREG_ID), true);
 writeMultiple(SLAVE_ID, HREG(HREG_ID), 10);
 writeMultiple(SLAVE_ID, COIL(HREG_ID), 10);
 
+readMultiple(SLAVE_ID, HREG(HREG_ID), 10);
+readMultiple(SLAVE_ID, COIL(HREG_ID), 10);
+readMultiple(SLAVE_ID, IREG(HREG_ID), 10);
+readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
+
 // Garbage read
   {
   bool Node_1_ackStatus = false;
@@ -46,9 +48,10 @@ writeMultiple(SLAVE_ID, COIL(HREG_ID), 10);
            slave.task();
            delay(1);
         }
-        master.readIsts(SLAVE_ID, 100, &Node_1_ackStatus, NULL);
+        master.readIsts(SLAVE_ID, 100, &Node_1_ackStatus, 1, NULL);
         while (master.slave()) {
           master.task();
+          slave.task();
           delay(1);
         }
         master.readIsts(SLAVE_ID, 101, &Node_2_ackStatus, 1, NULL);
@@ -59,9 +62,10 @@ writeMultiple(SLAVE_ID, COIL(HREG_ID), 10);
            //slave.task();
            delay(1);
         }
-        master.readIsts(SLAVE_ID, 101, &Node_2_ackStatus, NULL);
+        master.readIsts(SLAVE_ID, 101, &Node_2_ackStatus, 1, NULL);
         while (master.slave()) {
           master.task();
+          slave.task();
           delay(1);
         }
   }
