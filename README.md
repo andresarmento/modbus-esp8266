@@ -4,8 +4,6 @@
 |---|---|
 
 
-**Release state: DEVELOPMENT**
-
 Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
 ---
@@ -65,22 +63,19 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
-// 3.0.0-DEVEL
+// 3.0.0
 + ModbusRTU Slave
 + ModbusRTU Master
 + Registers are now shared between Modbus* instances by default
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
 + ModbusRTU examples added
-+ CRC tables stored in PROGMEM
-+ TX control pin support to work with MAX-485
 + Test multiple Modbus* instances
-+ Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both.
-+ Documentation changes
++ Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both
 + Allow to specify local TCP port for Slave (default is 502)
 + Allow to specify TCP port for remote Slave connection (default is 502)
 + Master\Client. Fix crash on Write Multiple Hregs
-+ Master\Client. Fix crash on no callback function on read\write remote.
-- Add tests.
++ Master\Client. Fix crash on no callback function on read\write remote
++ Tests added
 // ToDo later
 - 0x14 - Read File Records function
 - 0x15 - Write File Records function
