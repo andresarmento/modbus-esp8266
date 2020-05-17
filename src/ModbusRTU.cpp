@@ -43,6 +43,10 @@ uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
+void ModbusRTU::setBaudrate(uint32_t baud) {
+	_baudrate = baud;
+}
+
 bool ModbusRTU::begin(Stream* port) {
     _port = port;
     _t = 2;
@@ -50,10 +54,22 @@ bool ModbusRTU::begin(Stream* port) {
 }
 
 bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
-	uint32_t baud = port->baudRate();
-	#if defined(ESP8266)
-	maxRegs = port->setRxBufferSize(MODBUS_MAX_FRAME) / 2 - 3;
-	#endif
+    uint32_t baud = 0;
+    if (_baudrate > 0) {
+        baud = _baudrate;
+    }
+    else {
+    #if defined(ESP32) || defined(ESP8266)
+        // baudRate() only available with ESP32+ESP8266
+        baud = port->baudRate();
+    #else
+    #warning "Using default 9600 baud as not specified with setBaudrate()"
+        baud = 9600;
+    #endif
+    }
+    #if defined(ESP8266)
+    maxRegs = port->setRxBufferSize(MODBUS_MAX_FRAME) / 2 - 3;
+    #endif
     _port = port;
     _txPin = txPin;
     if (_txPin >= 0) {
@@ -96,7 +112,7 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 	#endif
     _port->write(slaveId);  	//Send slaveId
     _port->write(frame, len); 	// Send PDU
-    _port->write(newCrc >> 8);	//Send CRC 
+    _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
 	#ifdef ESP32
     portEXIT_CRITICAL(&mux);
