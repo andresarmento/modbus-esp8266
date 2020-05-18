@@ -23,8 +23,8 @@ void setup() {
 #if defined(ESP32) || defined(ESP8266)
   mb.begin(&Serial);
 #else
-  mb.setBaudrate(9600);
   mb.begin(&Serial);
+  mb.setBaudrate(9600);
 #endif
   mb.slave(SLAVE_ID);
   mb.addHreg(REGN);

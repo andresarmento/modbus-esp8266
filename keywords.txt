@@ -72,6 +72,8 @@ isCoil	KEYWORD2
 isHreg	KEYWORD2
 isIsts	KEYWORD2
 isIreg	KEYWORD2
+begin   KEYWORD2
+setBaudrate KEYWORD2
 
 # Constants and Macros (LITERAL1)
 BIT_VAL	LITERAL1
