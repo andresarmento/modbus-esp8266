@@ -1,6 +1,6 @@
 /*
     ModbusRTU Library for ESP8266/ESP32
-    Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2019-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
@@ -24,7 +24,6 @@ class ModbusRTU : public Modbus {
     protected:
         Stream* _port;
         int16_t   _txPin = -1;
-        uint32_t _baudrate = -1;
 		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;
 		bool isMaster = false;

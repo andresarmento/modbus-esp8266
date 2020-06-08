@@ -1,7 +1,7 @@
 /*
     Modbus.h - Header for Modbus Base Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2018 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 
@@ -18,7 +18,7 @@
 
 
 #define MB_GLOBAL_REGS
-#define MB_MAX_REGS     32
+//#define MB_MAX_REGS     32
 #define MODBUS_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}

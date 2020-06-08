@@ -54,6 +54,12 @@ bool begin(HardwareSerial* port, int16_t txPin=-1);
 Assing Serial port. txPin controls transmit enable for MAX-485.
 
 ```c
+void setBaudrte(uint32 baud);
+```
+
+Set or override Serial baudrate. Must be called after .begin() for Non-ESP devices.
+
+```c
 void master();
 void slave(uint8_t slaveId);
 ```

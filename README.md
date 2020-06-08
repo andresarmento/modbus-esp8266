@@ -46,8 +46,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Master connect (ModbusIP)
-  * Master/Slave disconnect (ModbusIP)
+  * Client connect (ModbusIP)
+  * Server/Client disconnect (ModbusIP)
   * Read specific Register
   * Write specific Register
   * Slave transaction finish
@@ -72,13 +72,13 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + ModbusRTU Master
 + Registers are now shared between Modbus* instances by default
 + Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
-+ ModbusRTU examples added
++ ModbusRTU: Examples added
 + Test multiple Modbus* instances
 + Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both
-+ Allow to specify local TCP port for Slave (default is 502)
-+ Allow to specify TCP port for remote Slave connection (default is 502)
-+ Master\Client. Fix crash on Write Multiple Hregs
-+ Master\Client. Fix crash on no callback function on read\write remote
++ Client: Allow to specify local TCP port (default is 502)
++ Server: Allow to specify TCP remote port for connection (default is 502)
++ Master\Client: Fix crash on Write Multiple Hregs
++ Master\Client: Fix crash on no callback function on read\write remote
 + Tests added
 // ToDo later
 - 0x14 - Read File Records function

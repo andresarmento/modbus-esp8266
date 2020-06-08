@@ -1,7 +1,7 @@
 /*
     ModbusIP_ESP8266.h - Header for ModbusIP Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2019 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 

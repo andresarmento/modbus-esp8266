@@ -45,8 +45,8 @@ void setup() {
   mb.begin(&Serial1);
  #else
   Serial1.begin(9600, SERIAL_8N1);
-  mb.setBaudrate(9600);
   mb.begin(&Serial1);
+  mb.setBaudrate(9600);
  #endif
   mb.master();
 }
