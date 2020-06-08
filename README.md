@@ -1,4 +1,4 @@
-# ModbusRTU and ModbusIP Master-Slave Library for ESP8266/ESP32 v3.0
+# ModbusRTU and ModbusIP Library for ESP8266/ESP32 v3.0
 
 |If this project is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
@@ -29,6 +29,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 * Supported platforms are
   * ESP8266
   * ESP32
+  * STM32F103 and probably other (Modbus RTU only)
 * Operates as
   * slave
   * master

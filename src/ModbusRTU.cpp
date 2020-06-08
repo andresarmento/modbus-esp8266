@@ -180,8 +180,15 @@ void ModbusRTU::task() {
       _len = 0;
       return;
     }
-    for (uint8_t i=0 ; i < _len ; i++)
+    for (uint8_t i=0 ; i < _len ; i++) {
 		_frame[i] = _port->read();   // read data + crc
+		#if defined(MODBUSRTU_DEBUG)
+		Serial.printf("%02X ", _frame[i]);
+		#endif
+	}
+	#if defined(MODBUSRTU_DEBUG)
+	Serial.println();
+	#endif
 	//_port->readBytes(_frame, _len);
     u_int frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes

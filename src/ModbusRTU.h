@@ -11,6 +11,7 @@
  #include <SoftwareSerial.h>
 #endif
 
+#define MODBUSRTU_DEBUG
 #define MODBUSRTU_BROADCAST 0
 #define MB_RESERVE 248
 #define MB_SERIAL_BUFFER 128
