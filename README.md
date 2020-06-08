@@ -30,12 +30,11 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * ESP8266
   * ESP32
   * STM32F103 and probably other (Modbus RTU only)
-* Operates as
-  * slave
-  * master
-* Supports
-  * Modbus IP (TCP)
-  * Modbus RTU (RS-485)
+* Operates in any combination of multiple instances of
+  * Modbus RTU slave
+  * Modbus RTU master
+  * Modbus IP server
+  * Modbus IP client
 * Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
@@ -64,6 +63,10 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
+// 3.0.1
++ ModbusRTU: ESP32 possible send failure fix
++ ModbusRTU: Non-ESP devices support
++ Restriction to registers count removed
 // 3.0.0
 + ModbusRTU Slave
 + ModbusRTU Master
@@ -82,40 +85,6 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 - 0x15 - Write File Records function
 - 0x16 - Write Mask Register function
 - 0x17 - Read/Write Registers function
-// 2.1.0
-+ Slave. Fix error response on write multiple Hregs\Coils
-+ Slave. Fix writeCoil() for multiple coils
-+ Master. dropTransactions()
-+ Master. disconnect()
-+ ~ModbusIP()
-+ task() cleanup
-+ Modify examples
-+ Slave. Allow only single incoming master connection per IP
-// 2.0.1
-+ Master. Fix readCoil\Hreg\Ists\Ireg not read value from slave
-+ Fix crash on disconnect with Arduino Core 2.5.x
-// 2.0.0
-+ Remove memory allocation checking for small blocks as anyway firmware will fail if so low memory available.
-+ Change object's list implementation to *std::vector*
-+ Modbus class refactoring
-+ ModbusIP networking code refactoring and error reporting
-+ Global registers storage to share between multiple Modbus* instances
-+ Move rest of implementations from Modbus.h
-+ Modbus master implementation
-+ Move enum constants. E.g. MB_FC_READ_COIL => Modbus::FC_READ_COIL
-+ Back to marking private for onSet, onGet, addReg and Reg methods
-+ Added callback-related eventSource method, onDisconnect and transaction result callbacks
-+ Extend register addressing to 0..65535
-+ removeCoil, removeIsts, removeIreg, removeHreg, (removeReg)
-+ readCoil, readHreg, readIsts, readIreg
-+ push\pullCoil, push\pullHreg, pullIsts, pullIreg
-+ pullCoilToIsts, pullHregToIreg, pushIstsToCoil, pushIregToHreg
-+ optimize code around std::vector processing
-+ extend removeCoil/Hreg/... to remove multiple registers
-+ multiple callbacks => memory usage optimization
-+ added removeOnSetCoil\... methods
-+ added read/write/push/pullCoil/Hreg/Ireg/Ists() parameter to specify Modbus unit id
-+ added ability to auto connect to slave. Setting is global. Disabled by default.
 ```
 
 ## Contributions
