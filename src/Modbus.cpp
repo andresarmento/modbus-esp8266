@@ -453,24 +453,25 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
     uint8_t fcode  = frame[0];
     _reply = EX_SUCCESS;
     if ((fcode & 0x80) != 0) {
-	    _reply = _frame[1];
+	    _reply = frame[1];
 	    return;
     }
     uint16_t field2 = (uint16_t)sourceFrame[3] << 8 | (uint16_t)sourceFrame[4];
     uint8_t bytecount_calc;
     switch (fcode) {
         case FC_READ_REGS:
-            //field1 = startreg, field2 = numregs, frame[1] = data lenght, header len = 2
+        case FC_READ_INPUT_REGS:
+            //field2 = numregs, frame[1] = data lenght, header len = 2
             if (frame[1] != 2 * field2) { //Check if data size matches
                 _reply = EX_DATA_MISMACH;
                 break;
             }
             if (output) {
-                frame = frame + 2;
+                frame += 2;
                 while(field2) {
                     *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
-                    frame = frame + 2;
-                    output = output + 2;
+                    frame += 2;
+                    output += 2;
                     field2--;
                 }
             } else {
@@ -478,21 +479,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             }
         break;
         case FC_READ_COILS:
-            //field1 = startreg, field2 = numregs, frame[1] = data length, header len = 2
-            bytecount_calc = field2 / 8;
-            if (field2 % 8) bytecount_calc++;
-            if (frame[1] != bytecount_calc) { // check if data size matches
-                _reply = EX_DATA_MISMACH;
-                break;
-            }
-            if (output) {
-                bitsToBool((bool*)output, frame + 2, field2);
-            } else {
-                setMultipleBits(frame + 2, startreg, field2);
-            }
-        break;
         case FC_READ_INPUT_STAT:
-            //field1 = startreg, field2 = numregs, frame[1] = data length, header len = 2
+            //field2 = numregs, frame[1] = data length, header len = 2
             bytecount_calc = field2 / 8;
             if (field2 % 8) bytecount_calc++;
             if (frame[1] != bytecount_calc) { // check if data size matches
@@ -503,36 +491,15 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 bitsToBool((bool*)output, frame + 2, field2);
             } else {
                 setMultipleBits(frame + 2, startreg, field2);
-            }
-        break;
-        case FC_READ_INPUT_REGS:
-            //field1 = startreg, field2 = status, frame[1] = data lenght, header len = 2
-            if (frame[1] != 2 * field2) { //Check if data size matches
-                _reply = EX_DATA_MISMACH;
-                break;
-            }
-            if (output) {
-                frame = frame + 2;
-                while(field2) {
-                    *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
-                    frame = frame + 2;
-                    output = output + 2;
-                    field2--;
-                }
-            } else {
-                setMultipleWords((uint16_t*)(frame + 2), startreg, field2);
             }
         break;
         case FC_WRITE_REG:
-        break;
         case FC_WRITE_REGS:
-        break;
         case FC_WRITE_COIL:
-        break;
         case FC_WRITE_COILS:
         break;
         default:
-		_reply = EX_GENERAL_FAILURE;
+		    _reply = EX_GENERAL_FAILURE;
     }
 }
 
