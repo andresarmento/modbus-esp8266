@@ -1,6 +1,6 @@
-# ModbusRTU and ModbusIP Library for ESP8266/ESP32 v3.0
+# ModbusRTU and ModbusIP Library for ESP8266/ESP32
 
-|If this project is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
+|If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
 
 
@@ -13,7 +13,7 @@ used in industrial automation and can be used in other areas, such as home autom
 
 The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
 
-In the current version the library allows the ESP8266/ESP32 operate as a master and/or slave, supporting Modbus IP via wireless network and Modbus RTU over serial. For more information about Modbus see:
+For more information about Modbus see:
 
 * [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
 * [MODBUS APPLICATION PROTOCOL SPECIFICATION
@@ -29,7 +29,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 * Supported platforms are
   * ESP8266
   * ESP32
-  * STM32F103 and probably other (Modbus RTU only)
+  * STM32F103 and probably others (Modbus RTU only)
 * Operates in any combination of multiple instances of
   * Modbus RTU slave
   * Modbus RTU master
