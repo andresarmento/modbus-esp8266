@@ -1,5 +1,5 @@
 /*
-  Modbus-Arduino Example - Master (Modbus IP ESP8266/ESP32)
+  Modbus-Arduino Example -  Modbus IP Client (ESP8266/ESP32)
   Control Led on D4/TX pin by remote Modbus device using Read Single Coil Modbus Function
 
   (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -40,11 +40,7 @@ uint16_t gc(TRegister* r, uint16_t v) { // Callback function
 }
 
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin("SSID", "password");
   
@@ -58,7 +54,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.master();                    // Initialize local Modbus Master
+  mb.client();                    // Initialize local Modbus Client
   pinMode(USE_LED, OUTPUT);
   mb.addCoil(LED_COIL);           // Add Coil
   mb.onSetCoil(LED_COIL, gc);     // Assign Callback on set the Coil

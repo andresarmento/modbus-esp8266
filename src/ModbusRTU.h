@@ -11,7 +11,7 @@
  #include <SoftwareSerial.h>
 #endif
 
-#define MODBUSRTU_DEBUG
+//#define MODBUSRTU_DEBUG
 #define MODBUSRTU_BROADCAST 0
 #define MB_RESERVE 248
 #define MB_SERIAL_BUFFER 128
@@ -25,7 +25,7 @@ class ModbusRTU : public Modbus {
         Stream* _port;
         int16_t   _txPin = -1;
 		unsigned int _t;	// inter-frame delay in mS
-		uint32_t t = 0;
+		uint32_t t = 0;		// time sience last data byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
 		uint32_t _timestamp = 0;

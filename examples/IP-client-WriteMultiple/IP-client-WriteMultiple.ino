@@ -1,5 +1,5 @@
 /*
-  Modbus-Arduino Example - Master (Modbus IP ESP8266/ESP32)
+  Modbus-Arduino Example - Modbus IP Client (ESP8266/ESP32)
   Write multiple coils to Slave device
 
   (c)2019 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -20,11 +20,7 @@ IPAddress remote(192, 168, 20, 102);    // Address of Modbus Slave device
 ModbusIP mb;  // ModbusIP object
 
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin();
   
@@ -38,7 +34,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.master();
+  mb.client();
 }
 
 bool cb(Modbus::ResultCode event, uint16_t transactionId, void* data) { // Modbus Transaction callback

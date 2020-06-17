@@ -67,6 +67,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + ModbusRTU: ESP32 possible send failure fix
 + ModbusRTU: Non-ESP devices support
 + Restriction to registers count removed
++ Added bridge example
 // 3.0.0
 + ModbusRTU Slave
 + ModbusRTU Master
@@ -85,6 +86,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 - 0x15 - Write File Records function
 - 0x16 - Write Mask Register function
 - 0x17 - Read/Write Registers function
+- ModbusIP: Support for non-ESP boards (using W5x00)
 ```
 
 ## Contributions

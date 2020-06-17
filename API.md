@@ -49,6 +49,7 @@ Processing routine. Should be periodically called form loop().
 ```c
 bool begin(SoftwareSerial* port, int16_t txPin=-1); // For ESP8266 only
 bool begin(HardwareSerial* port, int16_t txPin=-1);
+bool begin(Stream* port);
 ```
 
 Assing Serial port. txPin controls transmit enable for MAX-485.
@@ -70,19 +71,21 @@ Select and initialize master or slave mode to work. Switching between modes is n
 uint8_t slave();
 ```
 
-Slave mode. Returns configured slave id. Master mode. Returns slave id for active request or 0 if no request in-progress.
+Slave mode: Returns configured slave id. Master mode: Returns slave id for active request or 0 if no request in-progress.
 
 ### ModBus IP Slave specific API
 
 ```c
-void begin(); // Depricated. Use slave() instead.
-void slave(uint16_t port = MODBUSIP_PORT);
+void begin(); // Depricated. Use server() instead.
+void slave(uint16_t port = MODBUSIP_PORT); // For compatibility with ModbusRTU calls. Typically may be replaced with server() call.
+void server(uint16_t port = MODBUSIP_PORT);
 ```
 
 ### ModBus IP Master specific
 
 ```c
-void master();
+void master(); // For compatibility with ModbusRTU calls. Typically may be replaced with client() call.
+void client();
 bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
 bool disconnect(IPAddress ip);
 bool isTransaction(uint16_t id);
@@ -122,8 +125,7 @@ Result is saved to local registers. Method returns corresponding transaction id.
 uint16_t pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pushHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 uint16_t pushIstsToCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
-uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = 
-MODBUSIP_UNIT);
+uint16_t pushIregToHreg(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
 
 uint16_t pushCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
 uint16_t pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);

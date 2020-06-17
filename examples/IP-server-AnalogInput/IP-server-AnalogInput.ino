@@ -26,11 +26,7 @@ ModbusIP mb;
 long ts;
 
 void setup() {
- #ifdef ESP8266
-    Serial.begin(74880);
- #else
     Serial.begin(115200);
- #endif
  
     WiFi.begin("your_ssid", "your_password");
     while (WiFi.status() != WL_CONNECTED) {
@@ -43,7 +39,7 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    mb.slave();		//Start Modbus IP
+    mb.server();		//Start Modbus IP
     // Add SENSOR_IREG register - Use addIreg() for analog Inputs
     mb.addIreg(SENSOR_IREG);
 

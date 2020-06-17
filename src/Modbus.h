@@ -1,5 +1,5 @@
 /*
-    Modbus.h - Header for Modbus Base Library
+    Modbus.h - Header for Modbus Core Library
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */

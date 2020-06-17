@@ -1,9 +1,9 @@
 # Syntax Coloring Map For ModbusIP-ESP8266
 
 # Datatypes (KEYWORD1)
-ModbusRTUSlave	KEYWORD1
-ModbusRTUMaster	KEYWORD1
+ModbusRTU	KEYWORD1
 ModbusIP	KEYWORD1
+ModbusIP_ESP8266    KEYWORD1
 Modbus	KEYWORD1
 TRegister	KEYWORD1
 TTransaction	KEYWORD1
@@ -13,6 +13,8 @@ ResultCode	KEYWORD1
 # Methods and Functions (KEYWORD2)
 master	KEYWORD2
 slave	KEYWORD2
+client  KEYWORD2
+server  KEYWORD2
 task	KEYWORD2
 onConnect	KEYWORD2
 onDisconnect	KEYWORD2

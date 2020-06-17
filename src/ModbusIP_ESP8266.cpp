@@ -10,21 +10,17 @@
 ModbusIP::ModbusIP() {
 	//_trans.reserve(MODBUSIP_MAX_TRANSACIONS);
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		client[i] = nullptr;
+		tcpclient[i] = nullptr;
 }
 
-void ModbusIP::master() {
+void ModbusIP::client() {
 
 }
 
-void ModbusIP::slave(uint16_t port) {
-	slavePort = port;
-	server = new WiFiServer(slavePort);
-	server->begin();
-}
-
-void ModbusIP::begin() {
-	slave();
+void ModbusIP::server(uint16_t port) {
+	serverPort = port;
+	tcpserver = new WiFiServer(serverPort);
+	tcpserver->begin();
 }
 
 bool ModbusIP::connect(IPAddress ip, uint16_t port) {
@@ -34,13 +30,13 @@ bool ModbusIP::connect(IPAddress ip, uint16_t port) {
 	int8_t p = getFreeClient();
 	if (p == -1)
 		return false;
-	client[p] = new WiFiClient();
-	return client[p]->connect(ip, port);
+	tcpclient[p] = new WiFiClient();
+	return tcpclient[p]->connect(ip, port);
 }
 
 uint32_t ModbusIP::eventSource() {		// Returns IP of current processing client query
-	if (n >= 0 && n < MODBUSIP_MAX_CLIENTS && client[n])
-		return (uint32_t)client[n]->remoteIP();
+	if (n >= 0 && n < MODBUSIP_MAX_CLIENTS && tcpclient[n])
+		return (uint32_t)tcpclient[n]->remoteIP();
 	return (uint32_t)INADDR_NONE;
 }
 
@@ -53,9 +49,9 @@ TTransaction* ModbusIP::searchTransaction(uint16_t id) {
 void ModbusIP::task() {
 	MBAP_t _MBAP;
 	cleanup();
-	if (server) {
-		while (server->hasClient()) {
-			WiFiClient* currentClient = new WiFiClient(server->available());
+	if (tcpserver) {
+		while (tcpserver->hasClient()) {
+			WiFiClient* currentClient = new WiFiClient(tcpserver->available());
 			if (!currentClient || !currentClient->connected())
 				continue;
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
@@ -63,14 +59,14 @@ void ModbusIP::task() {
 				// Disconnect previous connection from same IP if present
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
-					client[n]->flush();
-					delete client[n];
-					client[n] = nullptr;
+					tcpclient[n]->flush();
+					delete tcpclient[n];
+					tcpclient[n] = nullptr;
 				}
 				#endif
 				n = getFreeClient();
 				if (n > -1) {
-					client[n] = currentClient;
+					tcpclient[n] = currentClient;
 					continue; // while
 				}
 			}
@@ -79,38 +75,38 @@ void ModbusIP::task() {
 		}
 	}
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
-		if (!client[n]) continue;
-		if (!client[n]->connected()) continue;
+		if (!tcpclient[n]) continue;
+		if (!tcpclient[n]->connected()) continue;
 		uint32_t readStart = millis();
-		while (millis() - readStart < MODBUSIP_MAX_READMS &&  client[n]->available() > sizeof(_MBAP)) {
-			client[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
+		while (millis() - readStart < MODBUSIP_MAX_READMS &&  tcpclient[n]->available() > sizeof(_MBAP)) {
+			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
-				while (client[n]->available())	// Drop all incoming if wrong packet
-					client[n]->read();
+				while (tcpclient[n]->available())	// Drop all incoming if wrong packet
+					tcpclient[n]->read();
 					continue;
 			}
 			_len = __bswap_16(_MBAP.length);
 			_len--; // Do not count with last byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
-				exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
+				exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
 				_len--;	// Subtract for read byte
-				for (uint8_t i = 0; client[n]->available() && i < _len; i++)	// Drop rest of packet
-					client[n]->read();
+				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of packet
+					tcpclient[n]->read();
 			} else {
 				free(_frame);
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
-					exceptionResponse((FunctionCode)client[n]->read(), EX_SLAVE_FAILURE);
-					for (uint8_t i = 0; client[n]->available() && i < _len; i++)	// Drop packet
-						client[n]->read();
+					exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
+					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop packet
+						tcpclient[n]->read();
 				} else {
-					if (client[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
+					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-						//while (client[n]->available())	// Drop all incoming (if any)
-						//	client[n]->read();
+						//while (tcpclient[n]->available())	// Drop all incoming (if any)
+						//	tcpclient[n]->read();
 					} else {
-						if (client[n]->localPort() == slavePort) {
+						if (tcpclient[n]->localPort() == serverPort) {
 							// Process incoming frame as slave
 							slavePDU(_frame);
 						} else {
@@ -137,15 +133,15 @@ void ModbusIP::task() {
 					}
 				}
 			}
-			if (client[n]->localPort() != slavePort) _reply = REPLY_OFF;	// No replay if it was responce to master
+			if (tcpclient[n]->localPort() != serverPort) _reply = REPLY_OFF;	// No replay if it was responce to master
 			if (_reply != REPLY_OFF) {
 				_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];				
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-				client[n]->write(sbuf, send_len);
-				client[n]->flush();
+				tcpclient[n]->write(sbuf, send_len);
+				tcpclient[n]->flush();
 			}
 			if (_frame) {
 				free(_frame);
@@ -163,7 +159,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return false;
 #endif
 	int8_t p = getSlave(ip);
-	if (p == -1 || !client[p]->connected())
+	if (p == -1 || !tcpclient[p]->connected())
 		return autoConnectMode?connect(ip):false;
 	transactionId++;
 	if (!transactionId) transactionId = 1;
@@ -175,9 +171,9 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 	uint8_t sbuf[send_len];
 	memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-	if (client[p]->write(sbuf, send_len) != send_len)
+	if (tcpclient[p]->write(sbuf, send_len) != send_len)
 		return false;
-	client[p]->flush();
+	tcpclient[p]->flush();
 	if (waitResponse) {
 		TTransaction tmp;
 		tmp.transactionId = transactionId;
@@ -205,11 +201,11 @@ void ModbusIP::onDisconnect(cbModbusConnect cb) {
 void ModbusIP::cleanup() {
 	// Free clients if not connected
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
-		if (client[i] && !client[i]->connected()) {
-			//IPAddress ip = client[i]->remoteIP();
-			//client[i]->stop();
-			delete client[i];
-			client[i] = nullptr;
+		if (tcpclient[i] && !tcpclient[i]->connected()) {
+			//IPAddress ip = tcpclient[i]->remoteIP();
+			//tcpclient[i]->stop();
+			delete tcpclient[i];
+			tcpclient[i] = nullptr;
 			if (cbDisconnect && cbEnabled) 
 				cbDisconnect(IPADDR_NONE);
 		}
@@ -229,21 +225,21 @@ void ModbusIP::cleanup() {
 
 int8_t ModbusIP::getFreeClient() {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (!client[i])
+		if (!tcpclient[i])
 			return i;
 	return -1;
 }
 
 int8_t ModbusIP::getSlave(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() != slavePort)
+		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && tcpclient[i]->localPort() != serverPort)
 			return i;
 	return -1;
 }
 
 int8_t ModbusIP::getMaster(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (client[i] && client[i]->connected() && client[i]->remoteIP() == ip && client[i]->localPort() == slavePort)
+		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && tcpclient[i]->localPort() == serverPort)
 			return i;
 	return -1;
 }
@@ -397,7 +393,7 @@ bool ModbusIP::isTransaction(uint16_t id) {
 }
 bool ModbusIP::isConnected(IPAddress ip) {
 	int8_t p = getSlave(ip);
-	return  p != -1 && client[p]->connected();
+	return  p != -1 && tcpclient[p]->connected();
 }
 
 void ModbusIP::autoConnect(bool enabled) {
@@ -407,8 +403,8 @@ void ModbusIP::autoConnect(bool enabled) {
 bool ModbusIP::disconnect(IPAddress ip) {
 	int8_t p = getSlave(ip);
 	if (p != -1) {
-		delete client[p];
-		client[p] = nullptr;
+		delete tcpclient[p];
+		tcpclient[p] = nullptr;
 	}
 	return true;
 }
@@ -422,8 +418,8 @@ ModbusIP::~ModbusIP() {
 	dropTransactions();
 	cleanup();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
-		delete client[i];
-		client[i] = nullptr;
+		delete tcpclient[i];
+		tcpclient[i] = nullptr;
 	}
 }
 

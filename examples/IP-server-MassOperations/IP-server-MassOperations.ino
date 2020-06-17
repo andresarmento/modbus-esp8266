@@ -30,6 +30,8 @@ ModbusIP mb;
 
 // Callback function to read corresponding DI
 uint16_t cbRead(TRegister* reg, uint16_t val) {
+  // Checking value of register address which callback is called on.
+  // See Modbus.h for TRegister and TAddress definition
   if(reg->address.address < COIL_BASE)
     return 0;
   uint8_t offset = reg->address.address - COIL_BASE;
@@ -49,11 +51,7 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin("ssid", "password");
   
@@ -69,11 +67,11 @@ void setup() {
   for (uint8_t i = 0; i < LEN; i++)
     pinMode(pinList[i], INPUT);
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.slave();
+  mb.server();
 
   mb.addCoil(COIL_BASE, COIL_VAL(false), LEN); // Add Coils.
-  mb.onGetCoil(COIL_BASE, cbRead, LEN); // Add callback on Coils value get
-  mb.onSetCoil(COIL_BASE, cbWrite, LEN);
+  mb.onGetCoil(COIL_BASE, cbRead, LEN);  // Add single callback for multiple Coils. It will be called for each of these coils value get
+  mb.onSetCoil(COIL_BASE, cbWrite, LEN); // The same as above just for set value
 }
 
 void loop() {

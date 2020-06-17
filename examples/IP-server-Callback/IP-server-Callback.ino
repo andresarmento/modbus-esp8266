@@ -42,11 +42,8 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
+
   WiFi.begin("SID", "PASSWORD");
   
   while (WiFi.status() != WL_CONNECTED) {
@@ -60,7 +57,7 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.slave();
+  mb.server();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)

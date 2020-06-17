@@ -26,11 +26,7 @@ const int ledPin = 0; //GPIO0
 ModbusIP mb;
   
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin("your_ssid", "your_password");
   
@@ -44,7 +40,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.slave();
+  mb.server();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);

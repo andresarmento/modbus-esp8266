@@ -50,11 +50,7 @@ bool cbConn(IPAddress ip) {
 }
  
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin("ssid", "pass");
   
@@ -69,7 +65,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   mb.onConnect(cbConn);   // Add callback on connection event
-  mb.slave();
+  mb.server();
 
   if (!mb.addHreg(0, 0xF0F0, LEN)) Serial.println("Error"); // Add Hregs
   mb.onGetHreg(0, cbRead, LEN); // Add callback on Coils value get

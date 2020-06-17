@@ -26,11 +26,7 @@ const int switchPin = 0; //GPIO0
 ModbusIP mb;
 
 void setup() {
- #ifdef ESP8266
-    Serial.begin(74880);
- #else
     Serial.begin(115200);
- #endif
 
     WiFi.begin("your_ssid", "your_password");
     while (WiFi.status() != WL_CONNECTED) {
@@ -38,7 +34,7 @@ void setup() {
       Serial.print(".");
     }
     //Config Modbus IP
-    mb.slave();
+    mb.server();
     //Set ledPin mode
     pinMode(switchPin, INPUT);
     // Add SWITCH_ISTS register - Use addIsts() for digital inputs

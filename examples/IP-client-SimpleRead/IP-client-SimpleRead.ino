@@ -1,6 +1,6 @@
 /*
-  Modbus-Arduino Example - Master (Modbus IP ESP8266/ESP32)
-  Read Holding Register from Slave device
+  Modbus-Arduino Example - Master Modbus IP Client (ESP8266/ESP32)
+  Read Holding Register from Server device
 
   (c)2018 Alexander Emelianov (a.m.emelianov@gmail.com)
   https://github.com/emelianov/modbus-esp8266
@@ -20,11 +20,7 @@ const int LOOP_COUNT = 10;
 ModbusIP mb;  //ModbusIP object
 
 void setup() {
- #ifdef ESP8266
-  Serial.begin(74880);
- #else
   Serial.begin(115200);
- #endif
  
   WiFi.begin("SSID", "PASSWORD");
   
@@ -38,7 +34,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.master();
+  mb.client();
 }
 
 uint16_t res = 0;

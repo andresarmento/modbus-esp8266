@@ -1,5 +1,5 @@
 /*
-    Modbus.cpp - Modbus Base Library Implementation
+    Modbus.cpp - Modbus Core Library Implementation
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
