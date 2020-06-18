@@ -96,7 +96,6 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
         delay(1);
     }
 	#ifdef ESP32
-	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 	portENTER_CRITICAL(&mux);
 	#endif
     _port->write(slaveId);  	//Send slaveId
@@ -131,23 +130,22 @@ bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void*
 
 void ModbusRTU::task() {
 	#ifdef ESP32
-	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-	portENTER_CRITICAL(&mux);
+	if (_len == 0)
+		portENTER_CRITICAL(&mux);
 	#endif
     if (_port->available() > _len)	{
         _len = _port->available();
         t = millis();
+		return;
     }
-    if (isMaster) cleanup();
-    if (_len == 0 || millis() - t < _t) { // No data or not end of frame
-		#ifdef ESP32
-    	portEXIT_CRITICAL(&mux);
- 		#endif
-		return;  // Wait data whitespace
-	}
+    if (_len != 0 && millis() - t < _t) // Wait data whitespace if there is data
+		return;
 	#ifdef ESP32
     portEXIT_CRITICAL(&mux);
  	#endif
+    if (isMaster) cleanup();
+	if (_len == 0)
+		return;
 
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte

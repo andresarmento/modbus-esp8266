@@ -64,7 +64,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 
 ```diff
 // 3.0.1
-+ ModbusRTU: ESP32 possible send failure fix
++ ModbusRTU: ESP32 possible send\receive failure fix
 + ModbusRTU: Non-ESP devices support
 + Restriction to registers count removed
 + Added bridge example
