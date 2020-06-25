@@ -75,6 +75,7 @@ bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
         pinMode(_txPin, OUTPUT);
         digitalWrite(_txPin, LOW);
     }
+	Serial.println(_t);
     return true;
 }
 
@@ -129,10 +130,6 @@ bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void*
 }
 
 void ModbusRTU::task() {
-	#ifdef ESP32
-	if (_len == 0)
-		portENTER_CRITICAL(&mux);
-	#endif
     if (_port->available() > _len)	{
         _len = _port->available();
         t = millis();
@@ -140,9 +137,6 @@ void ModbusRTU::task() {
     }
     if (_len != 0 && millis() - t < _t) // Wait data whitespace if there is data
 		return;
-	#ifdef ESP32
-    portEXIT_CRITICAL(&mux);
- 	#endif
     if (isMaster) cleanup();
 	if (_len == 0)
 		return;
