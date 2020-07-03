@@ -17,7 +17,7 @@
 #endif
 
 
-//#define MB_GLOBAL_REGS
+#define MB_GLOBAL_REGS
 //#define MB_MAX_REGS     32
 #define MODBUS_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
