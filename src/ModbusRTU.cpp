@@ -130,27 +130,43 @@ bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void*
 }
 
 void ModbusRTU::task() {
-    if (_port->available() > _len)	{
+	#ifdef ESP32
+	portENTER_CRITICAL(&mux);
+	#endif
+    if (_port->available() > _len) {
         _len = _port->available();
         t = millis();
+		#ifdef ESP32
+    	portEXIT_CRITICAL(&mux);
+ 		#endif
 		return;
     }
-    if (_len != 0 && millis() - t < _t) // Wait data whitespace if there is data
+    if (_len != 0 && millis() - t < _t) { // Wait data whitespace if there is data
+		#ifdef ESP32
+    	portEXIT_CRITICAL(&mux);
+ 		#endif
 		return;
-    if (isMaster) cleanup();
-	if (_len == 0)
-		return;
+	}
+	#ifdef ESP32
+    portEXIT_CRITICAL(&mux);
+ 	#endif
 
+	if (_len == 0) {
+		if (isMaster) cleanup();
+		return;
+	}
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
     if (isMaster && _slaveId == 0) {    // Check if slaveId is set
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if is not expected
         _len = 0;
+		if (isMaster) cleanup();
         return;
     }
     if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // SlaveId Check
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if SlaveId doesn't mach
         _len = 0;
+		if (isMaster) cleanup();
         return;
     }
 
@@ -159,6 +175,7 @@ void ModbusRTU::task() {
     if (!_frame) {  // Fail to allocate buffer
       for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip packet if can't allocate buffer
       _len = 0;
+	  if (isMaster) cleanup();
       return;
     }
     for (uint8_t i=0 ; i < _len ; i++) {
@@ -176,7 +193,8 @@ void ModbusRTU::task() {
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
         free(_frame);
         _frame = nullptr;
-		_len = 0;   // Cleanup if wrong crc
+		_len = 0;
+		if (isMaster) cleanup();
         return;
     }
     if (isMaster) {
@@ -204,6 +222,7 @@ void ModbusRTU::task() {
     free(_frame);
     _frame = nullptr;
     _len = 0;
+	if (isMaster) cleanup();
 }
 
 
