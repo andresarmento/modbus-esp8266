@@ -62,7 +62,9 @@ class ModbusIP : public Modbus {
 	uint16_t serverPort = 0;
 
 	TTransaction* searchTransaction(uint16_t id);
-	void cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
+	void cleanupConnections();	// Free clients if not connected
+	void cleanupTransactions();	// Remove timedout transactions and forced event
+
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);

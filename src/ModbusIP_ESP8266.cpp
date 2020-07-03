@@ -24,7 +24,7 @@ void ModbusIP::server(uint16_t port) {
 }
 
 bool ModbusIP::connect(IPAddress ip, uint16_t port) {
-	//cleanup();
+	//cleanupConnections();
 	if(getSlave(ip) != -1)
 		return true;
 	int8_t p = getFreeClient();
@@ -48,7 +48,7 @@ TTransaction* ModbusIP::searchTransaction(uint16_t id) {
 
 void ModbusIP::task() {
 	MBAP_t _MBAP;
-	cleanup();
+	cleanupConnections();
 	if (tcpserver) {
 		while (tcpserver->hasClient()) {
 			WiFiClient* currentClient = new WiFiClient(tcpserver->available());
@@ -151,6 +151,7 @@ void ModbusIP::task() {
 		}
 	}
 	n = -1;
+	cleanupTransactions();
 }
 
 uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
@@ -198,8 +199,7 @@ void ModbusIP::onDisconnect(cbModbusConnect cb) {
 		cbDisconnect = cb;
 }
 
-void ModbusIP::cleanup() {
-	// Free clients if not connected
+void ModbusIP::cleanupConnections() {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (tcpclient[i] && !tcpclient[i]->connected()) {
 			//IPAddress ip = tcpclient[i]->remoteIP();
@@ -210,7 +210,9 @@ void ModbusIP::cleanup() {
 				cbDisconnect(IPADDR_NONE);
 		}
 	}
-	// Remove timedout transactions and forced event
+}
+
+void ModbusIP::cleanupTransactions() {
 	for (auto it = _trans.begin(); it != _trans.end();) {
 		if (millis() - it->timestamp > MODBUSIP_TIMEOUT || it->forcedEvent != Modbus::EX_SUCCESS) {
 			Modbus::ResultCode res = (it->forcedEvent != Modbus::EX_SUCCESS)?it->forcedEvent:Modbus::EX_TIMEOUT;
@@ -416,7 +418,8 @@ void ModbusIP::dropTransactions() {
 ModbusIP::~ModbusIP() {
 	free(_frame);
 	dropTransactions();
-	cleanup();
+	cleanupConnections();
+	cleanupTransactions();
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		delete tcpclient[i];
 		tcpclient[i] = nullptr;
