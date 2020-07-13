@@ -1,4 +1,4 @@
-# ModbusRTU and ModbusIP Library for ESP8266/ESP32
+# Modbus RTU and Modbus TCP Library for ESP8266/ESP32
 
 |If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
@@ -33,8 +33,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 * Operates in any combination of multiple instances of
   * Modbus RTU slave
   * Modbus RTU master
-  * Modbus IP server
-  * Modbus IP client
+  * Modbus TCP server
+  * Modbus TCP client
 * Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
@@ -46,8 +46,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Client connect (ModbusIP)
-  * Server/Client disconnect (ModbusIP)
+  * Client connect (Modbus TCP)
+  * Server/Client disconnect (Modbus TCP)
   * Read specific Register
   * Write specific Register
   * Slave transaction finish

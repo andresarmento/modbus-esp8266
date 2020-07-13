@@ -1,4 +1,4 @@
-# Modbus Master-Slave Library for ESP8266/ESP32
+# Modbus RTU and Modbus TCP Library for ESP8266/ESP32
 
 ## Common API
 
@@ -73,7 +73,7 @@ uint8_t slave();
 
 Slave mode: Returns configured slave id. Master mode: Returns slave id for active request or 0 if no request in-progress.
 
-### ModBus IP Slave specific API
+### Modbus TCP Server specific API
 
 ```c
 void begin(); // Depricated. Use server() instead.
@@ -81,7 +81,7 @@ void slave(uint16_t port = MODBUSIP_PORT); // For compatibility with ModbusRTU c
 void server(uint16_t port = MODBUSIP_PORT);
 ```
 
-### ModBus IP Master specific
+### Modbus TCP Client specific
 
 ```c
 void master(); // For compatibility with ModbusRTU calls. Typically may be replaced with client() call.
@@ -99,7 +99,7 @@ void autoConnect(bool enabled);
 
 Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call. Disabled by default.
 
-### Query [multiple] regs from remote slave
+### Query [multiple] regs from remote slave/server
 
 ```c
 uint16_t pullCoil(IPAddress ip, uint16_t from, uint16_t to, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -119,7 +119,7 @@ uint16_t pullCoilToIsts(uint8_t slaveId, uint16_t offset, uint16_t startreg, uin
 
 Result is saved to local registers. Method returns corresponding transaction id. [ip/from] or [ip/offset] - slave, [to] or [startreg] - local
 
-### Send [multiple] regs to remote slave
+### Send [multiple] regs to remote slave/server
 
 ```c
 uint16_t pushCoil(IPAddress ip, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -135,7 +135,7 @@ uint16_t pushIregToHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t nu
 
 Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value. [ip/to] - slave, [from] - local
 
-### Write [multiple] values to remote slave reg
+### Write [multiple] values to remote slave/servr reg[s]
 
 ```c
 uint16_t writeCoil(IPAddress ip, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -145,7 +145,7 @@ uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransacti
 uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb = nullptr);
 ```
 
-Write single value to remote Hreg/Coil.
+Writes single value to remote Hreg/Coil.
 
 ```c
 uint16_t writeCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -155,9 +155,9 @@ uint16_t writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numre
 uint16_t writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
-Write multiple values from array to remote Coil/Hreg.
+Writes multiple values from array to remote Coil/Hreg.
 
-### Read values from multiple remote slave regs
+### Read values from multiple remote slave/server regs
 
 ```c
 uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -171,7 +171,7 @@ uint16_t readHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t nu
 uint16_t readIreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
-Read values from remote Hreg/Coil/Ireg/Ists to array.
+Reads values from remote Hreg/Coil/Ireg/Ists to array.
 
 ## Callbacks API
 
@@ -187,13 +187,13 @@ void onConnect(cbModbusConnect cb);
 void onDisonnect(cbModbusConnect cb);
 ```
 
-*Modbus IP Slave* Assign callback function on new incoming connection event.
+*Modbus TCP Sserver* Assign callback function on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
-*Modbus IP Slave* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
+*Modbus TCP Sserver* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
 
 ```c
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
@@ -205,7 +205,7 @@ Get/Set register callback function definition. Pointer to TRegister structure (s
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 ```
 
-Transaction end callback function definition. For ModbusIP *data* is currently reserved. For ModbusRTU *transactionId* is also reserved.
+Transaction end callback function definition. For ModbusIP *data* is currently reserved. For Modbus RTU *transactionId* is also reserved.
 
 ```c
 uint32_t eventSource();
@@ -213,7 +213,7 @@ uint32_t eventSource();
 
 Should be called from onGet/onSet or transaction callback function.
 
-*Modbus IP Master/Slave* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
+*Modbus TCP Client/Server* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
 
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
 
@@ -274,7 +274,7 @@ uint16_t cbCoilSet(TRegister* reg, uint16_t val) { // 'reg' is pointer to reg st
 uint16_t cbCoilGet(TRegister* reg, uint16_t val) {
   Serial.print("Get query from ");
   Serial.println(mb.eventSource().toString());
-  return COIL_VAL(coil); // Override value to be returned to ModBus master as reply for current request
+  return COIL_VAL(coil); // Override value to be returned to Modbus client as reply for current request
 }
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
