@@ -1,4 +1,4 @@
-# Modbus RTU and Modbus TCP Library for ESP8266/ESP32
+# ModbusRTU and ModbusTCP Library for ESP8266/ESP32
 
 |If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
@@ -31,10 +31,10 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * ESP32
   * STM32F103 and probably others (Modbus RTU only)
 * Operates in any combination of multiple instances of
-  * Modbus RTU slave
-  * Modbus RTU master
-  * Modbus TCP server
-  * Modbus TCP client
+  * ModbusRTU slave
+  * ModbusRTU master
+  * ModbusTCP server
+  * ModbusTCP client
 * Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
@@ -46,8 +46,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
 * Callbacks for
-  * Client connect (Modbus TCP)
-  * Server/Client disconnect (Modbus TCP)
+  * Client connect (ModbusTCP)
+  * Server/Client disconnect (ModbusTCP)
   * Read specific Register
   * Write specific Register
   * Slave transaction finish
@@ -56,7 +56,7 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 
 1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 2. For API refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
-3. Modbus RTU maximum incoming frame size is determinated by HardwareSerial buffer size. For SoftwareSerial buffer must be set to 256 bytes.
+3. ModbusRTU maximum incoming frame size is determinated by HardwareSerial buffer size. For SoftwareSerial buffer must be set to 256 bytes.
 4. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [ArduinoSTL](https://github.com/mike-matera/ArduinoSTL).
 5. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
 
