@@ -141,7 +141,7 @@ void ModbusIP::task() {
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 				tcpclient[n]->write(sbuf, send_len);
-				tcpclient[n]->flush();
+				//tcpclient[n]->flush();
 			}
 			if (_frame) {
 				free(_frame);
@@ -174,7 +174,7 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 	if (tcpclient[p]->write(sbuf, send_len) != send_len)
 		return false;
-	tcpclient[p]->flush();
+	//tcpclient[p]->flush();
 	if (waitResponse) {
 		TTransaction tmp;
 		tmp.transactionId = transactionId;
