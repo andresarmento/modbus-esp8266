@@ -1,5 +1,6 @@
 /*
-    ModbusRTU Library for ESP8266/ESP32
+    Modbus Library for Arduino
+    ModbusRTU implementation
     Copyright (C) 2019-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
@@ -29,7 +30,7 @@ static const uint16_t _auchCRC[] PROGMEM = {
 	0x4040, 0x0000
 };
 
-uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
+uint16_t ModbusRTUTemplate::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
 	uint8_t i = 0xFF ^ address;
 	uint16_t val = pgm_read_word(_auchCRC + i);
     uint8_t CRCHi = 0xFF ^ highByte(val);	// Hi
@@ -43,7 +44,7 @@ uint16_t ModbusRTU::crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return (CRCHi << 8) | CRCLo;
 }
 
-void ModbusRTU::setBaudrate(uint32_t baud) {
+void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
     if (baud > 19200) {
         _t = 2;
     } else {
@@ -51,13 +52,13 @@ void ModbusRTU::setBaudrate(uint32_t baud) {
     }
 }
 
-bool ModbusRTU::begin(Stream* port) {
+bool ModbusRTUTemplate::begin(Stream* port) {
     _port = port;
     _t = 2;
     return true;
 }
 
-bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
+bool ModbusRTUTemplate::begin(HardwareSerial* port, int16_t txPin) {
     uint32_t baud = 0;
     #if defined(ESP32) || defined(ESP8266)
     // baudRate() only available with ESP32+ESP8266
@@ -80,7 +81,7 @@ bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
 }
 
 #if defined(ESP8266)
-bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin) {
+bool ModbusRTUTemplate::begin(SoftwareSerial* port, int16_t txPin) {
 	uint32_t baud = port->baudRate();
     _port = port;
     if (txPin >= 0)
@@ -90,7 +91,7 @@ bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin) {
 }
 #endif
 
-bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
+bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     uint16_t newCrc = crc16(slaveId, frame, len);
     if (_txPin >= 0) {
         digitalWrite(_txPin, HIGH);
@@ -113,7 +114,7 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 	return true;
 }
 
-bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
+uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
     if (_slaveId) return false; // Break if waiting for previous request result
 	rawSend(slaveId, _frame, _len);
 	if (waitResponse) {
@@ -129,7 +130,7 @@ bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void*
 	return true;
 }
 
-void ModbusRTU::task() {
+void ModbusRTUTemplate::task() {
 	#ifdef ESP32
 	portENTER_CRITICAL(&mux);
 	#endif
@@ -225,8 +226,7 @@ void ModbusRTU::task() {
 	if (isMaster) cleanup();
 }
 
-
-bool ModbusRTU::cleanup() {
+bool ModbusRTUTemplate::cleanup() {
 	// Remove timeouted request and forced event
 	if (_slaveId && (millis() - _timestamp > MODBUSRTU_TIMEOUT)) {
 		if (_cb)
@@ -238,164 +238,4 @@ bool ModbusRTU::cleanup() {
         return true;
 	}
     return false;
-}
-
-
-uint16_t ModbusRTU::writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb) {
-    readSlave(offset, value, FC_WRITE_REG);
-	return send(slaveId, HREG(offset), cb, nullptr, cb);
-}
-
-uint16_t ModbusRTU::writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb) {
-	readSlave(offset, COIL_VAL(value), FC_WRITE_COIL);
-	return send(slaveId, COIL(offset), cb, nullptr, cb);
-}
-
-uint16_t ModbusRTU::readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	readSlave(offset, numregs, FC_READ_COILS);
-	return send(slaveId, COIL(offset), cb, value);
-}
-
-
-uint16_t ModbusRTU::writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x07D0) return false;
-	writeSlaveBits(COIL(offset), offset, numregs, FC_WRITE_COILS, value);
-	return send(slaveId, COIL(offset), cb, nullptr, cb);
-}
-
-
-uint16_t ModbusRTU::writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007D) return false;
-	writeSlaveWords(HREG(offset), offset, numregs, FC_WRITE_REGS, value);
-	return send(slaveId, HREG(offset), cb, nullptr, cb);
-}
-
-
-uint16_t ModbusRTU::readHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs) return false;
-	readSlave(offset, numregs, FC_READ_REGS);
-	return send(slaveId, HREG(offset), cb, value);
-}
-
-
-uint16_t ModbusRTU::readIsts(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	readSlave(offset, numregs, FC_READ_INPUT_STAT);
-	return send(slaveId, ISTS(offset), cb, value);
-}
-
-
-uint16_t ModbusRTU::readIreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs) return false;
-	readSlave(offset, numregs, FC_READ_INPUT_REGS);
-	return send(slaveId, IREG(offset), cb, value);
-}
-
-
-uint16_t ModbusRTU::pushCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x07D0) return false;
-	if (!searchRegister(COIL(from))) return false;
-	if (numregs == 1) {
-		readSlave(to, COIL_VAL(Coil(from)), FC_WRITE_COIL);
-	} else {
-		writeSlaveBits(COIL(from), to, numregs, FC_WRITE_COILS);
-	}
-	return send(slaveId, COIL(from), cb);
-}
-
-
-uint16_t ModbusRTU::pullCoil(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addCoil(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_COILS);
-	return send(slaveId, COIL(to), cb);
-}
-
-
-uint16_t ModbusRTU::pullIsts(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addIsts(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_INPUT_STAT);
-	return send(slaveId, ISTS(to), cb);
-}
-
-
-uint16_t ModbusRTU::pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007D) return false;
-	if (!searchRegister(HREG(from))) return false;
-	if (numregs == 1) {
-		readSlave(to, Hreg(from), FC_WRITE_REG);
-	} else {
-		writeSlaveWords(HREG(from), to, numregs, FC_WRITE_REGS);
-	}
-	return send(slaveId, HREG(from), cb);
-}
-
-
-uint16_t ModbusRTU::pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addHreg(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_REGS);
-	return send(slaveId, HREG(to), cb);
-}
-
-
-uint16_t ModbusRTU::pullIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addIreg(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_INPUT_REGS);
-	return send(slaveId, IREG(to), cb);
-}
-
-
-uint16_t ModbusRTU::pushIregToHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > 0x007D) return false;
-	if (!searchRegister(IREG(from))) return false;
-	if (numregs == 1) {
-		readSlave(to, Ireg(from), FC_WRITE_REG);
-	} else {
-		writeSlaveWords(IREG(from), to, numregs, FC_WRITE_REGS);
-	}
-	return send(slaveId, IREG(from), cb);
-}
-
-
-uint16_t ModbusRTU::pushIstsToCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	if (!searchRegister(ISTS(from))) return false;
-	if (numregs == 1) {
-		readSlave(to, ISTS_VAL(Ists(from)), FC_WRITE_COIL);
-	} else {
-		writeSlaveBits(ISTS(from), to, numregs, FC_WRITE_COILS);
-	}
-	return send(slaveId, ISTS(from), cb);
-}
-
-
-uint16_t ModbusRTU::pullHregToIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addIreg(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_REGS);
-	return send(slaveId, IREG(to), cb);
-}
-
-
-uint16_t ModbusRTU::pullCoilToIsts(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
-	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
-	#ifdef MODBUSRTU_ADD_REG
-	 addIsts(to, numregs);
-	#endif
-	readSlave(from, numregs, FC_READ_COILS);
-	return send(slaveId, ISTS(to), cb);
 }

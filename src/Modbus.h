@@ -1,10 +1,11 @@
 /*
-    Modbus.h - Header for Modbus Core Library
+    Modbus Library for Arduino
+    Core functions
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
-
+#include "ModbusSettings.h"
 #include "Arduino.h"
 #include <vector>
 #include <algorithm>
@@ -16,10 +17,6 @@
  #define __bswap_16(num) (((uint16_t)num>>8) | ((uint16_t)num<<8))
 #endif
 
-
-#define MB_GLOBAL_REGS
-//#define MB_MAX_REGS     32
-#define MODBUS_MAX_FRAME   256
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
 #define IREG(n) (TAddress){TAddress::IREG, n}
@@ -134,48 +131,9 @@ class Modbus {
             EX_CANCEL               = 0xE6  // Custom. Transaction/request canceled
         };
         ~Modbus();
-        bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
-        bool Hreg(uint16_t offset, uint16_t value);
-        uint16_t Hreg(uint16_t offset);
-        uint16_t removeHreg(uint16_t offset, uint16_t numregs = 1);
-        bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
-        bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
-        bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
-        bool Coil(uint16_t offset, bool value);
-        bool Ists(uint16_t offset, bool value);
-        bool Ireg(uint16_t offset, uint16_t value);
-        bool Coil(uint16_t offset);
-        bool Ists(uint16_t offset);
-        uint16_t Ireg(uint16_t offset);
-        bool removeCoil(uint16_t offset, uint16_t numregs = 1);
-        bool removeIsts(uint16_t offset, uint16_t numregs = 1);
-        bool removeIreg(uint16_t offset, uint16_t numregs = 1);
-        /*
-        bool Hreg(uint16_t offset, uint16_t* value);
-        bool Coil(uint16_t offset, bool* value);
-        bool Ists(uint16_t offset, bool* value);
-        bool Ireg(uint16_t offset, uint16_t* value);
-        */
+
         void cbEnable(bool state = true);
         void cbDisable();
-        
-        bool onGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool onSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-
-        bool removeOnGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-        bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
 
     private:
 	    void readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
@@ -227,6 +185,7 @@ class Modbus {
         // fn - Modbus function
         // data - if null use local registers. Otherwise use data from array to erite to slave
 
+    public:
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);
         uint16_t Reg(TAddress address);

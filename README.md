@@ -11,18 +11,15 @@ Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for 
 This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
 used in industrial automation and can be used in other areas, such as home automation.
 
-The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus IP).
+The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP).
 
 For more information about Modbus see:
 
 * [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
-* [MODBUS APPLICATION PROTOCOL SPECIFICATION
-V1.1b](http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf)
-* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE
-V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
-* [MODBUS over Serial Line
-Specification and Implementation Guide
-V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
+* [MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b](http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf)
+* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
+* [MODBUS over Serial Line Specification and Implementation Guide V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
+* [MODBUS/TCP Security Protocol Specification](https://modbus.org/docs/MB-TCP-Security-v21_2018-07-24.pdf)
 
 ## Features
 
@@ -63,6 +60,14 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
+// 4.0.0
+- Modbus TCP Security Server
+- Modbus TCP Security Client
+- STL dependency remove
+- Ethernet library support
++ API implementation code merge
++ ModbusIP => ModbusTCP
+- Examples revising
 // 3.0.1
 + ModbusRTU: ESP32 possible send\receive failure fix
 + ModbusRTU: Non-ESP devices support
@@ -81,12 +86,6 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 + Master\Client: Fix crash on Write Multiple Hregs
 + Master\Client: Fix crash on no callback function on read\write remote
 + Tests added
-// ToDo later
-- 0x14 - Read File Records function
-- 0x15 - Write File Records function
-- 0x16 - Write Mask Register function
-- 0x17 - Read/Write Registers function
-- ModbusIP: Support for non-ESP boards (using W5x00)
 ```
 
 ## Contributions

@@ -1,5 +1,6 @@
 /*
-    Modbus.cpp - Modbus Core Library Implementation
+    Modbus Library for Arduino
+    Core functions
     Copyright (C) 2014 Andr� Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
@@ -92,11 +93,11 @@ void Modbus::slavePDU(uint8_t* frame) {
     switch (fcode) {
         case FC_WRITE_REG:
             //field1 = reg, field2 = value
-            if (!Hreg(field1, field2)) { //Check Address and execute (reg exists?)
+            if (!Reg(HREG(field1), field2)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 break;
             }
-            if (Hreg(field1) != field2) { //Check for failure
+            if (Reg(HREG(field1)) != field2) { //Check for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 break;
             }
@@ -148,11 +149,13 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 break;
             }
-            if (!Coil(field1, COIL_BOOL(field2))) { //Check Address and execute (reg exists?)
+            //if (!Coil(field1, COIL_BOOL(field2))) { //Check Address and execute (reg exists?)
+            if (!Reg(COIL(field1), field2)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 break;
             }
-            if (Coil(field1) != COIL_BOOL(field2)) { //Check for failure
+            //if (Coil(field1) != COIL_BOOL(field2)) { //Check for failure
+            if (Reg(COIL(field1)) != field2) { //Check for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 break;
             }
@@ -509,105 +512,6 @@ void Modbus::cbEnable(bool state) {
 void Modbus::cbDisable() {
     cbEnable(false);
 }
-
-bool Modbus::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-    return addReg(HREG(offset), value, numregs);
-}
-bool Modbus::Hreg(uint16_t offset, uint16_t value) {
-    return Reg(HREG(offset), value);
-}
-uint16_t Modbus::Hreg(uint16_t offset) {
-    return Reg(HREG(offset));
-}
-uint16_t Modbus::removeHreg(uint16_t offset, uint16_t numregs) {
-    return removeReg(HREG(offset), numregs);
-}
-bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {
-    return addReg(COIL(offset), COIL_VAL(value), numregs);
-}
-bool Modbus::addIsts(uint16_t offset, bool value, uint16_t numregs) {
-    return addReg(ISTS(offset), ISTS_VAL(value), numregs);
-}
-bool Modbus::addIreg(uint16_t offset, uint16_t value, uint16_t numregs) {
-    return addReg(IREG(offset), value, numregs);
-}
-bool Modbus::Coil(uint16_t offset, bool value) {
-    return Reg(COIL(offset), COIL_VAL(value));
-}
-bool Modbus::Ists(uint16_t offset, bool value) {
-    return Reg(ISTS(offset), ISTS_VAL(value));
-}
-bool Modbus::Ireg(uint16_t offset, uint16_t value) {
-    return Reg(IREG(offset), value);
-}
-bool Modbus::Coil(uint16_t offset) {
-    return COIL_BOOL(Reg(COIL(offset)));
-}
-bool Modbus::Ists(uint16_t offset) {
-    return ISTS_BOOL(Reg(ISTS(offset)));
-}
-uint16_t Modbus::Ireg(uint16_t offset) {
-    return Reg(IREG(offset));
-}
-bool Modbus::removeCoil(uint16_t offset, uint16_t numregs) {
-    return removeReg(COIL(offset), numregs);
-}
-bool Modbus::removeIsts(uint16_t offset, uint16_t numregs) {
-    return removeReg(ISTS(offset), numregs);
-}
-bool Modbus::removeIreg(uint16_t offset, uint16_t numregs) {
-    return removeReg(IREG(offset), numregs);
-}
-bool Modbus::onGetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onGet(COIL(offset), cb, numregs);
-}
-bool Modbus::onSetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onSet(COIL(offset), cb, numregs);
-}
-bool Modbus::onGetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onGet(HREG(offset), cb, numregs);
-}
-bool Modbus::onSetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onSet(HREG(offset), cb, numregs);
-}
-bool Modbus::onGetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onGet(ISTS(offset), cb, numregs);
-}
-bool Modbus::onSetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onSet(ISTS(offset), cb, numregs);
-}
-bool Modbus::onGetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onGet(IREG(offset), cb, numregs);
-}
-bool Modbus::onSetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return onSet(IREG(offset), cb, numregs);
-}
-
-bool Modbus::removeOnGetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnGet(COIL(offset), cb, numregs);
-}
-bool Modbus::removeOnSetCoil(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnSet(COIL(offset), cb, numregs);
-}
-bool Modbus::removeOnGetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnGet(HREG(offset), cb, numregs);
-}
-bool Modbus::removeOnSetHreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnSet(HREG(offset), cb, numregs);
-}
-bool Modbus::removeOnGetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnGet(ISTS(offset), cb, numregs);
-}
-bool Modbus::removeOnSetIsts(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnSet(ISTS(offset), cb, numregs);
-}
-bool Modbus::removeOnGetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnGet(IREG(offset), cb, numregs);
-}
-bool Modbus::removeOnSetIreg(uint16_t offset, cbModbus cb, uint16_t numregs) {
-    return removeOnSet(IREG(offset), cb, numregs);
-}
-
 Modbus::~Modbus() {
     free(_frame);
 }
