@@ -9,6 +9,7 @@
 #ifdef MB_GLOBAL_REGS
  std::vector<TRegister> _regs;
  std::vector<TCallback> _callbacks;
+ cbModbusFileOp _onFile;
 #endif
 
 uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
@@ -182,6 +183,109 @@ void Modbus::slavePDU(uint8_t* frame) {
                 _reply = REPLY_NORMAL;
             }
         break;
+    #if defined(MODBUS_MAX_FRAME)
+        case FC_READ_FILE_REC:
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request data size
+                exceptionResponse(fcode, EX_ILLEGAL_VALUE);
+                return;  
+            }
+            {
+            uint8_t bufSize = 2;    // 2 bytes for frame header
+            uint8_t* recs = frame + 2;   // Begin of sub-recs blocks
+            uint8_t recsCount = frame[1] / 7; // Count of sub-rec blocks
+            for (uint8_t p = 0; p < recsCount; p++) {   // Calc output buffer size required
+                //uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
+                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
+                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+                //Serial.printf("%d, %d, %d\n", fileNum, recNum, recLen);
+                if (recs[0] != 0x06 || recNum > 0x270F) { // Wrong ref type or count of records
+                    exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                    return;
+                }  
+                bufSize += recLen * 2 + 2;   // 4 bytes for header + data
+                recs += 7;
+            }
+            if (bufSize > MODBUS_MAX_FRAME) {  // Frame to return too large
+                exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                return;  
+            }
+            uint8_t* srcFrame = _frame;
+            _frame = (uint8_t*)malloc(bufSize);
+            if (!_frame) {
+                free(srcFrame);
+                exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                return;
+            }
+            _len = bufSize;
+            recs = frame + 2;   // Begin of sub-recs blocks
+            uint8_t* data = _frame + 2;
+            for (uint8_t p = 0; p < recsCount; p++) {
+                uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
+                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
+                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+                ResultCode res = fileOp(fcode, fileNum, recNum, recLen, data + 2);
+                if (res != EX_SUCCESS) {    // File read failed
+                    free(srcFrame);
+                    exceptionResponse(fcode, res);
+                    return;  
+                }
+                data[0] = recLen * 2 + 1;
+                data[1] = 0x06;
+                data += recLen * 2 + 2;
+                recs += 7;
+            }
+            _frame[0] = fcode;
+            _frame[1] = bufSize;
+            _reply = REPLY_NORMAL;
+            free(srcFrame);
+            }
+        break;
+        case FC_WRITE_FILE_REC: {
+            if (frame[1] < 0x09 || frame[1] > 0xFB) {   // Wrong request data size
+                exceptionResponse(fcode, EX_ILLEGAL_VALUE);
+                return;  
+            }
+            uint8_t* recs = frame + 2;   // Begin of sub-recs blocks
+            while (recs < frame + frame[1]) {
+                if (recs[0] != 0x06) {
+                    exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                    return;  
+                }
+                uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
+                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
+                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+                if (recs + recLen * 2 > frame + frame[1]) {
+                    exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                    return;
+                }
+                ResultCode res = fileOp(fcode, fileNum, recNum, recLen, recs + 7);
+                if (res != EX_SUCCESS) {    // File write failed
+                    exceptionResponse(fcode, res);
+                    return;
+                }
+                recs += 7 + recLen * 2;
+            }
+        }
+        _reply = REPLY_ECHO;
+        break;
+    #endif
+        case FC_MASKWRITE_REG: {
+            //field1 = reg, field2 = AND mask
+            // Result = (Current Contents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
+            uint16_t orMask = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
+            uint16_t val = Reg(HREG(field1));
+            val = (val && field2) || (orMask && !field2);
+            if (!Reg(HREG(field1), val)) { //Check Address and execute (reg exists?)
+                exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                return;
+            }
+            if (Reg(HREG(field1)) != val) { //Check for failure
+                exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                return;
+            }
+        }
+        _reply = REPLY_ECHO;
+        return;
 
         default:
             exceptionResponse(fcode, EX_ILLEGAL_FUNCTION);
@@ -496,11 +600,38 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 setMultipleBits(frame + 2, startreg, field2);
             }
         break;
+    #if defined(MODBUS_FILES)
+        case FC_READ_FILE_REC:
+        // Should check if byte order swap needed
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request data size
+                _reply = EX_ILLEGAL_VALUE;
+                return;  
+            }
+            {
+            uint8_t* data = frame + 2;
+            uint8_t* eoFrame = frame + frame[1];
+            while (data < eoFrame) {
+                //data[0] - sub-req length
+                //data[1] = 0x06
+                if (data[1] != 0x06 || data[0] < 0x07 || data[0] > 0xF5 || data + data[0] > eoFrame) {   // Wrong request data size
+                    _reply = EX_ILLEGAL_VALUE;
+                    return;  
+                }
+                memcpy(output, data + 2, data[0]);
+                data += data[0] + 1;
+                output += data[0] - 1;
+            }
+            }
+        break;
+        case FC_WRITE_FILE_REC:
+    #endif
         case FC_WRITE_REG:
         case FC_WRITE_REGS:
         case FC_WRITE_COIL:
         case FC_WRITE_COILS:
+        case FC_MASKWRITE_REG:
         break;
+
         default:
 		    _reply = EX_GENERAL_FAILURE;
     }
@@ -515,3 +646,63 @@ void Modbus::cbDisable() {
 Modbus::~Modbus() {
     free(_frame);
 }
+
+#if defined(MODBUS_FILES)
+bool Modbus::onFile(Modbus::ResultCode (*cb)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)) {
+    _onFile = cb;
+    return true;
+}
+Modbus::ResultCode Modbus::fileOp(Modbus::FunctionCode fc, uint16_t fileNum, uint16_t recNum, uint16_t recLen, uint8_t* frame) {
+    if (!_onFile) return EX_ILLEGAL_ADDRESS;
+    return _onFile(fc, fileNum, recNum, recLen, frame);
+}
+
+    bool Modbus::readSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn) {
+	    _len = count * 7 + 2;
+        if (_len > MODBUS_MAX_FRAME) return false;
+        free(_frame);
+	    _frame = (uint8_t*) malloc(_len);
+        if (!_frame) return false;
+	    _frame[0] = fn;
+	    _frame[1] = _len - 2;
+        uint8_t* subReq = _frame + 2;
+        for (uint8_t i = 0; i < count; i++) {
+            subReq[0] = 0x06;
+	        subReq[1] = fileNum[i] >> 8;
+	        subReq[2] = fileNum[i] & 0x00FF;
+            subReq[3] = startRec[i] >> 8;
+	        subReq[4] = startRec[i] & 0x00FF;
+            subReq[5] = len[i] >> 8;
+	        subReq[6] = len[i] & 0x00FF;
+            subReq += 7;
+        }
+        return true;
+    }
+    bool Modbus::writeSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn, uint8_t* data) {
+        _len = 2;
+        for (uint8_t i = 0; i < count; i++) {
+            _len += len[i] * 2 + 7;
+        }
+        if (_len > MODBUS_MAX_FRAME) return false;
+        free(_frame);
+	    _frame = (uint8_t*) malloc(_len);
+        if (!_frame) return false;
+	    _frame[0] = fn;
+	    _frame[1] = _len - 2;
+        uint8_t* subReq = _frame + 2;
+        for (uint8_t i = 0; i < count; i++) {
+            subReq[0] = 0x06;
+	        subReq[1] = fileNum[i] >> 8;
+	        subReq[2] = fileNum[i] & 0x00FF;
+            subReq[3] = startRec[i] >> 8;
+	        subReq[4] = startRec[i] & 0x00FF;
+            subReq[5] = len[i] >> 8;
+	        subReq[6] = len[i] & 0x00FF;
+            uint8_t clen = len[i] * 2;
+            memcpy(subReq + 7, data, clen);
+            subReq += 7 + clen;
+            data += clen;
+        }
+        return true;
+    }
+    #endif

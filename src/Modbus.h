@@ -160,6 +160,10 @@ class Modbus {
     #ifndef MB_GLOBAL_REGS
         std::vector<TRegister> _regs;
         std::vector<TCallback> _callbacks;
+        #if defined(MODBUS_FILES)
+        Modbus::ResultCode (*_onFile)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*) = nullptr;
+        #endif
+
     #endif
         uint8_t*  _frame = nullptr;
         uint16_t  _len = 0;
@@ -197,6 +201,32 @@ class Modbus {
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
 
         virtual uint32_t eventSource() {return 0;}
+
+    #if defined(MODBUS_FILES)
+    public:
+        bool onFile(Modbus::ResultCode (*cb)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*));
+    private:
+        ResultCode fileOp(FunctionCode fc, uint16_t fileNum, uint16_t recNum, uint16_t recLen, uint8_t* frame);
+    protected:
+        bool readSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn);
+        // fileNum - sequental array of files numbers to read
+        // startRec - array of strart records for each file
+        // len - array of counts of records to read in terms of register size (2 bytes) for each file
+        // count - count of records to be compose in the single request
+        // fn - Modbus function. Assumed to be 0x14
+        bool writeSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn, uint8_t* data);
+        // fileNum - sequental array of files numbers to read
+        // startRec - array of strart records for each file
+        // len - array of counts of records to read in terms of register size (2 bytes) for each file
+        // count - count of records to be compose in the single request
+        // fn - Modbus function. Assumed to be 0x15
+        // data - sequental set of data records
+    #endif
+
 };
 
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests
+#if defined(MODBUS_FILES)
+// Callback skeleton for file read/write
+typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame);
+#endif

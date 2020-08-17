@@ -42,6 +42,9 @@ For more information about Modbus see:
   * 0x06 - Write Single Register
   * 0x0F - Write Multiple Coils
   * 0x10 - Write Multiple Registers
+  * 0x14 - Read File Record
+  * 0x15 - Write File Record
+  * 0x16 - Mask Write Register
 * Callbacks for
   * Client connect (Modbus TCP)
   * Server/Client disconnect (Modbus TCP)
@@ -54,20 +57,37 @@ For more information about Modbus see:
 1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
 2. For API refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 3. Modbus RTU maximum incoming frame size is determinated by HardwareSerial buffer size. For SoftwareSerial buffer must be set to 256 bytes.
-4. Probably it's possible to use ModbusRTU with other AVR boards using <vector> from [ArduinoSTL](https://github.com/mike-matera/ArduinoSTL).
-5. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
+4. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
 
 ## Last Changes
 
 ```diff
-// 4.0.0
+// 4.0.0.DEVEL
 - Modbus TCP Security Server
 - Modbus TCP Security Client
 - STL dependency remove
 - Ethernet library support
-+ API implementation code merge
++ API: Implementation code merge
 + ModbusIP => ModbusTCP
-- Examples revising
++ 0x14 - Read File Records function
++ Test: 0x14
++ 0x15 - Write File Records function
++ Test: 0x15
+- Examples: Basic file operations
+- Examples: FW update
++ 0x16 - Write Mask Register function
+- Test: 0x16
+- 0x17 - Read/Write Registers function
+- Test: 0x17
+- Slave/Server: slavePDU use early exit by return where possible
+- Master/Client: Check frame size against header data where possible
+- Master/Client: Additional responce data validation
+- Test: push/pull functions
+- Test: Frame accuracy to specefication
+- Documentation: Update
+- Examples: Revising
+// 3.0.2
++ ModbusTCP Client: ESP32 fix unexpected transaction timeout
 // 3.0.1
 + ModbusRTU: ESP32 possible send\receive failure fix
 + ModbusRTU: Non-ESP devices support

@@ -10,4 +10,4 @@
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
-class ModbusTCP : public ModbusTemplate<IPAddress, ModbusTCPTemplate<WiFiServer, WiFiClient, MODBUSTCP_PORT>> {};
+class ModbusTCP : public ModbusAPI<IPAddress, ModbusTCPTemplate<WiFiServer, WiFiClient, MODBUSTCP_PORT>> {};
