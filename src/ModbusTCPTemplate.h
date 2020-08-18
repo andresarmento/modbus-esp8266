@@ -8,6 +8,10 @@
 #pragma once
 #include "Modbus.h"
 
+#define BIT_SET(a,b) ((a) |= (1ULL<<(b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
+#define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))        // '!!' to make sure this returns 0 or 1
+
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
@@ -40,6 +44,13 @@ class ModbusTCPTemplate : public Modbus {
 	cbModbusConnect cbDisconnect = nullptr;
 	SERVER* tcpserver = nullptr;
 	CLIENT* tcpclient[MODBUSIP_MAX_CLIENTS];
+	#if MODBUSIP_MAX_CLIENTS <= 8
+	uint8_t tcpServerConnection = 0;
+	#elif MODBUSIP_MAX_CLIENTS <= 16
+	uint16_t tcpServerConnection = 0;
+	#else
+	uint32_t tcpServerConnection = 0;
+	#endif
 	std::vector<TTransaction> _trans;
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
@@ -110,13 +121,18 @@ bool ModbusTCPTemplate<SERVER, CLIENT, PORT>::connect(IPAddress ip, uint16_t por
 	if (p == -1)
 		return false;
 	tcpclient[p] = new CLIENT();
+	BIT_CLEAR(tcpServerConnection, p);
 	return tcpclient[p]->connect(ip, port);
 }
 
 template <class SERVER, class CLIENT, int PORT>
 uint32_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::eventSource() {		// Returns IP of current processing client query
 	if (n >= 0 && n < MODBUSIP_MAX_CLIENTS && tcpclient[n])
+	#if !defined(ethernet_h)
 		return (uint32_t)tcpclient[n]->remoteIP();
+	#else
+		return 1;
+	#endif
 	return (uint32_t)INADDR_NONE;
 }
 
@@ -132,10 +148,12 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 	MBAP_t _MBAP;
 	cleanupConnections();
 	if (tcpserver) {
-		while (tcpserver->hasClient()) {
-			CLIENT* currentClient = new CLIENT(tcpserver->available());
+		//while (tcpserver->hasClient()) {
+			//CLIENT* currentClient = new CLIENT(tcpserver->available());
+		while (CLIENT* currentClient = new CLIENT(tcpserver->available())) {
 			if (!currentClient || !currentClient->connected())
 				continue;
+			#if !defined(ethernet_h)
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#ifdef MODBUSIP_UNIQUE_CLIENTS
 				// Disconnect previous connection from same IP if present
@@ -146,12 +164,16 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 					tcpclient[n] = nullptr;
 				}
 				#endif
+			#endif
 				n = getFreeClient();
 				if (n > -1) {
 					tcpclient[n] = currentClient;
+					BIT_SET(tcpServerConnection, n);
 					continue; // while
 				}
+			#if !defined(ethernet_h)
 			}
+			#endif
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
 			delete currentClient;
 		}
@@ -188,7 +210,8 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 						//while (tcpclient[n]->available())	// Drop all incoming (if any)
 						//	tcpclient[n]->read();
 					} else {
-						if (tcpclient[n]->localPort() == serverPort) {
+						//if (tcpclient[n]->localPort() == serverPort) {
+						if (BIT_CHECK(tcpServerConnection, n)) {
 							// Process incoming frame as slave
 							slavePDU(_frame);
 						} else {
@@ -215,7 +238,8 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 					}
 				}
 			}
-			if (tcpclient[n]->localPort() != serverPort) _reply = REPLY_OFF;	// No replay if it was responce to master
+			//if (tcpclient[n]->localPort() != serverPort) _reply = REPLY_OFF;	// No replay if it was responce to master
+			if (!BIT_CHECK(tcpServerConnection, n)) _reply = REPLY_OFF;	// No replay if it was responce to master
 			if (_reply != REPLY_OFF) {
 				_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
@@ -223,7 +247,7 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 				tcpclient[n]->write(sbuf, send_len);
-				tcpclient[n]->flush();
+				//tcpclient[n]->flush();
 			}
 			if (_frame) {
 				free(_frame);
@@ -257,7 +281,7 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::send(IPAddress ip, TAddress st
 	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 	if (tcpclient[p]->write(sbuf, send_len) != send_len)
 		return false;
-	tcpclient[p]->flush();
+	//tcpclient[p]->flush();
 	if (waitResponse) {
 		TTransaction tmp;
 		tmp.transactionId = transactionId;
@@ -322,7 +346,7 @@ int8_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::getFreeClient() {
 template <class SERVER, class CLIENT, int PORT>
 int8_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::getSlave(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && tcpclient[i]->localPort() != serverPort)
+		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && !BIT_CHECK(tcpServerConnection, i))
 			return i;
 	return -1;
 }
@@ -330,7 +354,7 @@ int8_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::getSlave(IPAddress ip) {
 template <class SERVER, class CLIENT, int PORT>
 int8_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::getMaster(IPAddress ip) {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++)
-		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && tcpclient[i]->localPort() == serverPort)
+		if (tcpclient[i] && tcpclient[i]->connected() && tcpclient[i]->remoteIP() == ip && BIT_CHECK(tcpServerConnection, i))
 			return i;
 	return -1;
 }

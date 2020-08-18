@@ -64,9 +64,12 @@ For more information about Modbus see:
 ```diff
 // 4.0.0.DEVEL
 - Modbus TCP Security Server
+- Test: TLS Server
 - Modbus TCP Security Client
+- Test: TLS Client
 - STL dependency remove
-- Ethernet library support
++ W5x00 Ethernet library support
+- Test: W5x00 support
 + API: Implementation code merge
 + ModbusIP => ModbusTCP
 + 0x14 - Read File Records function

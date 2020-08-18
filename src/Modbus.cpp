@@ -183,7 +183,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 _reply = REPLY_NORMAL;
             }
         break;
-    #if defined(MODBUS_MAX_FRAME)
+    #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
             if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request data size
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
