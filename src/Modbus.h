@@ -7,8 +7,12 @@
 #pragma once
 #include "ModbusSettings.h"
 #include "Arduino.h"
-#include <vector>
-#include <algorithm>
+#if defined(MODBUS_USE_STL)
+ #include <vector>
+ #include <algorithm>
+#else
+ #include "darray.h"
+#endif
 #ifdef ARDUINO_ARCH_ESP32
  #include <byteswap.h>
 #endif
@@ -158,8 +162,13 @@ class Modbus {
             REPLY_UNEXPECTED     = 0x05
         };
     #ifndef MB_GLOBAL_REGS
+        #if defined(MODBUS_USE_STL)
         std::vector<TRegister> _regs;
         std::vector<TCallback> _callbacks;
+        #else
+        DArray<TRegister, 1, 1> _regs;
+        DArray<TCallback, 1, 1> _callbacks;
+        #endif
         #if defined(MODBUS_FILES)
         Modbus::ResultCode (*_onFile)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*) = nullptr;
         #endif

@@ -11,7 +11,9 @@
 #define BIT_SET(a,b) ((a) |= (1ULL<<(b)))
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
 #define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))        // '!!' to make sure this returns 0 or 1
-
+#ifndef IPADDR_NONE
+#define IPADDR_NONE (IPAddress(0,0,0,0))
+#endif
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
 
@@ -51,7 +53,11 @@ class ModbusTCPTemplate : public Modbus {
 	#else
 	uint32_t tcpServerConnection = 0;
 	#endif
+	#if defined(MODBUS_USE_STL)
 	std::vector<TTransaction> _trans;
+	#else
+	DArray<TTransaction, 2, 2> _trans;
+	#endif
 	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 	bool autoConnectMode = false;
@@ -138,9 +144,14 @@ uint32_t ModbusTCPTemplate<SERVER, CLIENT, PORT>::eventSource() {		// Returns IP
 
 template <class SERVER, class CLIENT, int PORT>
 TTransaction* ModbusTCPTemplate<SERVER, CLIENT, PORT>::searchTransaction(uint16_t id) {
-	std::vector<TTransaction>::iterator it = std::find_if(_trans.begin(), _trans.end(), [id](TTransaction& trans){return trans.transactionId == id;});
+#define MODBUSIP_COMPARE_TRANS [id](TTransaction& trans){return trans.transactionId == id;}
+	#if defined(MODBUS_USE_STL)
+	std::vector<TTransaction>::iterator it = std::find_if(_trans.begin(), _trans.end(), MODBUSIP_COMPARE_TRANS);
    	if (it != _trans.end()) return &*it;
-   	return nullptr;
+	return nullptr;
+	#else
+	return _trans.entry(_trans.find(MODBUSIP_COMPARE_TRANS));
+	#endif
 }
 
 template <class SERVER, class CLIENT, int PORT>
@@ -150,10 +161,11 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 	if (tcpserver) {
 		//while (tcpserver->hasClient()) {
 			//CLIENT* currentClient = new CLIENT(tcpserver->available());
-		while (CLIENT* currentClient = new CLIENT(tcpserver->available())) {
+		//while (CLIENT* currentClient = new CLIENT(tcpserver->available())) {
+		while (CLIENT c = tcpserver->available()) {
+			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())
 				continue;
-			#if !defined(ethernet_h)
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#ifdef MODBUSIP_UNIQUE_CLIENTS
 				// Disconnect previous connection from same IP if present
@@ -164,16 +176,13 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 					tcpclient[n] = nullptr;
 				}
 				#endif
-			#endif
 				n = getFreeClient();
 				if (n > -1) {
 					tcpclient[n] = currentClient;
 					BIT_SET(tcpServerConnection, n);
 					continue; // while
 				}
-			#if !defined(ethernet_h)
 			}
-			#endif
 			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
 			delete currentClient;
 		}
@@ -229,10 +238,15 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::task() {
 									trans->cb((ResultCode)_reply, trans->transactionId, nullptr);
 								}
 								free(trans->_frame);
+								#if defined(MODBUS_USE_STL)
 								//_trans.erase(std::remove(_trans.begin(), _trans.end(), *trans), _trans.end() );
 								std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
 								if (it != _trans.end())
 									_trans.erase(it);
+								#else
+								size_t r = _trans.find([trans](TTransaction& t){return *trans == t;});
+								_trans.remove(r);
+								#endif
 							}
 						}
 					}
@@ -323,6 +337,7 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::cleanupConnections() {
 
 template <class SERVER, class CLIENT, int PORT>
 void ModbusTCPTemplate<SERVER, CLIENT, PORT>::cleanupTransactions() {
+	#if defined(MODBUS_USE_STL)
 	for (auto it = _trans.begin(); it != _trans.end();) {
 		if (millis() - it->timestamp > MODBUSIP_TIMEOUT || it->forcedEvent != Modbus::EX_SUCCESS) {
 			Modbus::ResultCode res = (it->forcedEvent != Modbus::EX_SUCCESS)?it->forcedEvent:Modbus::EX_TIMEOUT;
@@ -333,6 +348,20 @@ void ModbusTCPTemplate<SERVER, CLIENT, PORT>::cleanupTransactions() {
 		} else
 			it++;
 	}
+	#else
+	size_t i = 0;
+	while (i < _trans.size()) {
+		TTransaction t =  _trans[i];
+		if (millis() - t.timestamp > MODBUSIP_TIMEOUT || t.forcedEvent != Modbus::EX_SUCCESS) {
+			Modbus::ResultCode res = (t.forcedEvent != Modbus::EX_SUCCESS)?t.forcedEvent:Modbus::EX_TIMEOUT;
+			if (t.cb)
+				t.cb(res, t.transactionId, nullptr);
+			free(t._frame);
+			_trans.remove(i);
+		} else
+			i++;
+	}
+	#endif
 }
 
 template <class SERVER, class CLIENT, int PORT>
@@ -387,7 +416,12 @@ bool ModbusTCPTemplate<SERVER, CLIENT, PORT>::disconnect(IPAddress ip) {
 
 template <class SERVER, class CLIENT, int PORT>
 void ModbusTCPTemplate<SERVER, CLIENT, PORT>::dropTransactions() {
+	#if defined(MODBUS_USE_STL)
 	for (auto &t : _trans) t.forcedEvent = EX_CANCEL;
+	#else
+	for (size_t i = 0; i < _trans.size(); i++)
+		_trans.entry(i)->forcedEvent = EX_CANCEL;
+	#endif
 }
 
 template <class SERVER, class CLIENT, int PORT>

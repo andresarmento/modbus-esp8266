@@ -189,7 +189,7 @@ void ModbusRTUTemplate::task() {
 	Serial.println();
 	#endif
 	//_port->readBytes(_frame, _len);
-    u_int frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
+    uint16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
         free(_frame);

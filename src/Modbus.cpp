@@ -7,32 +7,54 @@
 #include "Modbus.h"
 
 #ifdef MB_GLOBAL_REGS
+#if defined(MODBUS_USE_STL)
  std::vector<TRegister> _regs;
  std::vector<TCallback> _callbacks;
+#else
+ DArray<TRegister, 1, 1> _regs;
+ DArrat<TCallback, 1, 1> _callbacks;
+#endif
  cbModbusFileOp _onFile;
 #endif
 
 uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
+#define MODBUS_COMPARE_CB [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;}
     uint16_t newVal = val;
+#if defined(MODBUS_USE_STL)
     std::vector<TCallback>::iterator it = _callbacks.begin();
     do {
-        it = std::find_if(it, _callbacks.end(), [reg, t](TCallback& cb){return cb.address == reg->address && cb.type == t;});
+        it = std::find_if(it, _callbacks.end(), MODBUS_COMPARE_CB);
         if (it != _callbacks.end()) {
             newVal = it->cb(reg, newVal);
             it++;
         }
     } while (it != _callbacks.end());
+#else
+    size_t r = 0; 
+    do {
+        r = _callbacks.find(MODBUS_COMPARE_CB, r);
+        if (r < _callbacks.size())
+            newVal = _callbacks[r].cb(reg, newVal);
+        r++;
+    } while (r < _callbacks.size());
+#endif
     return newVal;
 }
 
 TRegister* Modbus::searchRegister(TAddress address) {
-    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(), [address](TRegister& addr){return addr.address == address;});
+#define MODBUS_COMPARE_REG [address](TRegister& addr){return (addr.address == address);}
+#if defined(MODBUS_USE_STL)
+    std::vector<TRegister>::iterator it = std::find_if(_regs.begin(), _regs.end(), MODBUS_COMPARE_REG);
     if (it != _regs.end()) return &*it;
+#else
+    size_t r = _regs.find(MODBUS_COMPARE_REG);
+    if (r < _regs.size()) return _regs.entry(r); 
+#endif
     return nullptr;
 }
 
 bool Modbus::addReg(TAddress address, uint16_t value, uint16_t numregs) {
-   #ifdef MB_MAX_REGS
+   #ifdef MODBUS_MAX_REGS
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
     for (uint16_t i = 0; i < numregs; i++) {
@@ -79,7 +101,11 @@ bool Modbus::removeReg(TAddress address, uint16_t numregs) {
             atLeastOne = true;
             removeOnSet(address + i);
             removeOnGet(address + i);
+            #if defined(MODBUS_USE_STL)
             _regs.erase(std::remove( _regs.begin(), _regs.end(), *reg), _regs.end() );
+            #else
+            _regs.remove(_regs.find(MODBUS_COMPARE_REG));
+            #endif
         }
     }
     return atLeastOne;
@@ -445,17 +471,33 @@ bool Modbus::onSet(TAddress address, cbModbus cb, uint16_t numregs) {
 }
 
 bool Modbus::removeOnSet(TAddress address, cbModbus cb, uint16_t numregs) {
+#define MODBUS_COMPARE_ONSET [address, cb](TCallback entry){ return entry.type == TCallback::ON_SET && entry.address == address && (!cb || entry.cb == cb);}
     while(numregs--) {
-        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), [address, cb](TCallback entry){
-                        return entry.type == TCallback::ON_SET && entry.address == address && (!cb || entry.cb == cb);} ), _callbacks.end() );
+        #if defined(MODBUS_USE_STL)
+        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), MODBUS_COMPARE_ONSET), _callbacks.end());
+        #else
+        size_t r = 0;
+        do {
+            r = _callbacks.find(MODBUS_COMPARE_ONSET, r);
+            _callbacks.remove(r);
+        } while (r < _callbacks.size());
+        #endif
         address++;
     }
     return false;
 }
 bool Modbus::removeOnGet(TAddress address, cbModbus cb, uint16_t numregs) {
+#define MODBUS_COMPARE_ONGET [address, cb](TCallback entry){ return entry.type == TCallback::ON_GET && entry.address == address && (!cb || entry.cb == cb);}
     while(numregs--) {
-        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), [address, cb](TCallback entry){
-                        return entry.type == TCallback::ON_GET && entry.address == address && (!cb || entry.cb == cb);} ), _callbacks.end() );
+        #if defined(MODBUS_USE_STL)
+        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), MODBUS_COMPARE_ONGET), _callbacks.end());
+        #else
+        size_t r = 0;
+        do {
+            r = _callbacks.find(MODBUS_COMPARE_ONGET, r);
+            _callbacks.remove(r);
+        } while (r < _callbacks.size());
+        #endif
         address++;
     }
     return false;
