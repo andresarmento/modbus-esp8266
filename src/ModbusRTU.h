@@ -53,4 +53,4 @@ class ModbusRTUTemplate : public Modbus {
 		uint32_t eventSource() override {return _slaveId;}
 };
 
-class ModbusRTU : public ModbusAPI<uint8_t, ModbusRTUTemplate> {};
+class ModbusRTU : public ModbusAPI<ModbusRTUTemplate> {};

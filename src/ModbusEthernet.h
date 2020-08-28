@@ -6,6 +6,7 @@
 
 #pragma once
 #include <Ethernet.h>
+#include <Dns.h>
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
@@ -20,7 +21,23 @@ class EthernetClientWrapper : public EthernetClient {
     }
 };
 #undef MODBUSIP_UNIQUE_CLIENTS
-class ModbusEthernet : public ModbusAPI<IPAddress, ModbusTCPTemplate<EthernetServer, EthernetClientWrapper, MODBUSTCP_PORT>> {};
+class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServer, EthernetClientWrapper>> {
 #else
-class ModbusEthernet : public ModbusAPI<IPAddress, ModbusTCPTemplate<EthernetServer, EthernetClient, MODBUSTCP_PORT>> {};
+class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServer, EthernetClient>> {
 #endif
+    private:
+    static IPAddress resolver (const char* host) {
+        DNSClient dns;
+        IPAddress ip;
+        
+        dns.begin(Ethernet.dnsServerIP());
+        if (dns.getHostByName(host, remote_addr) == 1)
+            return ip;
+        else
+            return IPADDR_NONE;
+    }
+    public:
+    ModbusEthernet() : ModbusAPI() {
+        resolve = resolver;
+    }
+};

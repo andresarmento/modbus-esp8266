@@ -6,13 +6,13 @@
 */
 #include "Modbus.h"
 
-#ifdef MB_GLOBAL_REGS
+#ifdef MODBUS_GLOBAL_REGS
 #if defined(MODBUS_USE_STL)
  std::vector<TRegister> _regs;
  std::vector<TCallback> _callbacks;
 #else
  DArray<TRegister, 1, 1> _regs;
- DArrat<TCallback, 1, 1> _callbacks;
+ DArray<TCallback, 1, 1> _callbacks;
 #endif
  cbModbusFileOp _onFile;
 #endif

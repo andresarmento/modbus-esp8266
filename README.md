@@ -1,4 +1,4 @@
-# Modbus RTU and Modbus TCP Library for Arduino
+# Modbus RTU and Modbus TCP Library for ESP8266/ESP32
 
 |If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
@@ -63,15 +63,20 @@ For more information about Modbus see:
 
 ```diff
 // 4.0.0.DEVEL
-- Modbus TCP Security Server
-- Test: TLS Server
-- Modbus TCP Security Client
-- Test: TLS Client
-+ STL dependency remove
++ ModbusTLS: Modbus TCP Security Client/Server
++ ModbusTLS: ESP8266 Client/Server
++ Test: TLS ESP8266 Client/Server
++ Examples: TLS added
+- Examples: TLS Certificate test Role extension and Alt-Name
+- Examples: TLS Add example explanation
+- ModbusTLS: ESP32 Client
+- Test: TLS ESP32 Client
+- Build with no STL dependency
 - Test: No-STL mode
-+ W5x00 Ethernet library support
++ ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
 - Test: W5x00 support
 + API: Implementation code merge
++ API: Access ModbusTCP server by name 
 + ModbusIP => ModbusTCP
 + 0x14 - Read File Records function
 + Test: 0x14

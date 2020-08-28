@@ -16,7 +16,7 @@ MODBUSRTU_  Settings for RTU
 #pragma once
 
 #define MODBUS_GLOBAL_REGS
-//#define MODBUS_USE_STL
+#define MODBUS_USE_STL
 //#define MODBUS_MAX_REGS     32
 #define MODBUS_ADD_REG
 #define MODBUS_MAX_FRAME   256
