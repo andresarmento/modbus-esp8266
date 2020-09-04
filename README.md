@@ -63,6 +63,8 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
+// 3.0.3
++ ModbusRTU: Add inverse logic support for transmit control
 // 3.0.2
 + ModbusTCP Client: ESP32 fix unexpected transaction timeout 
 // 3.0.1

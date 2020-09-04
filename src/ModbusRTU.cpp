@@ -57,7 +57,7 @@ bool ModbusRTU::begin(Stream* port) {
     return true;
 }
 
-bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
+bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin, bool direct) {
     uint32_t baud = 0;
     #if defined(ESP32) || defined(ESP8266)
     // baudRate() only available with ESP32+ESP8266
@@ -70,21 +70,30 @@ bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin) {
     maxRegs = port->setRxBufferSize(MODBUS_MAX_FRAME) / 2 - 3;
     #endif
     _port = port;
-    _txPin = txPin;
-    if (_txPin >= 0) {
+    if (txPin >= 0) {
+	    _txPin = txPin;
+		_direct = direct;
         pinMode(_txPin, OUTPUT);
-        digitalWrite(_txPin, LOW);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
     }
 	Serial.println(_t);
     return true;
 }
 
 #if defined(ESP8266)
-bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin) {
+bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin, bool direct) {
 	uint32_t baud = port->baudRate();
     _port = port;
-    if (txPin >= 0)
-        port->setTransmitEnablePin(txPin);
+    if (txPin >= 0) {
+		if (direct)	// If direct logic use SoftwareSerial transmit control
+        	port->setTransmitEnablePin(txPin);
+		else {
+    		_txPin = txPin;
+			_direct = direct;
+        	pinMode(_txPin, OUTPUT);
+        	digitalWrite(_txPin, _direct?LOW:HIGH);
+		}
+	}
 	setBaudrate(baud);
     return true;
 }
@@ -93,7 +102,7 @@ bool ModbusRTU::begin(SoftwareSerial* port, int16_t txPin) {
 bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     uint16_t newCrc = crc16(slaveId, frame, len);
     if (_txPin >= 0) {
-        digitalWrite(_txPin, HIGH);
+        digitalWrite(_txPin, _direct?HIGH:LOW);
         delay(1);
     }
 	#ifdef ESP32
@@ -108,7 +117,7 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
  	#endif
     _port->flush();
     if (_txPin >= 0)
-        digitalWrite(_txPin, LOW);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
 	//delay(_t);
 	return true;
 }

@@ -47,12 +47,12 @@ Processing routine. Should be periodically called form loop().
 ### Modbus RTU Specific API
 
 ```c
-bool begin(SoftwareSerial* port, int16_t txPin=-1); // For ESP8266 only
-bool begin(HardwareSerial* port, int16_t txPin=-1);
+bool begin(SoftwareSerial* port, int16_t txPin=-1, bool direct=true); // For ESP8266 only
+bool begin(HardwareSerial* port, int16_t txPin=-1, bool direct=true);
 bool begin(Stream* port);
 ```
 
-Assing Serial port. txPin controls transmit enable for MAX-485.
+Assing Serial port. txPin controls transmit enable for MAX-485. Pass direct=false if txPin uses inverse logic.
 
 ```c
 void setBaudrte(uint32 baud);

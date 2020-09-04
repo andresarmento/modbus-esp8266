@@ -23,7 +23,8 @@
 class ModbusRTU : public Modbus {
     protected:
         Stream* _port;
-        int16_t   _txPin = -1;
+        int16_t   _txPin = -1;	// Transmic control GPIO
+		bool _direct = true;	// Transmit control logic (true=direct, false=inverse)
 		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;		// time sience last data byte arrived
 		bool isMaster = false;
@@ -49,9 +50,9 @@ class ModbusRTU : public Modbus {
     public:
 		void setBaudrate(uint32_t baud = -1);
 	 #if defined(ESP8266)
-	 	bool begin(SoftwareSerial* port, int16_t txPin=-1);
+	 	bool begin(SoftwareSerial* port, int16_t txPin=-1, bool direct=true);
 	 #endif
-		bool begin(HardwareSerial* port, int16_t txPin=-1);
+		bool begin(HardwareSerial* port, int16_t txPin=-1, bool direct=true);
 		bool begin(Stream* port);
         void task();
 		void master() { isMaster = true; };

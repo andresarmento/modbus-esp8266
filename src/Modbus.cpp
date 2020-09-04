@@ -519,7 +519,7 @@ bool Modbus::Hreg(uint16_t offset, uint16_t value) {
 uint16_t Modbus::Hreg(uint16_t offset) {
     return Reg(HREG(offset));
 }
-uint16_t Modbus::removeHreg(uint16_t offset, uint16_t numregs) {
+bool Modbus::removeHreg(uint16_t offset, uint16_t numregs) {
     return removeReg(HREG(offset), numregs);
 }
 bool Modbus::addCoil(uint16_t offset, bool value, uint16_t numregs) {

@@ -137,7 +137,7 @@ class Modbus {
         bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
         bool Hreg(uint16_t offset, uint16_t value);
         uint16_t Hreg(uint16_t offset);
-        uint16_t removeHreg(uint16_t offset, uint16_t numregs = 1);
+        bool removeHreg(uint16_t offset, uint16_t numregs = 1);
         bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
         bool addIsts(uint16_t offset, bool value = false, uint16_t numregs = 1);
         bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
