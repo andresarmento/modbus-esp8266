@@ -54,7 +54,7 @@ class ModbusAPI : public T {
     bool removeCoil(uint16_t offset, uint16_t numregs = 1);
     bool removeIsts(uint16_t offset, uint16_t numregs = 1);
     bool removeIreg(uint16_t offset, uint16_t numregs = 1);
-    uint16_t removeHreg(uint16_t offset, uint16_t numregs = 1);
+    bool removeHreg(uint16_t offset, uint16_t numregs = 1);
 
     bool onGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
     bool onSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -207,7 +207,7 @@ uint16_t ModbusAPI<T>::Hreg(uint16_t offset) {
     return this->Reg(HREG(offset));
 }
 template <class T> \
-uint16_t ModbusAPI<T>::removeHreg(uint16_t offset, uint16_t numregs) {
+bool ModbusAPI<T>::removeHreg(uint16_t offset, uint16_t numregs) {
     return this->removeReg(HREG(offset), numregs);
 }
 template <class T> \

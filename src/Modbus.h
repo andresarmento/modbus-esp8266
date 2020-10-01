@@ -13,7 +13,7 @@
 #else
  #include "darray.h"
 #endif
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ESP32)
  #include <byteswap.h>
 #endif
 
@@ -140,8 +140,8 @@ class Modbus {
         void cbDisable();
 
     private:
-	    void readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
-	    void readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
+	    bool readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
+	    bool readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
         
         void setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
         void setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numoutputs);
@@ -211,6 +211,20 @@ class Modbus {
 
         virtual uint32_t eventSource() {return 0;}
 
+        typedef ResultCode (*cbRequest)(FunctionCode fc, TAddress reg, uint16_t regCount); // Callback function Type
+
+    protected:
+        static ResultCode _onRequestDefault(FunctionCode fc, TAddress reg, uint16_t regCount);
+        cbRequest _onRequestSuccess = _onRequestDefault;
+    public:
+        bool onRequest(cbRequest cb = _onRequestDefault);
+    #if defined (MODBUSAPI_OPTIONAL)
+    protected:
+        cbRequest _onRequest = _onRequestDefault;
+    public:
+        bool onRequestSuccess(cbRequest cb = _onRequestDefault);
+    #endif
+
     #if defined(MODBUS_FILES)
     public:
         bool onFile(Modbus::ResultCode (*cb)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*));
@@ -235,6 +249,7 @@ class Modbus {
 };
 
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests
+//typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode func, TRegister* reg, uint16_t regCount); // Callback function Type
 #if defined(MODBUS_FILES)
 // Callback skeleton for file read/write
 typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame);

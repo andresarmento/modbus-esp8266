@@ -1,4 +1,5 @@
-# Modbus RTU and Modbus TCP Library for ESP8266/ESP32
+# Modbus Library for Arduino
+### ModbusRTU, ModbusTCP and ModbusTCP Security
 
 |If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
@@ -28,10 +29,12 @@ For more information about Modbus see:
   * ESP32
   * STM32F103 and probably others (Modbus RTU only)
 * Operates in any combination of multiple instances of
-  * Modbus RTU slave
-  * Modbus RTU master
+  * [Modbus RTU slave](examples/RTU)
+  * [Modbus RTU master](examples/RTU)
   * Modbus TCP server
   * Modbus TCP client
+  * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
+  * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
 * Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
@@ -88,6 +91,7 @@ For more information about Modbus see:
 - Test: 0x16
 - 0x17 - Read/Write Registers function
 - Test: 0x17
+- Access control callback for individual function
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation

@@ -117,35 +117,54 @@ void Modbus::slavePDU(uint8_t* frame) {
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
     uint16_t bytecount_calc;
     uint16_t k;
+    ResultCode ex;
     switch (fcode) {
         case FC_WRITE_REG:
             //field1 = reg, field2 = value
+            ex = _onRequest(fcode, HREG(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
             if (!Reg(HREG(field1), field2)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
-                break;
+                return;
             }
             if (Reg(HREG(field1)) != field2) { //Check for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
-                break;
+                return;
             }
             _reply = REPLY_ECHO;
+            _onRequestSuccess(fcode, HREG(field1), field2);
         break;
 
         case FC_READ_REGS:
             //field1 = startreg, field2 = numregs, header len = 3
-            readWords(HREG(field1), field2, fcode);
+            ex = _onRequest(fcode, HREG(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
+            if (!readWords(HREG(field1), field2, fcode))
+                return;
+            _onRequestSuccess(fcode, HREG(field1), field2);
         break;
 
         case FC_WRITE_REGS:
             //field1 = startreg, field2 = numregs, frame[5] = data lenght, header len = 6
+            ex = _onRequest(fcode, HREG(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
             if (field2 < 0x0001 || field2 > 0x007B || frame[5] != 2 * field2) { //Check value
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
-                break;
+                return;
             }
             for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
                 if (!searchRegister(HREG(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
-                    break;
+                    return;
                 }
             }
             if (k >= field2) {
@@ -153,54 +172,87 @@ void Modbus::slavePDU(uint8_t* frame) {
                 successResponce(HREG(field1), field2, fcode);
                 _reply = REPLY_NORMAL;
             }
+            _onRequestSuccess(fcode, HREG(field1), field2);
         break;
 
         case FC_READ_COILS:
             //field1 = startreg, field2 = numregs
-            readBits(COIL(field1), field2, fcode);
+            ex = _onRequest(fcode, COIL(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
+            if (!readBits(COIL(field1), field2, fcode))
+                return;
+            _onRequestSuccess(fcode, COIL(field1), field2);
         break;
 
         case FC_READ_INPUT_STAT:
             //field1 = startreg, field2 = numregs
-            readBits(ISTS(field1), field2, fcode);
+            ex = _onRequest(fcode, ISTS(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
+            if (!readBits(ISTS(field1), field2, fcode))
+                return;
+            _onRequestSuccess(fcode, ISTS(field1), field2);
         break;
 
         case FC_READ_INPUT_REGS:
             //field1 = startreg, field2 = numregs
-            readWords(IREG(field1), field2, fcode);
+            ex = _onRequest(fcode, IREG(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
+            if (!readWords(IREG(field1), field2, fcode))
+                return;
+            _onRequestSuccess(fcode, IREG(field1), field2);
         break;
 
         case FC_WRITE_COIL:
             //field1 = reg, field2 = status, header len = 3
+            ex = _onRequest(fcode, COIL(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
             if (field2 != 0xFF00 && field2 != 0x0000) { //Check value (status)
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
-                break;
+                return;
             }
             //if (!Coil(field1, COIL_BOOL(field2))) { //Check Address and execute (reg exists?)
             if (!Reg(COIL(field1), field2)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
-                break;
+                return;
             }
             //if (Coil(field1) != COIL_BOOL(field2)) { //Check for failure
             if (Reg(COIL(field1)) != field2) { //Check for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
-                break;
+                return;
             }
             _reply = REPLY_ECHO;
+            _onRequestSuccess(fcode, COIL(field1), field2);
         break;
 
         case FC_WRITE_COILS:
             //field1 = startreg, field2 = numregs, frame[5] = bytecount, header len = 6
+            ex = _onRequest(fcode, COIL(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
             bytecount_calc = field2 / 8;
             if (field2%8) bytecount_calc++;
             if (field2 < 0x0001 || field2 > 0x07B0 || frame[5] != bytecount_calc) { //Check registers range and data size maches
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
-                break;
+                return;
             }
             for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
                 if (!searchRegister(COIL(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
-                    break;
+                    return;
                 }
             }
             if (k >= field2) {
@@ -208,6 +260,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 successResponce(COIL(field1), field2, fcode);
                 _reply = REPLY_NORMAL;
             }
+            _onRequestSuccess(fcode, COIL(field1), field2);
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
@@ -298,6 +351,11 @@ void Modbus::slavePDU(uint8_t* frame) {
         case FC_MASKWRITE_REG: {
             //field1 = reg, field2 = AND mask
             // Result = (Current Contents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
+            ex = _onRequest(fcode, HREG(field1), field2);
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
             uint16_t orMask = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
             uint16_t val = Reg(HREG(field1));
             val = (val && field2) || (orMask && !field2);
@@ -311,10 +369,12 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
         }
         _reply = REPLY_ECHO;
-        return;
+        _onRequestSuccess(fcode, HREG(field1), field2);
+        break;
 
         default:
             exceptionResponse(fcode, EX_ILLEGAL_FUNCTION);
+            return;
     }
 }
 
@@ -361,10 +421,10 @@ void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numre
     }
 }
 
-void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     if (numregs < 0x0001 || numregs > 0x07D0) { //Check value (numregs)
         exceptionResponse(fn, EX_ILLEGAL_VALUE);
-        return;
+        return false;
     }
     //Check Address
     //Check only startreg. Is this correct?
@@ -373,7 +433,7 @@ void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     //when you have more then one datapoint configured from same type.
     if (!searchRegister(startreg)) {
         exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
-        return;
+        return false;
     }
     free(_frame);
     //Determine the message length = function type, byte count and
@@ -383,36 +443,38 @@ void Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
         exceptionResponse(fn, EX_SLAVE_FAILURE);
-        return;
+        return false;
     }
     _frame[0] = fn;
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
 	_frame[_len - 1] = 0;  //Clean last probably partial byte
     getMultipleBits(_frame+2, startreg, numregs);
     _reply = REPLY_NORMAL;
+    return true;
 }
 
-void Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
+bool Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > 0x007D) {
         exceptionResponse(fn, EX_ILLEGAL_VALUE);
-        return;
+        return false;
     }
     if (!searchRegister(startreg)) { //Check Address
         exceptionResponse(fn, EX_ILLEGAL_ADDRESS);
-        return;
+        return false;
     }
     free(_frame);
 	_len = 2 + numregs * 2; //calculate the query reply message length. 2 bytes per register + 2 bytes for header
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
         exceptionResponse(fn, EX_SLAVE_FAILURE);
-        return;
+        return false;
     }
     _frame[0] = fn;
     _frame[1] = _len - 2;   //byte count
     getMultipleWords((uint16_t*)(_frame + 2), startreg, numregs);
     _reply = REPLY_NORMAL;
+    return true;
 }
 
 void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs) {
@@ -748,3 +810,17 @@ Modbus::ResultCode Modbus::fileOp(Modbus::FunctionCode fc, uint16_t fileNum, uin
         return true;
     }
     #endif
+
+Modbus::ResultCode Modbus::_onRequestDefault(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount) {
+    return EX_SUCCESS;
+}
+bool Modbus::onRequest(cbRequest cb) {
+    _onRequest = cb;
+    return true;
+}
+#if defined (MODBUSAPI_OPTIONAL)
+bool Modbus::onRequestSuccess(cbRequest cb) {
+    _onRequestSuccess = cb;
+    return true;
+}
+#endif

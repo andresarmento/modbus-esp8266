@@ -12,6 +12,7 @@ MODBUSIP_   Settings for TCP and TLS both
 MODBUSTCP_  Settings for TCP
 MODBUSTLS_  Settings for TLS
 MODBUSRTU_  Settings for RTU
+MODBUSAPI_  Settings for API
 */
 #pragma once
 
@@ -41,3 +42,6 @@ MODBUSRTU_  Settings for RTU
 #define MB_SERIAL_BUFFER 128
 #define MB_MAX_TIME 10
 #define MODBUSRTU_TIMEOUT 1000
+
+#define MODBUSAPI_LEGACY
+#define MODBUSAPI_OPTIONAL

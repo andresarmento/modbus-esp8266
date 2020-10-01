@@ -51,9 +51,9 @@ class DArray {
 
   void remove(size_t i) {
     if (isEmpty) return;
-    if (i >= last) return;
+    if (i > last) return;
     if (last == 0) {
-      isEmpty = 0;
+      isEmpty = true;
       return;
     }
     memcpy(&data[i], &data[i + 1], (last - i - 1) * sizeof(T));
