@@ -6,16 +6,13 @@
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
 #pragma once
-#include <HardwareSerial.h>
-#if defined(ESP8266)
- #include <SoftwareSerial.h>
-#endif
 #include "ModbusAPI.h"
 
 class ModbusRTUTemplate : public Modbus {
     protected:
         Stream* _port;
         int16_t   _txPin = -1;
+		bool _direct = true;	// Transmit control logic (true=direct, false=inverse)
 		unsigned int _t;	// inter-frame delay in mS
 		uint32_t t = 0;		// time sience last data byte arrived
 		bool isMaster = false;
@@ -41,10 +38,8 @@ class ModbusRTUTemplate : public Modbus {
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
     public:
 		void setBaudrate(uint32_t baud = -1);
-	 #if defined(ESP8266)
-	 	bool begin(SoftwareSerial* port, int16_t txPin=-1);
-	 #endif
-		bool begin(HardwareSerial* port, int16_t txPin=-1);
+		template <class T>
+		bool begin(T* port, int16_t txPin = -1, bool direct = true);
 		bool begin(Stream* port);
         void task();
 		void master() { isMaster = true; };
@@ -52,5 +47,24 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t slave() { return _slaveId; }
 		uint32_t eventSource() override {return _slaveId;}
 };
+
+template <class T>
+bool ModbusRTUTemplate::begin(T* port, int16_t txPin, bool direct) {
+    uint32_t baud = 0;
+    #if defined(ESP32) || defined(ESP8266) // baudRate() only available with ESP32+ESP8266
+    baud = port->baudRate();
+    #else
+    baud = 9600;
+    #endif
+	setBaudrate(baud);
+    _port = port;
+    if (txPin >= 0) {
+	    _txPin = txPin;
+		_direct = direct;
+        pinMode(_txPin, OUTPUT);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
+    }
+    return true;
+}
 
 class ModbusRTU : public ModbusAPI<ModbusRTUTemplate> {};

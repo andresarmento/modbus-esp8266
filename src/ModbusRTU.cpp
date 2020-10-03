@@ -58,58 +58,25 @@ bool ModbusRTUTemplate::begin(Stream* port) {
     return true;
 }
 
-bool ModbusRTUTemplate::begin(HardwareSerial* port, int16_t txPin) {
-    uint32_t baud = 0;
-    #if defined(ESP32) || defined(ESP8266)
-    // baudRate() only available with ESP32+ESP8266
-    baud = port->baudRate();
-    #else
-    baud = 9600;
-    #endif
-	setBaudrate(baud);
-    #if defined(ESP8266)
-    maxRegs = port->setRxBufferSize(MODBUS_MAX_FRAME) / 2 - 3;
-    #endif
-    _port = port;
-    _txPin = txPin;
-    if (_txPin >= 0) {
-        pinMode(_txPin, OUTPUT);
-        digitalWrite(_txPin, LOW);
-    }
-	Serial.println(_t);
-    return true;
-}
-
-#if defined(ESP8266)
-bool ModbusRTUTemplate::begin(SoftwareSerial* port, int16_t txPin) {
-	uint32_t baud = port->baudRate();
-    _port = port;
-    if (txPin >= 0)
-        port->setTransmitEnablePin(txPin);
-	setBaudrate(baud);
-    return true;
-}
-#endif
-
 bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     uint16_t newCrc = crc16(slaveId, frame, len);
     if (_txPin >= 0) {
-        digitalWrite(_txPin, HIGH);
-        delay(1);
+        digitalWrite(_txPin, _direct?HIGH:LOW);
+        delayMicroseconds(1000);
     }
-	#ifdef ESP32
+	#if defined(ESP32)
 	portENTER_CRITICAL(&mux);
 	#endif
     _port->write(slaveId);  	//Send slaveId
     _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
-	#ifdef ESP32
-    portEXIT_CRITICAL(&mux);
- 	#endif
     _port->flush();
     if (_txPin >= 0)
-        digitalWrite(_txPin, LOW);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
+	#if defined(ESP32)
+    portEXIT_CRITICAL(&mux);
+ 	#endif
 	//delay(_t);
 	return true;
 }
