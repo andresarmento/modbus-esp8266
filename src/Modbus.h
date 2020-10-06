@@ -13,13 +13,8 @@
 #else
  #include "darray.h"
 #endif
-#if defined(ESP32)
- #include <byteswap.h>
-#endif
 
-#ifndef __bswap_16
- #define __bswap_16(num) (((uint16_t)num>>8) | ((uint16_t)num<<8))
-#endif
+inline uint16_t __bswap_16(uint16_t num) { return (num >> 8) | (num << 8); }
 
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}

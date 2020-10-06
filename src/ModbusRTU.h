@@ -23,7 +23,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
 		uint16_t maxRegs = 0x007D;
-		#ifdef ESP32
+		#if defined(ESP32)
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		#endif
 

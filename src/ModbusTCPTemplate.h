@@ -18,7 +18,7 @@
 typedef bool (*cbModbusConnect)(IPAddress ip);
 typedef IPAddress (*cbModbusResolver)(const char*);
 
-typedef struct TTransaction {
+struct TTransaction {
 	uint16_t	transactionId;
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
@@ -34,7 +34,7 @@ typedef struct TTransaction {
 template <class SERVER, class CLIENT>
 class ModbusTCPTemplate : public Modbus {
 	protected:
-	typedef union MBAP_t {
+	union MBAP_t {
 		struct {
 			uint16_t transactionId;
 			uint16_t protocolId;
@@ -194,7 +194,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			if (!currentClient || !currentClient->connected())
 				continue;
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
-				#ifdef MODBUSIP_UNIQUE_CLIENTS
+				#if defined(MODBUSIP_UNIQUE_CLIENTS)
 				// Disconnect previous connection from same IP if present
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
@@ -314,7 +314,7 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress star
 template <class SERVER, class CLIENT>
 uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
 	MBAP_t _MBAP;
-#ifdef MODBUSIP_MAX_TRANSACIONS
+#if defined(MODBUSIP_MAX_TRANSACIONS)
 	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return 0;
 #endif
 	if (!ip)

@@ -98,24 +98,24 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
 }
 
 void ModbusRTUTemplate::task() {
-	#ifdef ESP32
+	#if defined(ESP32)
 	portENTER_CRITICAL(&mux);
 	#endif
     if (_port->available() > _len) {
         _len = _port->available();
         t = millis();
-		#ifdef ESP32
+		#if defined(ESP32)
     	portEXIT_CRITICAL(&mux);
  		#endif
 		return;
     }
     if (_len != 0 && millis() - t < _t) { // Wait data whitespace if there is data
-		#ifdef ESP32
+		#if defined(ESP32)
     	portEXIT_CRITICAL(&mux);
  		#endif
 		return;
 	}
-	#ifdef ESP32
+	#if defined(ESP32)
     portEXIT_CRITICAL(&mux);
  	#endif
 

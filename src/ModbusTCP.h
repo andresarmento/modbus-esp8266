@@ -6,25 +6,24 @@
 
 #pragma once
 #if defined(ESP8266)
-//#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #elif defined(ESP32)
-//#include <WiFi.h>
+#include <WiFi.h>
 #endif
 
-//#include <WiFiClient.h>
-//#include <WiFiServer.h>
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
 class ModbusTCP : public ModbusAPI<ModbusTCPTemplate<WiFiServer, WiFiClient>> {
-    private:
-    static IPAddress resolver (const char* host) {
+  private:
+    static IPAddress resolver(const char *host) {
         IPAddress remote_addr;
         if (WiFi.hostByName(host, remote_addr))
-                return remote_addr;
+            return remote_addr;
         return IPADDR_NONE;
     }
-    public:
+
+  public:
     ModbusTCP() : ModbusAPI() {
         resolve = resolver;
     }

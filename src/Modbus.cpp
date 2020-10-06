@@ -6,7 +6,7 @@
 */
 #include "Modbus.h"
 
-#ifdef MODBUS_GLOBAL_REGS
+#if defined(MODBUS_GLOBAL_REGS)
 #if defined(MODBUS_USE_STL)
  std::vector<TRegister> _regs;
  std::vector<TCallback> _callbacks;
@@ -54,7 +54,7 @@ TRegister* Modbus::searchRegister(TAddress address) {
 }
 
 bool Modbus::addReg(TAddress address, uint16_t value, uint16_t numregs) {
-   #ifdef MODBUS_MAX_REGS
+   #if defined(MODBUS_MAX_REGS)
     if (_regs.size() + numregs > MB_MAX_REGS) return false;
    #endif
     for (uint16_t i = 0; i < numregs; i++) {
@@ -678,12 +678,10 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                 break;
             }
             if (output) {
-                frame += 2;
-                while(field2) {
-                    *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
-                    frame += 2;
-                    output += 2;
-                    field2--;
+                uint16_t* from = (uint16_t*)(frame + 2);
+                uint16_t* to = (uint16_t*)output;
+                while(field2--) {
+                    *(to++) = __bswap_16(*(from++));
                 }
             } else {
                 setMultipleWords((uint16_t*)(frame + 2), startreg, field2);
