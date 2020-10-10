@@ -23,7 +23,7 @@ struct TTransaction {
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
 	uint8_t*	_frame = nullptr;
-	void*		data = nullptr;
+	uint8_t*		data = nullptr;
 	TAddress	startreg;
 	Modbus::ResultCode forcedEvent = Modbus::EX_SUCCESS;	// EX_SUCCESS means no forced event here. Forced EX_SUCCESS is not possible.
 	bool operator ==(const TTransaction &obj) const {
@@ -72,9 +72,9 @@ class ModbusTCPTemplate : public Modbus {
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
-	uint16_t send(String host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr, bool waitResponse = true);
-	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr, bool waitResponse = true);
-	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, void* data = nullptr, bool waitResponse = true);
+	uint16_t send(String host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
+	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
+	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
 	// ip - slave ip address
 	// startreg - first local register to save returned data to (miningless for write to slave operations)
@@ -302,17 +302,17 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(String host, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(String host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	return send(resolve(host.c_str()), startreg, cb, unit, data, waitResponse);
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	return send(resolve(host), startreg, cb, unit, data, waitResponse);
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, void* data, bool waitResponse) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	MBAP_t _MBAP;
 #if defined(MODBUSIP_MAX_TRANSACIONS)
 	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return 0;

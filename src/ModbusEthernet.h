@@ -5,7 +5,6 @@
 */
 
 #pragma once
-#include <Ethernet.h>
 #include <Dns.h>
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"

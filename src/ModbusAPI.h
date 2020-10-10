@@ -31,10 +31,12 @@ class ModbusAPI : public T {
 */
 	// Legacy API
 /*
-	bool Hreg(uint16_t offset, uint16_t* value);
-    bool Coil(uint16_t offset, bool* value);
-    bool Ists(uint16_t offset, bool* value);
-    bool Ireg(uint16_t offset, uint16_t* value);
+	bool addReg(TAddress address, uint16_t* value = 0, uint16_t numregs = 1);
+    bool Reg(TAddress address, uint16_t* value, uint16_t numregs = 1);
+	bool Hreg(uint16_t offset, uint16_t* value, uint16_t numregs = 1);
+    bool Coil(uint16_t offset, bool* value, uint16_t numregs = 1);
+    bool Ists(uint16_t offset, bool* value, uint16_t numregs = 1);
+    bool Ireg(uint16_t offset, uint16_t* value, uint16_t numregs = 1);
 */
 	bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
     bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
@@ -157,7 +159,7 @@ template <typename TYPEID> \
 uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t offset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
 	this->readSlave(offset, numregs, Modbus::FUNC); \
-	return this->send(ip, REG(offset), cb, unit, value); \
+	return this->send(ip, REG(offset), cb, unit, (uint8_t*)value); \
 }
 IMPLEMENT_READREGS(readCoil, COIL, FC_READ_COILS, 0x07D0, bool)
 IMPLEMENT_READREGS(readHreg, HREG, FC_READ_REGS, 0x007D, uint16_t)

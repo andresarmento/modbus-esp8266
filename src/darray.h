@@ -56,9 +56,9 @@ class DArray {
       isEmpty = true;
       return;
     }
-    memcpy(&data[i], &data[i + 1], (last - i - 1) * sizeof(T));
-    if (last) last --;
-    else isEmpty = true;
+    if (i < last)
+      memcpy(&data[i], &data[i + 1], (last - i) * sizeof(T));
+    last --;
   }
   T operator[](int i) {
     return data[i];
