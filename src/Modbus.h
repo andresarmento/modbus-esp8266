@@ -198,6 +198,8 @@ class Modbus {
         bool Reg(TAddress address, uint16_t value);
         uint16_t Reg(TAddress address);
         bool removeReg(TAddress address, uint16_t numregs = 1);
+        bool addReg(TAddress address, uint16_t* value, uint16_t numregs = 1);
+        bool Reg(TAddress address, uint16_t* value, uint16_t numregs = 1);
 
         bool onGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);

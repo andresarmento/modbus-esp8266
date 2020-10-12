@@ -111,6 +111,12 @@ bool Modbus::removeReg(TAddress address, uint16_t numregs) {
     return atLeastOne;
 }
 
+bool Modbus::addReg(TAddress address, uint16_t* value, uint16_t numregs) {
+	for (uint16_t k = 0; k < numregs; k++)
+		addReg(address + k, value[k]);
+	return true;
+}
+
 void Modbus::slavePDU(uint8_t* frame) {
     FunctionCode fcode  = (FunctionCode)frame[0];
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
