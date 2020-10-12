@@ -1,4 +1,3 @@
-
 /*
   ModbusTCP for W5x00 Ethernet library
   Basic Server code example
@@ -10,7 +9,7 @@
 */
 
 #include <SPI.h>
-#include <Ethernet.h>
+#include <Ethernet.h>       // Ethernet library v2 is required
 #include <ModbusEthernet.h>
 
 // Enter a MAC address and IP address for your controller below.
@@ -22,7 +21,10 @@ ModbusEthernet mb;              // Declare ModbusTCP instance
 
 void setup() {
   Serial.begin(115200);     // Open serial communications and wait for port to open
+  #if defined(AVR_LEONARDO)
   while (!Serial) {}        // wait for serial port to connect. Needed for Leonardo only
+  #endif
+  Ethernet.init(15);        // SS pin
   Ethernet.begin(mac, ip);  // start the Ethernet connection
   delay(1000);              // give the Ethernet shield a second to initialize
   mb.server();              // Act as Modbus TCP server

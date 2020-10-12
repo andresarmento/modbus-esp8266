@@ -9,7 +9,19 @@
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
-class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServer, EthernetClient>> {
+#undef MODBUSIP_UNIQUE_CLIENTS
+
+class EthernetClientWrapper : public EthernetClient {
+    public:
+    EthernetClientWrapper(EthernetClient c) : EthernetClient(c) {};
+    IPAddress remoteIP() {
+        if (connected())
+            return IPAddress(0,0,0,1);
+        return IPADDR_NONE;
+    }
+};
+
+class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServer, EthernetClientWrapper>> {
     private:
     static IPAddress resolver (const char* host) {
         DNSClient dns;
