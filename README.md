@@ -48,7 +48,7 @@ For more information about Modbus see:
   * 0x14 - Read File Record
   * 0x15 - Write File Record
   * 0x16 - Mask Write Register
-* Callbacks for
+* [Callbacks](examples/callback) for
   * Client connect (Modbus TCP)
   * Server/Client disconnect (Modbus TCP)
   * Read specific Register
@@ -72,9 +72,9 @@ For more information about Modbus see:
 + Examples: TLS added
 - Examples: TLS Certificate test Role extension and Alt-Name
 - Examples: TLS Add example explanation
-- ModbusTLS: ESP32 Client
++ ModbusTLS: ESP32 Client
 - Test: TLS ESP32 Client
-- Build with no STL dependency
++ Build with no STL dependency
 - Test: No-STL mode
 + ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
 - Test: W5x00 support
@@ -91,7 +91,7 @@ For more information about Modbus see:
 - Test: 0x16
 - 0x17 - Read/Write Registers function
 - Test: 0x17
-- Access control callback for individual function
++ Access control callback for individual function
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation

@@ -184,12 +184,13 @@ TTransaction* ModbusTCPTemplate<SERVER, CLIENT>::searchTransaction(uint16_t id) 
 template <class SERVER, class CLIENT>
 void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	MBAP_t _MBAP;
+	uint32_t taskStart = millis();
 	cleanupConnections();
 	if (tcpserver) {
-		//while (tcpserver->hasClient()) {
-			//CLIENT* currentClient = new CLIENT(tcpserver->available());
-		//while (CLIENT* currentClient = new CLIENT(tcpserver->available())) {
-		while (CLIENT c = tcpserver->available()) {
+		CLIENT c;
+		// WiFiServer.available() == Ethernet.accept() and should wrapped to get code to be compatible with Ethernet library (See ModbusTCP.h code).
+		// WiFiServer.accept() != Ethernet.accept() internally
+		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->accept())) {
 			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())
 				continue;
@@ -217,8 +218,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (!tcpclient[n]) continue;
 		if (!tcpclient[n]->connected()) continue;
-		uint32_t readStart = millis();
-		while (millis() - readStart < MODBUSIP_MAX_READMS &&  tcpclient[n]->available() > sizeof(_MBAP)) {
+		while (millis() - taskStart < MODBUSIP_MAX_READMS &&  tcpclient[n]->available() > sizeof(_MBAP)) {
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.

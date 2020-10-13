@@ -3,7 +3,7 @@
 
 # Callbacks
 
-[## Register read/write callback](onSet/onSet.ino)
+## [Register read/write callback](onSet/onSet.ino)
 
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -48,7 +48,7 @@ bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 
 `numregs`   Count of sequental segisters remove this callback to.
 Disconnect specific callback function or all callbacks of the type if cb=NULL.
 
-[## Incoming request callback (applicable to server/slave)](Request/Request.ino)
+## [Incoming request callback (applicable to server/slave)](Request/Request.ino)
 
 ```c
 typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount);
@@ -56,22 +56,24 @@ bool onRequest(cbRequest cb = _onRequestDefault);
 bool onRequestSuccess(cbRequest cb = _onRequestDefault);
 ```
 
-Callback function receives Modbus function code, register type and offset (TAddress structure) and count of registers requested. The function should return Modbus::EX_SUCCESS to allow request processing or Modbus error code to block processing. This code will be returned to client/master.
+Callback function receives Modbus function code, register type and offset (`TAddress` structure) and count of registers requested. The function should return `Modbus::EX_SUCCESS` to allow request processing or Modbus error code to block processing. This code will be returned to client/master.
 
-[## Modbus TCP/TLS Incoming connection callback](onSet/onSet.ino)
+## [Modbus TCP/TLS Incoming connection callback](onSet/onSet.ino)
 
 ```c
 void onConnect(cbModbusConnect cb);
 void onDisonnect(cbModbusConnect cb);
 ```
 
-*Modbus TCP Sserver* Assign callback function on new incoming connection event.
+Modbus TCP Server Assign callback function on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
-*Modbus TCP Sserver* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
+- `ip` Client's address of incomig connection source. `INADDR_NONE` for on disconnect callback.
 
-[## Modbus TCP/TLS Transaction result](Transactional/Transactional.ino)
+## [Modbus TCP/TLS Transaction result](Transactional/Transactional.ino)
 
+
+## Other related functions and defenitions

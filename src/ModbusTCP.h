@@ -14,7 +14,15 @@
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
-class ModbusTCP : public ModbusAPI<ModbusTCPTemplate<WiFiServer, WiFiClient>> {
+class WiFiServerESPWrapper : public WiFiServer {
+  public:
+    WiFiServerESPWrapper(uint16_t port) : WiFiServer(port) {}
+    inline WiFiClient accept() {
+        return available();
+    }
+};
+
+class ModbusTCP : public ModbusAPI<ModbusTCPTemplate<WiFiServerESPWrapper, WiFiClient>> {
   private:
     static IPAddress resolver(const char *host) {
         IPAddress remote_addr;
