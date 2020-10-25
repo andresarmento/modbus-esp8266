@@ -12,7 +12,7 @@
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
 #define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))        // '!!' to make sure this returns 0 or 1
 #ifndef IPADDR_NONE
-#define IPADDR_NONE (IPAddress(0,0,0,0))
+#define IPADDR_NONE ((u32_t)0xffffffffUL)
 #endif
 // Callback function Type
 typedef bool (*cbModbusConnect)(IPAddress ip);
@@ -189,7 +189,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	if (tcpserver) {
 		CLIENT c;
 		// WiFiServer.available() == Ethernet.accept() and should wrapped to get code to be compatible with Ethernet library (See ModbusTCP.h code).
-		// WiFiServer.accept() != Ethernet.accept() internally
+		// WiFiServer.available() != Ethernet.available() internally
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->accept())) {
 			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())

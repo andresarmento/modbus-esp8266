@@ -40,3 +40,7 @@ void loop() {
 
 }
 ```
+
+## ESP32 Slave notes
+
+For achive stable results it's not recommended to use high pooling rate

@@ -104,25 +104,31 @@ void ModbusRTUTemplate::task() {
     if (_port->available() > _len) {
         _len = _port->available();
         t = millis();
-		#if defined(ESP32)
-    	portEXIT_CRITICAL(&mux);
- 		#endif
-		return;
     }
-    if (_len != 0 && millis() - t < _t) { // Wait data whitespace if there is data
+	if (_len == 0) {
 		#if defined(ESP32)
     	portEXIT_CRITICAL(&mux);
  		#endif
+		if (isMaster) cleanup();
 		return;
+	}
+	uint32_t taskStart = millis();
+    while (millis() - t < _t) { // Wait data whitespace
+    	if (_port->available() > _len) {
+        	_len = _port->available();
+        	t = millis();
+		}
+		if (millis() - taskStart > MODBUSRTU_MAX_READMS) { // Prevent from task() executed too long
+			#if defined(ESP32)
+    		portEXIT_CRITICAL(&mux);
+ 			#endif
+			return;
+		}
 	}
 	#if defined(ESP32)
     portEXIT_CRITICAL(&mux);
  	#endif
 
-	if (_len == 0) {
-		if (isMaster) cleanup();
-		return;
-	}
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
     if (isMaster && _slaveId == 0) {    // Check if slaveId is set
@@ -172,6 +178,7 @@ void ModbusRTUTemplate::task() {
 			masterPDU(_frame, _sentFrame, _sentReg, _data);
             if (_cb) {
 			    _cb((ResultCode)_reply, 0, nullptr);
+				_cb = nullptr;
 		    }
             free(_sentFrame);
             _sentFrame = nullptr;
@@ -183,9 +190,9 @@ void ModbusRTUTemplate::task() {
         slavePDU(_frame);
         if (address == MODBUSRTU_BROADCAST)
 			_reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
+    	if (_reply != Modbus::REPLY_OFF)
+			rawSend(_slaveId, _frame, _len);
     }
-    if (_reply != Modbus::REPLY_OFF)
-		rawSend(_slaveId, _frame, _len);
     // Cleanup
     free(_frame);
     _frame = nullptr;

@@ -30,10 +30,10 @@ class ModbusAPI : public T {
 	uint16_t pull(TYPEID id, TAddress from, TAddress to, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 */
 	// Legacy API
-	bool Hreg(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(HREG(offset), value);}
-    bool Coil(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(COIL(offset), value);}
-    bool Ists(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(ISTS(offset), value);}
-    bool Ireg(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(IREG(offset), value);}
+	bool Hregs(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(HREG(offset), value);}
+    bool Coils(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(COIL(offset), value);}
+    bool Istss(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(ISTS(offset), value);}
+    bool Iregs(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(IREG(offset), value);}
 
 	//bool addHreg(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->addReg(HREG(offset), value);}
     //bool addCoil(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->addReg(COIL(offset), value);}

@@ -60,6 +60,7 @@ If defined regisers count will be limited.
 #define MB_SERIAL_BUFFER 128
 #define MB_MAX_TIME 10
 #define MODBUSRTU_TIMEOUT 1000
+#define MODBUSRTU_MAX_READMS 100
 
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL

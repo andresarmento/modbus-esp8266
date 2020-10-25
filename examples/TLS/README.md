@@ -1,6 +1,6 @@
 # Modbus\TCP Security Example
 
-*Target Platforms:*
+### *Target Platforms:*
 - *ESP8266 (CLient/Server)*
 - *ESP32 (Client only)*
 

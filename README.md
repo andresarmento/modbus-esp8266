@@ -24,15 +24,12 @@ For more information about Modbus see:
 
 ## Features
 
-* Supported platforms are
-  * ESP8266
-  * ESP32
-  * STM32F103 and probably others (Modbus RTU only)
+* Supports all Arduino platforms
 * Operates in any combination of multiple instances of
   * [Modbus RTU slave](examples/RTU)
   * [Modbus RTU master](examples/RTU)
-  * Modbus TCP server
-  * Modbus TCP client
+  * Modbus TCP server for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
+  * Modbus TCP client for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
   * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
   * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
 * Reply exception messages for all supported functions
@@ -77,9 +74,11 @@ For more information about Modbus see:
 + Build with no STL dependency
 - Test: No-STL mode
 + ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
-- Test: W5x00 support
++ Test: W5x00 support
+- Test: W5x00 with Ethernet library v1
 + API: Implementation code merge
-+ API: Access ModbusTCP server by name 
++ API: Access ModbusTCP server by name
++ API: Set local multiple registers from an array
 + ModbusIP => ModbusTCP
 + 0x14 - Read File Records function
 + Test: 0x14
@@ -91,7 +90,7 @@ For more information about Modbus see:
 - Test: 0x16
 - 0x17 - Read/Write Registers function
 - Test: 0x17
-+ Access control callback for individual function
++ API: Access control callback for individual function
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation
@@ -99,6 +98,10 @@ For more information about Modbus see:
 - Test: Frame accuracy to specefication
 - Documentation: Update
 - Examples: Revising
++ SoftwareSerial support for ESP32
+// 4.1.0
+- ModbusTLS: ESP32 Server
+- Test: TLS ESP32 Server
 // 3.0.2
 + ModbusTCP Client: ESP32 fix unexpected transaction timeout
 // 3.0.1
