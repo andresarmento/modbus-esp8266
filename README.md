@@ -63,6 +63,10 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
+// 3.0.4
++ ModbusIP: Fixed missed server connection free in destructor
++ Fixed addition of missing registers in .poll*() calls
++ ModbusRTU: Fixed callback remains assigned after transaction ends
 // 3.0.3
 + ModbusRTU: Add inverse logic support for transmit control
 // 3.0.2

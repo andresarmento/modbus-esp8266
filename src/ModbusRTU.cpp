@@ -213,6 +213,7 @@ void ModbusRTU::task() {
 			masterPDU(_frame, _sentFrame, _sentReg, _data);
             if (_cb) {
 			    _cb((ResultCode)_reply, 0, nullptr);
+				_cb = nullptr;
 		    }
             free(_sentFrame);
             _sentFrame = nullptr;
@@ -238,8 +239,10 @@ void ModbusRTU::task() {
 bool ModbusRTU::cleanup() {
 	// Remove timeouted request and forced event
 	if (_slaveId && (millis() - _timestamp > MODBUSRTU_TIMEOUT)) {
-		if (_cb)
+		if (_cb) {
 			_cb(Modbus::EX_TIMEOUT, 0, nullptr);
+			_cb = nullptr;
+		}
 		free(_sentFrame);
         _sentFrame = nullptr;
         _data = nullptr;
@@ -317,7 +320,7 @@ uint16_t ModbusRTU::pushCoil(uint8_t slaveId, uint16_t to, uint16_t from, uint16
 uint16_t ModbusRTU::pullCoil(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addCoil(to, numregs);
+	 addCoil(to, false, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_COILS);
 	return send(slaveId, COIL(to), cb);
@@ -327,7 +330,7 @@ uint16_t ModbusRTU::pullCoil(uint8_t slaveId, uint16_t from, uint16_t to, uint16
 uint16_t ModbusRTU::pullIsts(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addIsts(to, numregs);
+	 addIsts(to, false, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_INPUT_STAT);
 	return send(slaveId, ISTS(to), cb);
@@ -349,7 +352,7 @@ uint16_t ModbusRTU::pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16
 uint16_t ModbusRTU::pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addHreg(to, numregs);
+	 addHreg(to, 0, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_REGS);
 	return send(slaveId, HREG(to), cb);
@@ -359,7 +362,7 @@ uint16_t ModbusRTU::pullHreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16
 uint16_t ModbusRTU::pullIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addIreg(to, numregs);
+	 addIreg(to, 0, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_INPUT_REGS);
 	return send(slaveId, IREG(to), cb);
@@ -393,7 +396,7 @@ uint16_t ModbusRTU::pushIstsToCoil(uint8_t slaveId, uint16_t to, uint16_t from, 
 uint16_t ModbusRTU::pullHregToIreg(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addIreg(to, numregs);
+	 addIreg(to, 0, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_REGS);
 	return send(slaveId, IREG(to), cb);
@@ -403,7 +406,7 @@ uint16_t ModbusRTU::pullHregToIreg(uint8_t slaveId, uint16_t from, uint16_t to, 
 uint16_t ModbusRTU::pullCoilToIsts(uint8_t slaveId, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > maxRegs << 4) return false;
 	#ifdef MODBUSRTU_ADD_REG
-	 addIsts(to, numregs);
+	 addIsts(to, false, numregs);
 	#endif
 	readSlave(from, numregs, FC_READ_COILS);
 	return send(slaveId, ISTS(to), cb);
