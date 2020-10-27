@@ -76,7 +76,6 @@ bool ModbusRTU::begin(HardwareSerial* port, int16_t txPin, bool direct) {
         pinMode(_txPin, OUTPUT);
         digitalWrite(_txPin, _direct?LOW:HIGH);
     }
-	Serial.println(_t);
     return true;
 }
 
@@ -135,6 +134,9 @@ bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void*
 		_frame = nullptr;
 		_len = 0;
 	}
+	free(_frame);
+	_frame = nullptr;
+	_len = 0;
 	return true;
 }
 
@@ -150,7 +152,16 @@ void ModbusRTU::task() {
  		#endif
 		return;
     }
-    if (_len != 0 && millis() - t < _t) { // Wait data whitespace if there is data
+
+	if (_len == 0) {
+		#ifdef ESP32
+    	portEXIT_CRITICAL(&mux);
+ 		#endif
+		if (isMaster) cleanup();
+		return;
+	}
+
+    if (millis() - t < _t) { // Wait data whitespace if there is data
 		#ifdef ESP32
     	portEXIT_CRITICAL(&mux);
  		#endif
@@ -160,10 +171,6 @@ void ModbusRTU::task() {
     portEXIT_CRITICAL(&mux);
  	#endif
 
-	if (_len == 0) {
-		if (isMaster) cleanup();
-		return;
-	}
     uint8_t address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
     if (isMaster && _slaveId == 0) {    // Check if slaveId is set
