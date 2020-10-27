@@ -8,11 +8,11 @@
 
 #if defined(MODBUS_GLOBAL_REGS)
 #if defined(MODBUS_USE_STL)
- std::vector<TRegister> _regs;
- std::vector<TCallback> _callbacks;
+ std::vector<TRegister> Modbus::_regs;
+ std::vector<TCallback> Modbus::_callbacks;
 #else
- DArray<TRegister, 1, 1> _regs;
- DArray<TCallback, 1, 1> _callbacks;
+ DArray<TRegister, 1, 1> Modbus::_regs;
+ DArray<TCallback, 1, 1> Modbus::_callbacks;
 #endif
  cbModbusFileOp _onFile;
 #endif

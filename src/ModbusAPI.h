@@ -168,12 +168,17 @@ IMPLEMENT_READREGS(readHreg, HREG, FC_READ_REGS, 0x007D, uint16_t)
 IMPLEMENT_READREGS(readIsts, ISTS, FC_READ_INPUT_STAT, 0x07D0, bool)
 IMPLEMENT_READREGS(readIreg, IREG, FC_READ_INPUT_REGS, 0x007D, uint16_t)
 
+#if defined(MODBUS_ADD_REG)
+#define ADDREG this->addReg(REG(to), 0, numregs); \
+#else
+#define ADDREG
+#endif
 #define IMPLEMENT_PULL(FNAME, REG, FUNC, MAXNUM) \
 template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t from, uint16_t to, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
-	this->addCoil(to, numregs); \
+	ADDREG \
 	this->readSlave(from, numregs, Modbus::FUNC); \
 	return this->send(ip, REG(to), cb, unit); \
 }

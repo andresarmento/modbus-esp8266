@@ -99,6 +99,11 @@ For more information about Modbus see:
 - Documentation: Update
 - Examples: Revising
 + SoftwareSerial support for ESP32
++ ModbusRTU: Fix transaction callback remains assigned after request end
++ ModbusTCP: Free server connection in destructor
++ Declare global registers and callbacks as ststic members
+- Free global registers and callbacks on remove last Modbus instance
++ ModbusRTU: Refactor .task() for relaibe processing of incoming data
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server

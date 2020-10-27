@@ -92,14 +92,17 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
 		_sentFrame = _frame;
 		_sentReg = startreg;
 		_frame = nullptr;
-		_len = 0;
+		//_len = 0;
 	}
+	free(_frame);
+	_frame = nullptr;
+	_len = 0;
 	return true;
 }
 
 void ModbusRTUTemplate::task() {
 	#if defined(ESP32)
-	portENTER_CRITICAL(&mux);
+	taskENTER_CRITICAL(&mux);
 	#endif
     if (_port->available() > _len) {
         _len = _port->available();
@@ -107,26 +110,36 @@ void ModbusRTUTemplate::task() {
     }
 	if (_len == 0) {
 		#if defined(ESP32)
-    	portEXIT_CRITICAL(&mux);
+    	taskEXIT_CRITICAL(&mux);
  		#endif
 		if (isMaster) cleanup();
 		return;
 	}
-	uint32_t taskStart = millis();
-    while (millis() - t < _t) { // Wait data whitespace
-    	if (_port->available() > _len) {
-        	_len = _port->available();
-        	t = millis();
-		}
-		if (millis() - taskStart > MODBUSRTU_MAX_READMS) { // Prevent from task() executed too long
+	if (isMaster) {
+		if (millis() - t < _t) {
 			#if defined(ESP32)
-    		portEXIT_CRITICAL(&mux);
+    		taskEXIT_CRITICAL(&mux);
  			#endif
 			return;
 		}
 	}
+	else {	// For slave wait for whole message to come (unless MODBUSRTU_MAX_READMS reached)
+		uint32_t taskStart = millis();
+    	while (millis() - t < _t) { // Wait data whitespace
+    		if (_port->available() > _len) {
+        		_len = _port->available();
+        		t = millis();
+			}
+			if (millis() - taskStart > MODBUSRTU_MAX_READMS) { // Prevent from task() executed too long
+				#if defined(ESP32)
+    			taskEXIT_CRITICAL(&mux);
+ 				#endif
+				return;
+			}
+		}
+	}
 	#if defined(ESP32)
-    portEXIT_CRITICAL(&mux);
+    taskEXIT_CRITICAL(&mux);
  	#endif
 
     uint8_t address = _port->read(); //first byte of frame = address
@@ -203,8 +216,10 @@ void ModbusRTUTemplate::task() {
 bool ModbusRTUTemplate::cleanup() {
 	// Remove timeouted request and forced event
 	if (_slaveId && (millis() - _timestamp > MODBUSRTU_TIMEOUT)) {
-		if (_cb)
+		if (_cb) {
 			_cb(Modbus::EX_TIMEOUT, 0, nullptr);
+			_cb = nullptr;
+		}
 		free(_sentFrame);
         _sentFrame = nullptr;
         _data = nullptr;

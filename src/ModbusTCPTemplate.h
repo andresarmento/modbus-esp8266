@@ -494,6 +494,8 @@ ModbusTCPTemplate<SERVER, CLIENT>::~ModbusTCPTemplate() {
 	dropTransactions();
 	cleanupConnections();
 	cleanupTransactions();
+	delete tcpserver;
+	tcpserver = nullptr;
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		delete tcpclient[i];
 		tcpclient[i] = nullptr;

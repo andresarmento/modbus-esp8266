@@ -156,19 +156,29 @@ class Modbus {
             REPLY_ERROR          = 0x04,
             REPLY_UNEXPECTED     = 0x05
         };
-    #ifndef MB_GLOBAL_REGS
         #if defined(MODBUS_USE_STL)
+        #if defined(MODBUS_GLOBAL_REGS)
+        static
+        #endif
         std::vector<TRegister> _regs;
+        #if defined(MODBUS_GLOBAL_REGS)
+        static
+        #endif
         std::vector<TCallback> _callbacks;
         #else
+        #if defined(MODBUS_GLOBAL_REGS)
+        static
+        #endif
         DArray<TRegister, 1, 1> _regs;
+        #if defined(MODBUS_GLOBAL_REGS)
+        static
+        #endif
         DArray<TCallback, 1, 1> _callbacks;
         #endif
         #if defined(MODBUS_FILES)
         Modbus::ResultCode (*_onFile)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*) = nullptr;
         #endif
 
-    #endif
         uint8_t*  _frame = nullptr;
         uint16_t  _len = 0;
         uint8_t   _reply = 0;
