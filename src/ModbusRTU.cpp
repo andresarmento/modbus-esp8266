@@ -122,22 +122,24 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 }
 
 bool ModbusRTU::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, void* data, bool waitResponse) {
-    if (_slaveId) return false; // Break if waiting for previous request result
-	rawSend(slaveId, _frame, _len);
-	if (waitResponse) {
-        _slaveId = slaveId;
-		_timestamp = millis();
-		_cb = cb;
-		_data = data;
-		_sentFrame = _frame;
-		_sentReg = startreg;
-		_frame = nullptr;
-		_len = 0;
+    bool result = false;
+	if (!_slaveId) { // Check if waiting for previous request result
+		rawSend(slaveId, _frame, _len);
+		if (waitResponse) {
+        	_slaveId = slaveId;
+			_timestamp = millis();
+			_cb = cb;
+			_data = data;
+			_sentFrame = _frame;
+			_sentReg = startreg;
+			_frame = nullptr;
+		}
+		result = true;
 	}
 	free(_frame);
 	_frame = nullptr;
 	_len = 0;
-	return true;
+	return result;
 }
 
 void ModbusRTU::task() {
