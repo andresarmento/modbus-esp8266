@@ -29,8 +29,6 @@ All certificates must be in PEM format and can be stored in PROGMEM.
 
 ## [Server](server/server.ino)
 
-Method to observe
-
 ```c
 void server(uint16_t port, const char* server_cert = nullptr, const char* server_private_key = nullptr, const char* ca_cert = nullptr);
 ```

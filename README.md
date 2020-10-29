@@ -62,7 +62,7 @@ For more information about Modbus see:
 ## Last Changes
 
 ```diff
-// 4.0.0.DEVEL
+// 4.0.0.DEV
 + ModbusTLS: Modbus TCP Security Client/Server
 + ModbusTLS: ESP8266 Client/Server
 + Test: TLS ESP8266 Client/Server
@@ -107,26 +107,6 @@ For more information about Modbus see:
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
-// 3.0.2
-+ ModbusTCP Client: ESP32 fix unexpected transaction timeout
-// 3.0.1
-+ ModbusRTU: ESP32 possible send\receive failure fix
-+ ModbusRTU: Non-ESP devices support
-+ Restriction to registers count removed
-+ Added bridge example
-// 3.0.0
-+ ModbusRTU Slave
-+ ModbusRTU Master
-+ Registers are now shared between Modbus* instances by default
-+ Fix functions register count limits to follow Modbus specification (or RX buffer limitations)
-+ ModbusRTU: Examples added
-+ Test multiple Modbus* instances
-+ Change to 'uint32_t eventSource()'. Implemented for ModbusRTU and ModbusIP both
-+ Client: Allow to specify local TCP port (default is 502)
-+ Server: Allow to specify TCP remote port for connection (default is 502)
-+ Master\Client: Fix crash on Write Multiple Hregs
-+ Master\Client: Fix crash on no callback function on read\write remote
-+ Tests added
 ```
 
 ## Contributions

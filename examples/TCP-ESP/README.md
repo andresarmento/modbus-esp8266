@@ -9,10 +9,17 @@
 void client();
 ```
 
+Initialize internal structures to act as a Modbus client.
+
 ```c
 bool connect(IPAddress ip, uint16_t port = MODBUSIP_PORT);
 bool disconnect(IPAddress ip);
 ```
+
+- `ip`  IP address of the remote Modbus server
+- `port`    TCP port of remote Modbus server (standard value is 502)
+
+Note: Just one connection to the specific address is supported. That is the library is unable to simultaniousaly connect to Modbus servers that has same IP address but diffrent ports.
 
 ```c
 uint16_t readCoil(IPAddress ip, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t uint = MODBUSIP_UNIT);
@@ -35,7 +42,8 @@ uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numre
 - `unit` Modbus unit
 
 Sends corresponding Modbus read request to Modbus server at `ip`. Connection with server shoud be already established by connect(ip).
-Returns transaction `id` or `0` on failure.
+Returns transaction `id` or `0` on failure. Failure maens that client unable to send the request bacause of no connection to the Modbus server is established or other internal error.
+Note: read/write functions just sending requests to remote Modbus server. The functions returns immediate after request sent and doesn't waiting for result. That is `value` contains no result data on the function exit. `value` will be filled as responce arrive and processed by .task() function.
 
 ## [Client with blocking read operation](clientSync.ino)
 
@@ -43,11 +51,15 @@ Returns transaction `id` or `0` on failure.
 bool isTransaction(uint16_t id);
 ```
 
+- `id`  Transaction id.
+
 Returns `true` if transaction with `id` is active.
 
 ```c
 bool isConnected(IPAddress ip);
 ```
+
+- `ip`    Remote Modbus server IP address
 
 Returns `true` is connection with Modbus server at `ip` is established.
 
