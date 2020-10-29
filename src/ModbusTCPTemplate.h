@@ -314,26 +314,37 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress star
 template <class SERVER, class CLIENT>
 uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	MBAP_t _MBAP;
-#if defined(MODBUSIP_MAX_TRANSACIONS)
-	if (_trans.size() >= MODBUSIP_MAX_TRANSACIONS) return 0;
+	uint16_t result = 0;
+	int8_t p;
+#if defined(MODBUSIP_MAX_TRANSACTIONS)
+	if (_trans.size() >= MODBUSIP_MAX_TRANSACTIONS)
+		goto cleanup;
 #endif
 	if (!ip)
 		return 0;
-	int8_t p = getSlave(ip);
-	if (p == -1 || !tcpclient[p]->connected())
-		return autoConnectMode?connect(ip):0;
+	p = getSlave(ip);
+	if (p == -1 || !tcpclient[p]->connected()) {
+		if (!autoConnectMode)
+			goto cleanup;
+		if (!connect(ip))
+			goto cleanup;
+	}
 	transactionId++;
 	if (!transactionId) transactionId = 1;
 	_MBAP.transactionId	= __bswap_16(transactionId);
 	_MBAP.protocolId	= __bswap_16(0);
 	_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
-	size_t send_len = _len + sizeof(_MBAP.raw);
-	uint8_t sbuf[send_len];
-	memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
-	memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
-	if (tcpclient[p]->write(sbuf, send_len) != send_len)
-		return false;
+	bool writeResult;
+	{	// for sbuf isolation
+		size_t send_len = _len + sizeof(_MBAP.raw);
+		uint8_t sbuf[send_len];
+		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
+		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+		writeResult = (tcpclient[p]->write(sbuf, send_len) == send_len);
+	}
+	if (!writeResult)
+		goto cleanup;
 	//tcpclient[p]->flush();
 	if (waitResponse) {
 		TTransaction tmp;
@@ -345,9 +356,13 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 		tmp.startreg = startreg;
 		_trans.push_back(tmp);
 		_frame = nullptr;
-		_len = 0;
 	}
-	return transactionId;
+	result = transactionId;
+	cleanup:
+	free(_frame);
+	_frame = nullptr;
+	_len = 0;
+	return result;
 }
 
 template <class SERVER, class CLIENT>
