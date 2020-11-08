@@ -149,7 +149,7 @@ void ModbusRTUTemplate::task() {
     if (isMaster && _slaveId == 0) {    // Check if slaveId is set
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if is not expected
         _len = 0;
-		if (isMaster) cleanup();
+		//if (isMaster) cleanup();
         return;
     }
     if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // SlaveId Check

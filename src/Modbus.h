@@ -10,6 +10,8 @@
 #if defined(MODBUS_USE_STL)
  #include <vector>
  #include <algorithm>
+ #include <functional>
+ #include <memory>
 #else
  #include "darray.h"
 #endif
@@ -31,8 +33,11 @@ inline uint16_t __bswap_16(uint16_t num) { return (num >> 8) | (num << 8); }
 #define cbDefault nullptr
 
 struct TRegister;
-
+#if defined(MODBUS_USE_STL)
+typedef std::function<uint16_t(TRegister* reg, uint16_t val)> cbModbus; // Callback function Type
+#else
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
+#endif
 
 struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG};
@@ -158,25 +163,32 @@ class Modbus {
         };
         #if defined(MODBUS_USE_STL)
         #if defined(MODBUS_GLOBAL_REGS)
-        static
+        static std::vector<TRegister> _regs;
+        static std::vector<TCallback> _callbacks;
+        #if defined(MODBUS_FILES)
+        static std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> _onFile;
         #endif
+        #else
         std::vector<TRegister> _regs;
-        #if defined(MODBUS_GLOBAL_REGS)
-        static
-        #endif
         std::vector<TCallback> _callbacks;
+        #if defined(MODBUS_FILES)
+        std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> _onFile;
+        #endif
+        #endif
         #else
         #if defined(MODBUS_GLOBAL_REGS)
-        static
-        #endif
-        DArray<TRegister, 1, 1> _regs;
-        #if defined(MODBUS_GLOBAL_REGS)
-        static
-        #endif
-        DArray<TCallback, 1, 1> _callbacks;
-        #endif
+        static DArray<TRegister, 1, 1> _regs;
+        static DArray<TCallback, 1, 1> _callbacks;
         #if defined(MODBUS_FILES)
-        Modbus::ResultCode (*_onFile)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*) = nullptr;
+        static ResultCode (*_onFile)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*);
+        #endif
+        #else
+        DArray<TRegister, 1, 1> _regs;
+        DArray<TCallback, 1, 1> _callbacks;
+        #if defined(MODBUS_FILES)
+        ResultCode (*_onFile)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)= nullptr;
+        #endif
+        #endif
         #endif
 
         uint8_t*  _frame = nullptr;
@@ -202,7 +214,7 @@ class Modbus {
         // numregs - number of registers
         // fn - Modbus function
         // data - if null use local registers. Otherwise use data from array to erite to slave
-
+        bool removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
     public:
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);
@@ -217,8 +229,11 @@ class Modbus {
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
 
         virtual uint32_t eventSource() {return 0;}
-
+        #if defined(MODBUS_USE_STL)
+        typedef std::function<ResultCode(FunctionCode, TAddress, uint16_t)> cbRequest; // Callback function Type
+        #else
         typedef ResultCode (*cbRequest)(FunctionCode fc, TAddress reg, uint16_t regCount); // Callback function Type
+        #endif
 
     protected:
         static ResultCode _onRequestDefault(FunctionCode fc, TAddress reg, uint16_t regCount);
@@ -234,7 +249,11 @@ class Modbus {
 
     #if defined(MODBUS_FILES)
     public:
-        bool onFile(Modbus::ResultCode (*cb)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*));
+        #if defined(MODBUS_USE_STL)
+        bool onFile(std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)>);
+        #else
+        bool onFile(ResultCode (*cb)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*));
+        #endif
     private:
         ResultCode fileOp(FunctionCode fc, uint16_t fileNum, uint16_t recNum, uint16_t recLen, uint8_t* frame);
     protected:
@@ -255,7 +274,11 @@ class Modbus {
 
 };
 
+#if defined(MODBUS_USE_STL)
+typedef std::function<bool(Modbus::ResultCode, uint16_t, void*)> cbTransaction; // Callback skeleton for requests
+#else
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests
+#endif
 //typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode func, TRegister* reg, uint16_t regCount); // Callback function Type
 #if defined(MODBUS_FILES)
 // Callback skeleton for file read/write

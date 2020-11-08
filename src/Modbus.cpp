@@ -10,11 +10,16 @@
 #if defined(MODBUS_USE_STL)
  std::vector<TRegister> Modbus::_regs;
  std::vector<TCallback> Modbus::_callbacks;
+ #if defined(MODBUS_FILES) 
+ std::function<Modbus::ResultCode(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> Modbus::_onFile;
+ #endif
 #else
  DArray<TRegister, 1, 1> Modbus::_regs;
  DArray<TCallback, 1, 1> Modbus::_callbacks;
+ #if defined(MODBUS_FILES)
+ cbModbusFileOp Modbus::_onFile = nullptr;
+ #endif
 #endif
- cbModbusFileOp _onFile;
 #endif
 
 uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
@@ -538,37 +543,37 @@ bool Modbus::onSet(TAddress address, cbModbus cb, uint16_t numregs) {
 	return atLeastOne;
 }
 
-bool Modbus::removeOnSet(TAddress address, cbModbus cb, uint16_t numregs) {
-#define MODBUS_COMPARE_ONSET [address, cb](TCallback entry){ return entry.type == TCallback::ON_SET && entry.address == address && (!cb || entry.cb == cb);}
+bool Modbus::removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb, uint16_t numregs) {
+    size_t s = _callbacks.size();
+    #if defined(MODBUS_USE_STL)
+    #define MODBUS_COMPARE_ON [t, address, cb](const TCallback entry){\
+        return entry.type == t && entry.address == address \
+        && (!cb || std::addressof(cb) == std::addressof(entry.cb));}
     while(numregs--) {
-        #if defined(MODBUS_USE_STL)
-        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), MODBUS_COMPARE_ONSET), _callbacks.end());
-        #else
-        size_t r = 0;
-        do {
-            r = _callbacks.find(MODBUS_COMPARE_ONSET, r);
-            _callbacks.remove(r);
-        } while (r < _callbacks.size());
-        #endif
+        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), MODBUS_COMPARE_ON), _callbacks.end());
         address++;
     }
-    return false;
+    #else
+    #define MODBUS_COMPARE_ON [t, address, cb](const TCallback entry){ \
+        return entry.type == t && entry.address == address \
+        && (!cb || entry.cb == cb);}
+    while(numregs--) {
+        size_t r = 0;
+        do {
+            r = _callbacks.find(MODBUS_COMPARE_ON);
+            _callbacks.remove(r);
+        } while (r < _callbacks.size());
+        address++;
+    }
+    #endif
+    return s == _callbacks.size();
 }
+bool Modbus::removeOnSet(TAddress address, cbModbus cb, uint16_t numregs) {
+    return removeOn(TCallback::ON_SET, address, cb, numregs);
+}
+
 bool Modbus::removeOnGet(TAddress address, cbModbus cb, uint16_t numregs) {
-#define MODBUS_COMPARE_ONGET [address, cb](TCallback entry){ return entry.type == TCallback::ON_GET && entry.address == address && (!cb || entry.cb == cb);}
-    while(numregs--) {
-        #if defined(MODBUS_USE_STL)
-        _callbacks.erase(remove_if(_callbacks.begin(), _callbacks.end(), MODBUS_COMPARE_ONGET), _callbacks.end());
-        #else
-        size_t r = 0;
-        do {
-            r = _callbacks.find(MODBUS_COMPARE_ONGET, r);
-            _callbacks.remove(r);
-        } while (r < _callbacks.size());
-        #endif
-        address++;
-    }
-    return false;
+    return removeOn(TCallback::ON_GET, address, cb, numregs);
 }
 
 bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
@@ -756,7 +761,11 @@ Modbus::~Modbus() {
 }
 
 #if defined(MODBUS_FILES)
+#if defined(MODBUS_USE_STL)
+bool Modbus::onFile(std::function<Modbus::ResultCode(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)>  cb) {
+#else
 bool Modbus::onFile(Modbus::ResultCode (*cb)(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)) {
+#endif
     _onFile = cb;
     return true;
 }

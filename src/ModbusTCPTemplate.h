@@ -15,8 +15,13 @@
 #define IPADDR_NONE ((u32_t)0xffffffffUL)
 #endif
 // Callback function Type
+#if defined(MODBUS_USE_STL)
+typedef std::function<bool(IPAddress)> cbModbusConnect;
+typedef std::function<IPAddress(const char*)> cbModbusResolver;
+#else
 typedef bool (*cbModbusConnect)(IPAddress ip);
 typedef IPAddress (*cbModbusResolver)(const char*);
+#endif
 
 struct TTransaction {
 	uint16_t	transactionId;
@@ -107,7 +112,11 @@ class ModbusTCPTemplate : public Modbus {
 	uint32_t eventSource() override;
 	void autoConnect(bool enabled = true);
 	void dropTransactions();
+	#if defined(MODBUS_USE_STL)
 	static IPAddress defaultResolver(const char*) {return IPADDR_NONE;}
+	#else
+	static IPAddress defaultResolver(const char*) {return IPADDR_NONE;}
+	#endif
 };
 
 template <class SERVER, class CLIENT>

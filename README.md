@@ -62,7 +62,7 @@ For more information about Modbus see:
 ## Last Changes
 
 ```diff
-// 4.0.0.DEV
+// 4.0.0-DEV
 + ModbusTLS: Modbus TCP Security Client/Server
 + ModbusTLS: ESP8266 Client/Server
 + Test: TLS ESP8266 Client/Server
@@ -90,7 +90,7 @@ For more information about Modbus see:
 - Test: 0x16
 - 0x17 - Read/Write Registers function
 - Test: 0x17
-+ API: Access control callback for individual function
++ API: Access control callback for individual Modbus function
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation
@@ -98,12 +98,13 @@ For more information about Modbus see:
 - Test: Frame accuracy to specefication
 - Documentation: Update
 - Examples: Revising
-+ SoftwareSerial support for ESP32
++ ModbusRTU: ESP32 SoftwareSerial support
 + ModbusRTU: Fix transaction callback remains assigned after request end
 + ModbusTCP: Free server connection in destructor
 + Declare global registers and callbacks as ststic members
 - Free global registers and callbacks on remove last Modbus instance
 + ModbusRTU: Refactor .task() for relaibe processing of incoming data
++ API: Declare all callbacks as std::function (for STL)
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
