@@ -237,12 +237,12 @@ class Modbus {
 
     protected:
         static ResultCode _onRequestDefault(FunctionCode fc, TAddress reg, uint16_t regCount);
-        cbRequest _onRequestSuccess = _onRequestDefault;
+        cbRequest _onRequest = _onRequestDefault;
     public:
         bool onRequest(cbRequest cb = _onRequestDefault);
     #if defined (MODBUSAPI_OPTIONAL)
     protected:
-        cbRequest _onRequest = _onRequestDefault;
+        cbRequest _onRequestSuccess = _onRequestDefault;
     public:
         bool onRequestSuccess(cbRequest cb = _onRequestDefault);
     #endif
