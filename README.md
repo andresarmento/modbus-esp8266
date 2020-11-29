@@ -63,6 +63,9 @@ V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 ## Last Changes
 
 ```diff
+// 3.0.5
++ ModbusRTU: Fix early bus release if no callback
++ ModbusRTU ESP32: Fix potential responce loss
 // 3.0.4
 + ModbusIP: Fixed missed server connection free in destructor
 + Fixed addition of missing registers in .poll*() calls

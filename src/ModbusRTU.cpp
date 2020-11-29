@@ -111,13 +111,12 @@ bool ModbusRTU::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
-	#ifdef ESP32
-    portEXIT_CRITICAL(&mux);
- 	#endif
     _port->flush();
     if (_txPin >= 0)
         digitalWrite(_txPin, _direct?LOW:HIGH);
-	//delay(_t);
+	#ifdef ESP32
+    portEXIT_CRITICAL(&mux);
+ 	#endif
 	return true;
 }
 
@@ -264,12 +263,12 @@ bool ModbusRTU::cleanup() {
 
 uint16_t ModbusRTU::writeHreg(uint8_t slaveId, uint16_t offset, uint16_t value, cbTransaction cb) {
     readSlave(offset, value, FC_WRITE_REG);
-	return send(slaveId, HREG(offset), cb, nullptr, cb);
+	return send(slaveId, HREG(offset), cb, nullptr);
 }
 
 uint16_t ModbusRTU::writeCoil(uint8_t slaveId, uint16_t offset, bool value, cbTransaction cb) {
 	readSlave(offset, COIL_VAL(value), FC_WRITE_COIL);
-	return send(slaveId, COIL(offset), cb, nullptr, cb);
+	return send(slaveId, COIL(offset), cb, nullptr);
 }
 
 uint16_t ModbusRTU::readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
@@ -282,14 +281,14 @@ uint16_t ModbusRTU::readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint
 uint16_t ModbusRTU::writeCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > 0x07D0) return false;
 	writeSlaveBits(COIL(offset), offset, numregs, FC_WRITE_COILS, value);
-	return send(slaveId, COIL(offset), cb, nullptr, cb);
+	return send(slaveId, COIL(offset), cb, nullptr);
 }
 
 
 uint16_t ModbusRTU::writeHreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t numregs, cbTransaction cb) {
 	if (numregs < 0x0001 || numregs > 0x007D) return false;
 	writeSlaveWords(HREG(offset), offset, numregs, FC_WRITE_REGS, value);
-	return send(slaveId, HREG(offset), cb, nullptr, cb);
+	return send(slaveId, HREG(offset), cb, nullptr);
 }
 
 
