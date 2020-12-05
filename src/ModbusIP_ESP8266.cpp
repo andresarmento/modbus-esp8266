@@ -81,12 +81,12 @@ void ModbusIP::task() {
 		while (millis() - readStart < MODBUSIP_MAX_READMS &&  tcpclient[n]->available() > sizeof(_MBAP)) {
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
-			if (__bswap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
+			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __bswap is usless there.
 				while (tcpclient[n]->available())	// Drop all incoming if wrong packet
 					tcpclient[n]->read();
 					continue;
 			}
-			_len = __bswap_16(_MBAP.length);
+			_len = __swap_16(_MBAP.length);
 			_len--; // Do not count with last byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 				exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
@@ -112,7 +112,7 @@ void ModbusIP::task() {
 						} else {
 							// Process reply to master request
 							_reply = EX_SUCCESS;
-							TTransaction* trans = searchTransaction(__bswap_16(_MBAP.transactionId));
+							TTransaction* trans = searchTransaction(__swap_16(_MBAP.transactionId));
 							if (trans) { // if valid transaction id
 								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
 									// Procass incoming frame as master
@@ -135,7 +135,7 @@ void ModbusIP::task() {
 			}
 			if (tcpclient[n]->localPort() != serverPort) _reply = REPLY_OFF;	// No replay if it was responce to master
 			if (_reply != REPLY_OFF) {
-				_MBAP.length = __bswap_16(_len+1);     // _len+1 for last byte from MBAP					
+				_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];				
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
@@ -164,9 +164,9 @@ uint16_t ModbusIP::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8
 		return autoConnectMode?connect(ip):false;
 	transactionId++;
 	if (!transactionId) transactionId = 1;
-	_MBAP.transactionId	= __bswap_16(transactionId);
-	_MBAP.protocolId	= __bswap_16(0);
-	_MBAP.length		= __bswap_16(_len+1);     //_len+1 for last byte from MBAP
+	_MBAP.transactionId	= __swap_16(transactionId);
+	_MBAP.protocolId	= __swap_16(0);
+	_MBAP.length		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
 	size_t send_len = _len + sizeof(_MBAP.raw);
 	uint8_t sbuf[send_len];

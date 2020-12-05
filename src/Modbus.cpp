@@ -224,7 +224,7 @@ void Modbus::getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs
 
 void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
     for (uint8_t i = 0; i < numregs; i++) {
-        frame[i] = __bswap_16(Reg(startreg + i));
+        frame[i] = __swap_16(Reg(startreg + i));
     }
 }
 
@@ -298,7 +298,7 @@ void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutp
 
 void Modbus::setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
     for (uint8_t i = 0; i < numregs; i++) {
-        Reg(startreg + i, __bswap_16(frame[i]));
+        Reg(startreg + i, __swap_16(frame[i]));
     }
 }
 
@@ -405,7 +405,7 @@ bool Modbus::writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, F
         if (data) {
             uint16_t* frame = (uint16_t*)(_frame + 6);
             for (uint8_t i = 0; i < numregs; i++) {
-                frame[i] = __bswap_16(data[i]);
+                frame[i] = __swap_16(data[i]);
             }
         } else {
             getMultipleWords((uint16_t*)(_frame + 6), startreg, numregs);
@@ -469,7 +469,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             if (output) {
                 frame += 2;
                 while(field2) {
-                    *((uint16_t*)output) = __bswap_16(*((uint16_t*)frame));
+                    *((uint16_t*)output) = __swap_16(*((uint16_t*)frame));
                     frame += 2;
                     output += 2;
                     field2--;

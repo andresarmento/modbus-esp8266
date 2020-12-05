@@ -12,10 +12,7 @@
  #include <byteswap.h>
 #endif
 
-#ifndef __bswap_16
- #define __bswap_16(num) (((uint16_t)num>>8) | ((uint16_t)num<<8))
-#endif
-
+static inline uint16_t __swap_16(uint16_t num) { return (num >> 8) | (num << 8); }
 
 #define MB_GLOBAL_REGS
 //#define MB_MAX_REGS     32
