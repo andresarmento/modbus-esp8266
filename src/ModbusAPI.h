@@ -139,7 +139,7 @@ template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t offset, VALTYPE value, cbTransaction cb, uint8_t unit) { \
 	this->readSlave(offset, VALUE(value), Modbus::FUNC); \
-	return this->send(ip, REG(offset), cb, unit, nullptr, cb != nullptr); \
+	return this->send(ip, REG(offset), cb, unit); \
 }
 IMPLEMENT_WRITEREG(writeCoil, COIL, FC_WRITE_COIL, COIL_VAL, bool)
 IMPLEMENT_WRITEREG(writeHreg, HREG, FC_WRITE_REG, , uint16_t)
@@ -150,7 +150,7 @@ template <typename TYPEID> \
 uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t offset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
 	this->VALUE(REG(offset), offset, numregs, Modbus::FUNC, value); \
-	return this->send(ip, REG(offset), cb, unit, nullptr, cb != nullptr); \
+	return this->send(ip, REG(offset), cb, unit); \
 }
 IMPLEMENT_WRITEREGS(writeCoil, COIL, FC_WRITE_COILS, writeSlaveBits, 0x07D0, bool)
 IMPLEMENT_WRITEREGS(writeHreg, HREG, FC_WRITE_REGS, writeSlaveWords, 0x007D, uint16_t)

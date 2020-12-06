@@ -5,22 +5,14 @@
 |---|---|
 
 
-Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
+The library is under active development. Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
 
 ---
 
-This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a master-slave protocol
-used in industrial automation and can be used in other areas, such as home automation.
+This library allows your ESP8266/ESP32 to communicate via Modbus protocol. The Modbus is a protocol
+used in industrial automation and also can be used in other areas, such as home automation.
 
-The Modbus generally uses serial RS-232 or RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP).
-
-For more information about Modbus see:
-
-* [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
-* [MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b](http://www.modbus.org/docs/Modbus_Application_Protocol_V1_1b.pdf)
-* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
-* [MODBUS over Serial Line Specification and Implementation Guide V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
-* [MODBUS/TCP Security Protocol Specification](https://modbus.org/docs/MB-TCP-Security-v21_2018-07-24.pdf)
+The Modbus generally uses serial RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP).
 
 ## Features
 
@@ -58,6 +50,14 @@ For more information about Modbus see:
 2. For API refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
 3. Modbus RTU maximum incoming frame size is determinated by HardwareSerial buffer size. For SoftwareSerial buffer must be set to 256 bytes.
 4. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
+
+For more information about Modbus see:
+
+* [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
+* [MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b3](https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf)
+* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
+* [MODBUS over Serial Line Specification and Implementation Guide V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
+* [MODBUS/TCP Security Protocol Specification](https://modbus.org/docs/MB-TCP-Security-v21_2018-07-24.pdf)
 
 ## Last Changes
 
@@ -101,10 +101,11 @@ For more information about Modbus see:
 + ModbusRTU: ESP32 SoftwareSerial support
 + ModbusRTU: Fix transaction callback remains assigned after request end
 + ModbusTCP: Free server connection in destructor
-+ Declare global registers and callbacks as ststic members
++ Declare global registers and callbacks as static members
 - Free global registers and callbacks on remove last Modbus instance
-+ ModbusRTU: Refactor .task() for relaibe processing of incoming data
++ ModbusRTU: Refactor .task() for more relaibe processing of incoming data
 + API: Declare all callbacks as std::function (for STL)
+- API: Msater/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server

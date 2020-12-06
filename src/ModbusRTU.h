@@ -42,8 +42,11 @@ class ModbusRTUTemplate : public Modbus {
 		bool begin(T* port, int16_t txPin = -1, bool direct = true);
 		bool begin(Stream* port);
         void task();
-		void master() { isMaster = true; };
-		void slave(uint8_t slaveId) {_slaveId = slaveId;};
+		void client() { isMaster = true; };
+		inline void master() {client();}
+		void server(uint8_t serverId) {_slaveId = serverId;};
+		inline void slave(uint8_t slaveId) {server(slaveId);}
+		
 		uint8_t slave() { return _slaveId; }
 		uint32_t eventSource() override {return _slaveId;}
 };

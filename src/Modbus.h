@@ -16,7 +16,7 @@
  #include "darray.h"
 #endif
 
-inline uint16_t __bswap_16(uint16_t num) { return (num >> 8) | (num << 8); }
+static inline uint16_t __bswap_16(uint16_t num) { return (num >> 8) | (num << 8); }
 
 #define COIL(n) (TAddress){TAddress::COIL, n}
 #define ISTS(n) (TAddress){TAddress::ISTS, n}
