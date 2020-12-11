@@ -12,7 +12,7 @@
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
 #define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b))))        // '!!' to make sure this returns 0 or 1
 #ifndef IPADDR_NONE
-#define IPADDR_NONE ((u32_t)0xffffffffUL)
+#define IPADDR_NONE ((uint32_t)0xffffffffUL)
 #endif
 // Callback function Type
 #if defined(MODBUS_USE_STL)

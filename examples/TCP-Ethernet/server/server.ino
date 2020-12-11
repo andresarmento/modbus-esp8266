@@ -16,7 +16,7 @@
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
-IPAddress ip(192, 168, 1, 177); // The IP address will be dependent on your local network:
+IPAddress ip(192, 168, 30, 177); // The IP address will be dependent on your local network:
 ModbusEthernet mb;              // Declare ModbusTCP instance
 
 void setup() {
@@ -24,7 +24,7 @@ void setup() {
   #if defined(AVR_LEONARDO)
   while (!Serial) {}        // wait for serial port to connect. Needed for Leonardo only
   #endif
-  Ethernet.init(15);        // SS pin
+  Ethernet.init(5);        // SS pin
   Ethernet.begin(mac, ip);  // start the Ethernet connection
   delay(1000);              // give the Ethernet shield a second to initialize
   mb.server();              // Act as Modbus TCP server
