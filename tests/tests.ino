@@ -3,6 +3,7 @@
 #include "common.h"
 #include "write.h"
 #include "read.h"
+#include "files.h"
 
 
 uint8_t stage = 0;
@@ -17,9 +18,11 @@ uint16_t readHreg = 0;
 
 void setup() {
   Serial.begin(115200);
-  master.begin(&D1);
+  Serial.println("ModbusRTU API test");
+  delay(100);
+  master.begin(&P1);
   master.master();
-  slave.begin(&D2);
+  slave.begin(&P2);
   slave.slave(SLAVE_ID);
   slave.addHreg(HREG_ID);
 
@@ -57,8 +60,8 @@ readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
         master.readIsts(SLAVE_ID, 101, &Node_2_ackStatus, 1, NULL);
         while (master.slave()) {
            master.task();
-           while(D2.available())
-              D2.write(D2.read());
+           while(P2.available())
+              P2.write(P2.read());
            //slave.task();
            delay(1);
         }
@@ -75,8 +78,11 @@ readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
     Serial.println(" FAILED");
   }
   }
+  {
+    initFile();
+    testFile();
+  }
 }
-
 void loop() {
   yield();
 }
