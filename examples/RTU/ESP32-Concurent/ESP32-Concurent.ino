@@ -23,7 +23,10 @@ bool resCallback(Modbus::ResultCode event, uint16_t, void*) {
 
 Modbus::ResultCode readSync(uint16_t Address, uint16_t start, uint16_t num, uint16_t* buf) {
   xSemaphoreTake(xMutex, portMAX_DELAY);
-  if (mb.slave()){Serial.println(mb.slave());xSemaphoreGive(xMutex); return Modbus::EX_GENERAL_FAILURE;}
+  if (mb.slave()){
+    xSemaphoreGive(xMutex);
+    return Modbus::EX_GENERAL_FAILURE;
+  }
   Serial.printf("SlaveID: %d Hreg %d\n", Address, start);
   mb.readHreg(Address, start, buf, num, resCallback);
   while (mb.slave()) {
@@ -43,23 +46,23 @@ void setup() {
   Serial1.begin(9600, SERIAL_8N1, 19, 18);
   mb.begin(&Serial1, 17);
   mb.master();
-  vSemaphoreCreateBinary( xMutex );
+  xMutex = xSemaphoreCreateMutex();
   xTaskCreatePinnedToCore(
-                    loop1,       /* Task function. */
+                    loop1,   /* Task function. */
                     "Task1",     /* name of task. */
                     10000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
-                    10,          /* priority of the task */
-                    NULL,        /* Task handle to keep track of created task */
+                    10,           /* priority of the task */
+                    NULL,      /* Task handle to keep track of created task */
                     0);          /* pin task to core 1 */
  
  xTaskCreatePinnedToCore(
-                    loop2,       /* Task function. */
+                    loop2,   /* Task function. */
                     "Task1",     /* name of task. */
                     10000,       /* Stack size of task */
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
-                    NULL,        /* Task handle to keep track of created task */
+                    NULL,      /* Task handle to keep track of created task */
                     1);          /* pin task to core 1 */
 
 }
