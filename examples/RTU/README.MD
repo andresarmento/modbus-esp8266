@@ -1,8 +1,7 @@
 # Modbus Library for Arduino
 ### ModbusRTU, ModbusTCP and ModbusTCP Security
 
-This example is introduces how to use the library for ModbusRTU (typicaly over RS-485).
-Key API functions for slave device
+This example is introduces how to use the library for ModbusRTU (typicaly over RS-485) to act as [master](master) or [slave](slave). Additionally thre is [example of master](WSP32-Concurent) device for multithread usage with ESP32.
 
 ### Modbus RTU Specific API
 
