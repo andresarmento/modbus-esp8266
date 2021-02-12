@@ -27,7 +27,7 @@ If not defined each Modbus object will have own registers set.
 #define MODBUS_USE_STL
 If defined C STL will be used.
 */
-#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32)
+#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) //|| defined(ARDUINO_SAM_DUE)clear
 #define MODBUS_USE_STL
 #endif
 

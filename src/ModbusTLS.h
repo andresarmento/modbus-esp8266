@@ -17,6 +17,9 @@ public:
     WiFiServerSecure(uint16_t){}
     WiFiClientSecure available(){}
     void begin();
+    inline WiFiClientSecure accept() {
+        return available();
+    }
 };
 #endif
 #include "ModbusTCPTemplate.h"
