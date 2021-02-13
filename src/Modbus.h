@@ -284,3 +284,10 @@ typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, 
 // Callback skeleton for file read/write
 typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame);
 #endif
+
+#if defined(ARDUINO_SAM_DUE)
+// Arduino Due STL workaround
+namespace std {
+    void __throw_bad_function_call();
+}
+#endif

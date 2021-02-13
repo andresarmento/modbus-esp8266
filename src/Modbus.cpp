@@ -837,3 +837,12 @@ bool Modbus::onRequestSuccess(cbRequest cb) {
     return true;
 }
 #endif
+
+#if defined(ARDUINO_SAM_DUE)
+namespace std {
+    void __throw_bad_function_call() {
+        Serial.println(F("STL ERROR - __throw_bad_function_call"));
+        __builtin_unreachable();
+    }
+}
+#endif
