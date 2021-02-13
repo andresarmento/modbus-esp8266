@@ -24,10 +24,19 @@ If not defined each Modbus object will have own registers set.
 #define MODBUS_GLOBAL_REGS
 
 /*
+#define ARDUINO_SAM_DUE_STL
+Use STL with Arduino Due. Was able to use with Arduino IDE but not with PlatformIO
+Also note STL issue workaround code in Modbus.cpp
+*/
+#if defined(ARDUINO_SAM_DUE)
+//#define ARDUINO_SAM_DUE_STL
+#endif
+
+/*
 #define MODBUS_USE_STL
 If defined C STL will be used.
 */
-#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE)
+#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE_STL)
 #define MODBUS_USE_STL
 #endif
 

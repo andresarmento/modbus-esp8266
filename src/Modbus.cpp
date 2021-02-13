@@ -838,7 +838,7 @@ bool Modbus::onRequestSuccess(cbRequest cb) {
 }
 #endif
 
-#if defined(ARDUINO_SAM_DUE)
+#if defined(ARDUINO_SAM_DUE_STL)
 namespace std {
     void __throw_bad_function_call() {
         Serial.println(F("STL ERROR - __throw_bad_function_call"));

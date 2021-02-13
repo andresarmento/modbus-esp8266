@@ -5,7 +5,6 @@
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
-#pragma once
 #include "ModbusRTU.h"
 
 // Table of CRC values
