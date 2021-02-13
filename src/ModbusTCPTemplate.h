@@ -164,7 +164,12 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::connect(IPAddress ip, uint16_t port) {
 		return false;
 	tcpclient[p] = new CLIENT();
 	BIT_CLEAR(tcpServerConnection, p);
-	return tcpclient[p]->connect(ip, port?port:defaultPort);
+	if (!tcpclient[p]->connect(ip, port?port:defaultPort)) {
+		delete(tcpclient[p]);
+		tcpclient[p] = nullptr;
+		return false;
+	}
+	return true;
 }
 
 template <class SERVER, class CLIENT>
@@ -495,6 +500,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(IPAddress ip) {
 		return false;
 	int8_t p = getSlave(ip);
 	if (p != -1) {
+		tcpclient[p]->stop();
 		delete tcpclient[p];
 		tcpclient[p] = nullptr;
 		return true;

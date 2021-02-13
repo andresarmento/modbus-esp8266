@@ -1,8 +1,14 @@
-# Modbus Library for Arduino
-### ModbusRTU, ModbusTCP and ModbusTCP Security
+## (Concurent thread-safe access to Modbus object)[ESP32-Concurent]
 
-This example is introduces how to use the library for ModbusRTU (typicaly over RS-485).
-Key API functions for slave device
+This example is introduces how to use the library for ModbusRTU (typicaly over RS-485) to act as [master](master) or [slave](slave). Additionally thre is [example of master](WSP32-Concurent) device for multithread usage with ESP32.
+
+## (Simple ModbusRTU master)[master]
+
+## (Simple ModbusRTU slave)[slave]
+
+## (Sync ModbusRTU master)[masterSync]
+
+
 
 ### Modbus RTU Specific API
 
@@ -41,3 +47,10 @@ uint8_t slave();
 
 - Slave mode: Returns configured slave id.
 - Master mode: Returns slave id for active request or 0 if no request in-progress.
+
+# Modbus Library for Arduino
+### ModbusRTU, ModbusTCP and ModbusTCP Security
+
+(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+
+The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.

@@ -109,7 +109,8 @@ bool Ists(uint16_t offset);
 uint16_t Ireg(uint16_t offset);
 ```
 
-- `offset` Address of the first register to add
+- `offset` Address of the register to read
+
 
 Returns current value of the register.
 
