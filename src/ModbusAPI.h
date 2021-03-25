@@ -169,7 +169,7 @@ IMPLEMENT_READREGS(readIsts, ISTS, FC_READ_INPUT_STAT, 0x07D0, bool)
 IMPLEMENT_READREGS(readIreg, IREG, FC_READ_INPUT_REGS, 0x007D, uint16_t)
 
 #if defined(MODBUS_ADD_REG)
-#define ADDREG(R) this->addReg(R(to), 0, numregs);
+#define ADDREG(R) this->addReg(R(to), (uint16_t)0, numregs);
 #else
 #define ADDREG(R) ;
 #endif
