@@ -179,10 +179,13 @@ void Modbus::slavePDU(uint8_t* frame) {
                 }
             }
             if (k >= field2) {
-                setMultipleWords((uint16_t*)(frame + 6), HREG(field1), field2);
-                successResponce(HREG(field1), field2, fcode);
-                _reply = REPLY_NORMAL;
+                if (!setMultipleWords((uint16_t*)(frame + 6), HREG(field1), field2)) {
+                    exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                    return;
+                }
             }
+            successResponce(HREG(field1), field2, fcode);
+            _reply = REPLY_NORMAL;
             _onRequestSuccess(fcode, HREG(field1), field2);
         break;
 
@@ -267,10 +270,13 @@ void Modbus::slavePDU(uint8_t* frame) {
                 }
             }
             if (k >= field2) {
-                setMultipleBits(frame + 6, COIL(field1), field2);
-                successResponce(COIL(field1), field2, fcode);
-                _reply = REPLY_NORMAL;
+                if (!setMultipleBits(frame + 6, COIL(field1), field2)) {
+                    exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                    return;
+                }
             }
+            successResponce(COIL(field1), field2, fcode);
+            _reply = REPLY_NORMAL;
             _onRequestSuccess(fcode, COIL(field1), field2);
         break;
     #if defined(MODBUS_FILES)
@@ -488,11 +494,14 @@ bool Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     return true;
 }
 
-void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs) {
+bool Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs) {
     uint8_t bitn = 0;
     uint16_t i = 0;
+    bool result = true;
 	while (numoutputs--) {
         Reg(startreg, BIT_VAL(bitRead(frame[i], bitn)));
+        if (Reg(startreg) != BIT_VAL(bitRead(frame[i], bitn)))
+            result = false;
         bitn++;     //increment the bit index
         if (bitn == 8) {
             i++;
@@ -500,12 +509,17 @@ void Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutp
         }
         startreg++; //increment the register
 	}
+    return result;
 }
 
-void Modbus::setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
+bool Modbus::setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs) {
+    bool result = true;
     for (uint8_t i = 0; i < numregs; i++) {
         Reg(startreg + i, __swap_16(frame[i]));
+        if (Reg(startreg + i) != __swap_16(frame[i]))
+            result = false;
     }
+    return result;
 }
 
 bool Modbus::onGet(TAddress address, cbModbus cb, uint16_t numregs) {
