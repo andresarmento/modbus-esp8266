@@ -37,7 +37,7 @@ Also note STL issue workaround code in Modbus.cpp
 If defined C STL will be used.
 */
 #if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE_STL)
-//#define MODBUS_USE_STL
+#define MODBUS_USE_STL
 #endif
 
 /*

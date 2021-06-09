@@ -18,14 +18,14 @@ const uint16_t RW_HREG = 200; // Sample Hreg
 //ModbusIP object
 ModbusTCP mb;
 
-Modbus::ResultCode cbPreRequest(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount) {
+Modbus::ResultCode cbPreRequest(Modbus::FunctionCode fc, const Modbus::RequestData data) {
   Serial.printf("PRE Function: %02X\n", fc);
   if ((fc == Modbus::FC_WRITE_REG || fc == Modbus::FC_WRITE_REGS) && mb.Coil(RO_FLAG))
     return Modbus::EX_ILLEGAL_FUNCTION;
   return Modbus::EX_SUCCESS;
 }
 
-Modbus::ResultCode cbPostRequest(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount) {
+Modbus::ResultCode cbPostRequest(Modbus::FunctionCode fc, const Modbus::RequestData data) {
   Serial.printf("POST Function: %02X\n", fc);
   return Modbus::EX_SUCCESS;
 }

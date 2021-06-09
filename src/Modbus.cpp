@@ -132,7 +132,7 @@ void Modbus::slavePDU(uint8_t* frame) {
     switch (fcode) {
         case FC_WRITE_REG:
             //field1 = reg, field2 = value
-            ex = _onRequest(fcode, HREG(field1), field2);
+            ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
@@ -146,24 +146,24 @@ void Modbus::slavePDU(uint8_t* frame) {
                 return;
             }
             _reply = REPLY_ECHO;
-            _onRequestSuccess(fcode, HREG(field1), field2);
+            _onRequestSuccess(fcode, {HREG(field1), field2});
         break;
 
         case FC_READ_REGS:
             //field1 = startreg, field2 = numregs, header len = 3
-            ex = _onRequest(fcode, HREG(field1), field2);
+            ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
             if (!readWords(HREG(field1), field2, fcode))
                 return;
-            _onRequestSuccess(fcode, HREG(field1), field2);
+            _onRequestSuccess(fcode, {HREG(field1), field2});
         break;
 
         case FC_WRITE_REGS:
             //field1 = startreg, field2 = numregs, frame[5] = data lenght, header len = 6
-            ex = _onRequest(fcode, HREG(field1), field2);
+            ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
@@ -186,48 +186,48 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             successResponce(HREG(field1), field2, fcode);
             _reply = REPLY_NORMAL;
-            _onRequestSuccess(fcode, HREG(field1), field2);
+            _onRequestSuccess(fcode, {HREG(field1), field2});
         break;
 
         case FC_READ_COILS:
             //field1 = startreg, field2 = numregs
-            ex = _onRequest(fcode, COIL(field1), field2);
+            ex = _onRequest(fcode, {COIL(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
             if (!readBits(COIL(field1), field2, fcode))
                 return;
-            _onRequestSuccess(fcode, COIL(field1), field2);
+            _onRequestSuccess(fcode, {COIL(field1), field2});
         break;
 
         case FC_READ_INPUT_STAT:
             //field1 = startreg, field2 = numregs
-            ex = _onRequest(fcode, ISTS(field1), field2);
+            ex = _onRequest(fcode, {ISTS(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
             if (!readBits(ISTS(field1), field2, fcode))
                 return;
-            _onRequestSuccess(fcode, ISTS(field1), field2);
+            _onRequestSuccess(fcode, {ISTS(field1), field2});
         break;
 
         case FC_READ_INPUT_REGS:
             //field1 = startreg, field2 = numregs
-            ex = _onRequest(fcode, IREG(field1), field2);
+            ex = _onRequest(fcode, {IREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
             if (!readWords(IREG(field1), field2, fcode))
                 return;
-            _onRequestSuccess(fcode, IREG(field1), field2);
+            _onRequestSuccess(fcode, {IREG(field1), field2});
         break;
 
         case FC_WRITE_COIL:
             //field1 = reg, field2 = status, header len = 3
-            ex = _onRequest(fcode, COIL(field1), field2);
+            ex = _onRequest(fcode, {COIL(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
@@ -247,12 +247,12 @@ void Modbus::slavePDU(uint8_t* frame) {
                 return;
             }
             _reply = REPLY_ECHO;
-            _onRequestSuccess(fcode, COIL(field1), field2);
+            _onRequestSuccess(fcode, {COIL(field1), field2});
         break;
 
         case FC_WRITE_COILS:
             //field1 = startreg, field2 = numregs, frame[5] = bytecount, header len = 6
-            ex = _onRequest(fcode, COIL(field1), field2);
+            ex = _onRequest(fcode, {COIL(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
@@ -277,7 +277,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             successResponce(COIL(field1), field2, fcode);
             _reply = REPLY_NORMAL;
-            _onRequestSuccess(fcode, COIL(field1), field2);
+            _onRequestSuccess(fcode, {COIL(field1), field2});
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
@@ -368,7 +368,7 @@ void Modbus::slavePDU(uint8_t* frame) {
         case FC_MASKWRITE_REG: {
             //field1 = reg, field2 = AND mask
             // Result = (Current Contents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
-            ex = _onRequest(fcode, HREG(field1), field2);
+            ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
@@ -386,7 +386,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
         }
         _reply = REPLY_ECHO;
-        _onRequestSuccess(fcode, HREG(field1), field2);
+        _onRequestSuccess(fcode, {HREG(field1), field2});
         break;
 
         default:
@@ -838,7 +838,7 @@ Modbus::ResultCode Modbus::fileOp(Modbus::FunctionCode fc, uint16_t fileNum, uin
     }
     #endif
 
-Modbus::ResultCode Modbus::_onRequestDefault(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount) {
+Modbus::ResultCode Modbus::_onRequestDefault(Modbus::FunctionCode fc, const RequestData data) {
     return EX_SUCCESS;
 }
 bool Modbus::onRequest(cbRequest cb) {

@@ -134,6 +134,22 @@ class Modbus {
             EX_CONNECTION_LOST      = 0xE5, // Custom. Connection with device lost
             EX_CANCEL               = 0xE6  // Custom. Transaction/request canceled
         };
+        union RequestData {
+            struct {
+                TAddress reg;
+                uint16_t regCount;
+            };
+            struct {
+                TAddress regRead;
+                uint16_t regReadCount;
+                TAddress regWrite;
+                uint16_t regWriteCount;
+            };
+            struct {
+                uint16_t fileNum;
+            };
+        };
+
         ~Modbus();
 
         void cbEnable(bool state = true);
@@ -230,13 +246,13 @@ class Modbus {
 
         virtual uint32_t eventSource() {return 0;}
         #if defined(MODBUS_USE_STL)
-        typedef std::function<ResultCode(FunctionCode, TAddress, uint16_t)> cbRequest; // Callback function Type
+        typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest; // Callback function Type
         #else
-        typedef ResultCode (*cbRequest)(FunctionCode fc, TAddress reg, uint16_t regCount); // Callback function Type
+        typedef ResultCode (*cbRequest)(FunctionCode fc, const RequestData data); // Callback function Type
         #endif
 
     protected:
-        static ResultCode _onRequestDefault(FunctionCode fc, TAddress reg, uint16_t regCount);
+        static ResultCode _onRequestDefault(FunctionCode fc, const RequestData data);
         cbRequest _onRequest = _onRequestDefault;
     public:
         bool onRequest(cbRequest cb = _onRequestDefault);

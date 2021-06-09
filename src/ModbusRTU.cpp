@@ -64,17 +64,22 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
         delayMicroseconds(1000);
     }
 	#if defined(ESP32)
-	portENTER_CRITICAL(&mux);
+	//portENTER_CRITICAL(&mux);
+	vTaskDelay(1);
 	#endif
     _port->write(slaveId);  	//Send slaveId
     _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
+	#if defined(ESP32)
+	vTaskSuspendAll();
+	#endif
     _port->flush();
     if (_txPin >= 0)
         digitalWrite(_txPin, _direct?LOW:HIGH);
 	#if defined(ESP32)
-    portEXIT_CRITICAL(&mux);
+	xTaskResumeAll();
+    //portEXIT_CRITICAL(&mux);
  	#endif
 	//delay(_t);
 	return true;
