@@ -89,7 +89,7 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
     bool result = false;
 	if (!_slaveId) { // Check if waiting for previous request result
 		rawSend(slaveId, _frame, _len);
-		if (waitResponse) {
+		if (waitResponse && slaveId) {
         	_slaveId = slaveId;
 			_timestamp = millis();
 			_cb = cb;
