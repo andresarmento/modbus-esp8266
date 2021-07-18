@@ -8,16 +8,22 @@
 
 #pragma once
 #include <ModbusRTU.h>
+#define HW_SERIAL
 
 #define BSIZE 1024
 
+#if defined(HW_SERIAL)
+#define P1 Serial1
+#define P2 Serial2
+#else
 uint8_t buf1[BSIZE];
 uint8_t buf2[BSIZE];
 
 StreamBuf S1(buf1, BSIZE);
 StreamBuf S2(buf2, BSIZE);
-DuplexBuf D1(&S1, &S2);
-DuplexBuf D2(&S2, &S1);
+DuplexBuf P1(&S1, &S2);
+DuplexBuf P2(&S2, &S1);
+#endif
 
 ModbusRTU master;
 ModbusRTU slave;

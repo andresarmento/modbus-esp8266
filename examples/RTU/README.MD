@@ -1,12 +1,12 @@
-## (Concurent thread-safe access to Modbus object)[ESP32-Concurent]
+## [Concurent thread-safe access to Modbus object](ESP32-Concurent)
 
 This example is introduces how to use the library for ModbusRTU (typicaly over RS-485) to act as [master](master) or [slave](slave). Additionally thre is [example of master](WSP32-Concurent) device for multithread usage with ESP32.
 
-## (Simple ModbusRTU master)[master]
+## [Simple ModbusRTU master](master)
 
-## (Simple ModbusRTU slave)[slave]
+## [Simple ModbusRTU slave](slave)
 
-## (Sync ModbusRTU master)[masterSync]
+## [Sync ModbusRTU master](masterSync)
 
 
 

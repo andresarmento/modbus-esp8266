@@ -19,6 +19,10 @@ uint16_t readHreg = 0;
 void setup() {
   Serial.begin(115200);
   Serial.println("ModbusRTU API test");
+#if defiend(HW_SERIAL)
+  Serial1.begin(115200, SERIAL_8N1, 18, 19);
+  Serial2.begin(115200, SERIAL_8N1, 22, 23);
+#endif
   delay(100);
   master.begin(&P1);
   master.master();

@@ -64,22 +64,18 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
         delayMicroseconds(1000);
     }
 	#if defined(ESP32)
-	//portENTER_CRITICAL(&mux);
-	vTaskDelay(1);
+	//vTaskDelay(1);
+	portENTER_CRITICAL(&mux);
 	#endif
     _port->write(slaveId);  	//Send slaveId
     _port->write(frame, len); 	// Send PDU
     _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
-	#if defined(ESP32)
-	vTaskSuspendAll();
-	#endif
     _port->flush();
     if (_txPin >= 0)
         digitalWrite(_txPin, _direct?LOW:HIGH);
 	#if defined(ESP32)
-	xTaskResumeAll();
-    //portEXIT_CRITICAL(&mux);
+    portEXIT_CRITICAL(&mux);
  	#endif
 	//delay(_t);
 	return true;
@@ -87,9 +83,9 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 
 uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
     bool result = false;
-	if (!_slaveId) { // Check if waiting for previous request result
+	if (!_slaveId && _len && _frame) { // Check if waiting for previous request result and _frame filled
 		rawSend(slaveId, _frame, _len);
-		if (waitResponse) {
+		if (waitResponse && slaveId) {
         	_slaveId = slaveId;
 			_timestamp = millis();
 			_cb = cb;
@@ -179,7 +175,8 @@ void ModbusRTUTemplate::task() {
     for (uint8_t i=0 ; i < _len ; i++) {
 		_frame[i] = _port->read();   // read data + crc
 		#if defined(MODBUSRTU_DEBUG)
-		Serial.printf("%02X ", _frame[i]);
+		Serial.print(_frame[i], HEX);
+		Serial.print(" ");
 		#endif
 	}
 	#if defined(MODBUSRTU_DEBUG)

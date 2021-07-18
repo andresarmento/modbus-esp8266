@@ -51,12 +51,28 @@ Disconnect specific callback function or all callbacks of the type if cb=NULL.
 ## [Incoming request callback (applicable to server/slave)](Request/Request.ino)
 
 ```c
-typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode fc, TAddress reg, uint16_t regCount);
+typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode fc, const Modbus::RequestData data);
 bool onRequest(cbRequest cb = _onRequestDefault);
 bool onRequestSuccess(cbRequest cb = _onRequestDefault);
+
+union Modbus::RequestData {
+            struct {
+                TAddress reg;
+                uint16_t regCount;
+            };
+            struct {
+                TAddress regRead;
+                uint16_t regReadCount;
+                TAddress regWrite;
+                uint16_t regWriteCount;
+            };
+            struct {
+                uint16_t fileNum;
+            };
+        };
 ```
 
-Callback function receives Modbus function code, register type and offset (`TAddress` structure) and count of registers requested. The function should return [result code](#Result codes *Modbus::ResultCode*) `Modbus::EX_SUCCESS` to allow request processing or Modbus error code to block processing. This code will be returned to client/master.
+Callback function receives Modbus function code, structure `Modbus::RequestData` containing register type and offset (`TAddress` structure) and count of registers requested. The function should return [result code](#Result codes *Modbus::ResultCode*) `Modbus::EX_SUCCESS` to allow request processing or Modbus error code to block processing. This code will be returned to client/master.
 
 ## [Modbus TCP/TLS Incoming connection callback](onSet/onSet.ino)
 
