@@ -41,6 +41,14 @@ readMultiple(SLAVE_ID, COIL(HREG_ID), 10);
 readMultiple(SLAVE_ID, IREG(HREG_ID), 10);
 readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
 
+{
+  uint16_t rd[10];
+  uint16_t wr[10];
+  slave.addHreg(110, 10);
+  slave.addHreg(120, 20);
+  master.readWriteHreg(SLAVE_ID, 110, rd, 10, 120, wr, 10, cbWrite);
+  wait();
+}
 // Garbage read
   {
   bool Node_1_ackStatus = false;

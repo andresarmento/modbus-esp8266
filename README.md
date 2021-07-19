@@ -18,8 +18,8 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
 
 * Supports all Arduino platforms
 * Operates in any combination of multiple instances of
-  * [Modbus RTU slave](examples/RTU)
-  * [Modbus RTU master](examples/RTU)
+  * [Modbus RTU server](examples/RTU)
+  * [Modbus RTU client](examples/RTU)
   * Modbus TCP server for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
   * Modbus TCP client for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
   * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
@@ -37,12 +37,14 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
   * 0x14 - Read File Record
   * 0x15 - Write File Record
   * 0x16 - Mask Write Register
+  * 0x17 - Read/Write multiple registers
 * [Callbacks](examples/callback) for
   * Client connect (Modbus TCP)
   * Server/Client disconnect (Modbus TCP)
   * Read specific Register
   * Write specific Register
-  * Slave transaction finish
+  * Transaction result (Client side)
+  * Transaction start/end (Server side)
 
 ## Notes
 
@@ -71,7 +73,7 @@ For more information about Modbus see:
 + ModbusTLS: ESP32 Client
 - Test: TLS ESP32 Client
 + Build with no STL dependency
-- Test: No-STL mode
++ Test: No-STL mode
 + ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
 + Test: W5x00 support
 - Test: W5x00 with Ethernet library v1
@@ -87,7 +89,7 @@ For more information about Modbus see:
 - Examples: FW update
 + 0x16 - Write Mask Register function
 - Test: 0x16
-- 0x17 - Read/Write Registers function
++ 0x17 - Read/Write Registers function
 - Test: 0x17
 + API: Access control callback for individual Modbus function
 - Slave/Server: slavePDU use early exit by return where possible
@@ -97,6 +99,8 @@ For more information about Modbus see:
 - Test: Frame accuracy to specefication
 - Documentation: Update
 - Examples: Revising
+- Remove unneeded register count check in private functions
+- Check startreg + numreg < 65535
 + ModbusRTU: ESP32 SoftwareSerial support
 + ModbusRTU: Fix transaction callback remains assigned after request end
 + ModbusTCP: Free server connection in destructor
@@ -104,7 +108,7 @@ For more information about Modbus see:
 - Free global registers and callbacks on remove last Modbus instance
 + ModbusRTU: Refactor .task() for more relaibe processing of incoming data
 + API: Declare all callbacks as std::function (for STL)
-- API: Msater/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
+- API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server

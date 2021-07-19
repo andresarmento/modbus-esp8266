@@ -124,8 +124,8 @@ class ModbusAPI : public T {
 
 	template <typename TYPEID>
 	uint16_t maskHreg(TYPEID slaveId, uint16_t offset, uint16_t andMask, uint16_t orMask, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
-	//template <typename TYPEID>
-	//uint16_t readWriteHreg(uint8_t slaveId, uint16_t readOffset, uint16_t* value, uint16_t numregs, uint16_t writeOffset, uint16_t* value, uint16_t numregs, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	template <typename TYPEID>
+	uint16_t readWriteHreg(TYPEID slaveId, uint16_t readOffset, uint16_t* readValue, uint16_t readNumregs, uint16_t writeOffset, uint16_t* writeValue, uint16_t writeNumregs, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 };
 
 // FNAME	writeCoil, writeIsts, writeHreg, writeIreg
@@ -334,37 +334,64 @@ bool ModbusAPI<T>::removeOnSetIreg(uint16_t offset, cbModbus cb, uint16_t numreg
 template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::readFileRec(TYPEID slaveId, uint16_t fileNum, uint16_t startRec, uint16_t len, uint8_t* data, cbTransaction cb, uint8_t unit) {
-			if (startRec > 0x270F) return 0;
-			if (!this->readSlaveFile(&fileNum, &startRec, &len, 1, Modbus::FC_READ_FILE_REC)) return 0;
-			return this->send(slaveId, HREG(0), cb, unit, data); // HREG(0) - just dummy value
-		};
+	if (startRec > 0x270F) return 0;
+	if (!this->readSlaveFile(&fileNum, &startRec, &len, 1, Modbus::FC_READ_FILE_REC)) return 0;
+	return this->send(slaveId, HREG(0), cb, unit, data); // HREG(0) - just dummy value
+};
 template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::writeFileRec(TYPEID slaveId, uint16_t fileNum, uint16_t startRec, uint16_t len, uint8_t* data, cbTransaction cb, uint8_t unit) {
-			if (startRec > 0x270F) return 0;
-			if (!this->writeSlaveFile(&fileNum, &startRec, &len, 1, Modbus::FC_WRITE_FILE_REC, data)) return 0;
-			return this->send(slaveId, HREG(0), cb, unit); // HREG(0) - just dummy value
-		};
+	if (startRec > 0x270F) return 0;
+	if (!this->writeSlaveFile(&fileNum, &startRec, &len, 1, Modbus::FC_WRITE_FILE_REC, data)) return 0;
+	return this->send(slaveId, HREG(0), cb, unit); // HREG(0) - just dummy value
+};
 template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::maskHreg(TYPEID slaveId, uint16_t offset, uint16_t andMask, uint16_t orMask, cbTransaction cb, uint8_t unit) {
-			free(this->_frame);
-			this->_len = 7;
-			this->_frame = (uint8_t*) malloc(this->_len);
-			this->_frame[0] = Modbus::FC_MASKWRITE_REG;
-			this->_frame[1] = offset >> 8;
-			this->_frame[2] = offset & 0x00FF;
-			this->_frame[3] = andMask >> 8;
-			this->_frame[4] = andMask & 0x00FF;
-			this->_frame[5] = orMask >> 8;
-			this->_frame[6] = orMask & 0x00FF;
-			return this->send(slaveId, HREG(offset), cb, unit, nullptr, cb);	
-		};
-/*
+	free(this->_frame);
+	this->_len = 7;
+	this->_frame = (uint8_t*) malloc(this->_len);
+	this->_frame[0] = Modbus::FC_MASKWRITE_REG;
+	this->_frame[1] = offset >> 8;
+	this->_frame[2] = offset & 0x00FF;
+	this->_frame[3] = andMask >> 8;
+	this->_frame[4] = andMask & 0x00FF;
+	this->_frame[5] = orMask >> 8;
+	this->_frame[6] = orMask & 0x00FF;
+	return this->send(slaveId, HREG(offset), cb, unit, nullptr, cb);	
+};
+
 template <class T> \
 template <typename TYPEID> \
-uint16_t ModbusAPI<T>::readWriteHreg(TYPEID slaveId,
-			uint16_t readOffset, uint16_t* value, uint16_t numregs,
-			uint16_t writeOffset, uint16_t* value, uint16_t numregs,
-			cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
-*/
+uint16_t ModbusAPI<T>::readWriteHreg(TYPEID ip, \
+			uint16_t readOffset, uint16_t* readValue, uint16_t readNumregs, \
+			uint16_t writeOffset, uint16_t* writeValue, uint16_t writeNumregs, \
+			cbTransaction cb, uint8_t unit) {
+	const uint8_t _header = 10;
+	if (readNumregs < 0x0001 || readNumregs > MODBUS_MAX_WORDS || writeNumregs < 0x0001 || writeNumregs > 0X0079 || !readValue || !writeValue) return 0;
+
+	free(this->_frame);
+	this->_len = _header + 2 * writeNumregs;
+	this->_frame = (uint8_t*) malloc(this->_len);
+    if (!this->_frame) {
+		this->_reply = Modbus::REPLY_OFF;
+		return 0;    
+	}
+	this->_frame[0] = Modbus::FC_READWRITE_REGS;
+	this->_frame[1] = readOffset >> 8;
+	this->_frame[2] = readOffset & 0x00FF;
+	this->_frame[3] = readNumregs >> 8;
+	this->_frame[4] = readNumregs & 0x00FF;
+
+	this->_frame[5] = writeOffset >> 8;
+	this->_frame[6] = writeOffset & 0x00FF;
+	this->_frame[7] = writeNumregs >> 8;
+	this->_frame[8] = writeNumregs & 0x00FF;
+    this->_frame[9] = this->_len - _header;
+
+    uint16_t* frame = (uint16_t*)(this->_frame + _header);
+    for (uint8_t i = 0; i < writeNumregs; i++) {
+        frame[i] = __swap_16(writeValue[i]);
+    }
+    return this->send(ip, HREG(readOffset), cb, unit, (uint8_t*)readValue);
+};

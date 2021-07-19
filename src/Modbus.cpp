@@ -126,6 +126,8 @@ void Modbus::slavePDU(uint8_t* frame) {
     FunctionCode fcode  = (FunctionCode)frame[0];
     uint16_t field1 = (uint16_t)frame[1] << 8 | (uint16_t)frame[2];
     uint16_t field2 = (uint16_t)frame[3] << 8 | (uint16_t)frame[4];
+    uint16_t field3 = 0;
+    uint16_t field4 = 0;
     uint16_t bytecount_calc;
     uint16_t k;
     ResultCode ex;
@@ -375,7 +377,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             uint16_t orMask = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
             uint16_t val = Reg(HREG(field1));
-            val = (val && field2) || (orMask && !field2);
+            val = (val & field2) | (orMask & !field2);
             if (!Reg(HREG(field1), val)) { //Check Address and execute (reg exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
@@ -387,6 +389,30 @@ void Modbus::slavePDU(uint8_t* frame) {
         }
         _reply = REPLY_ECHO;
         _onRequestSuccess(fcode, {HREG(field1), field2});
+        break;
+        case FC_READWRITE_REGS:
+            //field1 = readreg, field2 = read count, frame[9] = data lenght, header len = 10
+            //field3 = wtitereg, field4 = write count
+            field3 = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
+            field4 = (uint16_t)frame[7] << 8 | (uint16_t)frame[8];
+            ex = _onRequest(fcode, {HREG(field1), field2, HREG(field3), field4});
+            if (ex != EX_SUCCESS) {
+                exceptionResponse(fcode, ex);
+                return;
+            }
+            if (field2 < 0x0001 || field2 > MODBUS_MAX_WORDS || field4 < 0x0001 || field4 > MODBUS_MAX_WORDS || frame[9] != 2 * field4) { //Check value
+                exceptionResponse(fcode, EX_ILLEGAL_VALUE);
+                return;
+            }
+            if (!setMultipleWords((uint16_t*)(frame + 10), HREG(field1), field2)) {
+                exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                return;
+            }
+
+            if (!readWords(HREG(field3), field4, fcode))
+                return;
+
+            _onRequestSuccess(fcode, {HREG(field1), field2, HREG(field3), field4});
         break;
 
         default:
@@ -697,6 +723,7 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
     switch (fcode) {
         case FC_READ_REGS:
         case FC_READ_INPUT_REGS:
+        case FC_READWRITE_REGS:
             //field2 = numregs, frame[1] = data lenght, header len = 2
             if (frame[1] != 2 * field2) { //Check if data size matches
                 _reply = EX_DATA_MISMACH;

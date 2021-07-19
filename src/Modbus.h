@@ -148,6 +148,19 @@ class Modbus {
             struct {
                 uint16_t fileNum;
             };
+            RequestData(TAddress r1, uint16_t c1) {
+                reg = r1;
+                regCount = c1;
+            };
+            RequestData(TAddress r1, uint16_t c1, TAddress r2, uint16_t c2) {
+                regRead = r1;
+                regReadCount = c1;
+                regWrite = r2;
+                regWriteCount = c2;
+            };
+            RequestData(uint16_t f) {
+                fileNum = f;
+            };
         };
 
         ~Modbus();

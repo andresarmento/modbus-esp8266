@@ -59,6 +59,13 @@ bool ModbusRTUTemplate::begin(Stream* port) {
 
 bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     uint16_t newCrc = crc16(slaveId, frame, len);
+#if defined(MODBUSRTU_DEBUG)
+	for (uint8_t i=0 ; i < _len ; i++) {
+		Serial.print(_frame[i], HEX);
+		Serial.print(" ");
+	}
+	Serial.println();
+#endif
     if (_txPin >= 0) {
         digitalWrite(_txPin, _direct?HIGH:LOW);
         delayMicroseconds(1000);
