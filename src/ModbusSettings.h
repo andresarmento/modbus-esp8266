@@ -2,7 +2,7 @@
 /*
     Modbus Library for Arduino
     
-    Copyright (C) 2019-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2019-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
     
@@ -22,6 +22,7 @@ If defined Modbus registers will be shared across all Modbus* instances.
 If not defined each Modbus object will have own registers set.
 */
 #define MODBUS_GLOBAL_REGS
+//#define MODBUS_FREE_REGS
 
 /*
 #define ARDUINO_SAM_DUE_STL
@@ -47,6 +48,7 @@ If defined regisers count will be limited.
 //#define MODBUS_MAX_REGS     32
 
 #define MODBUS_ADD_REG
+//#define MODBUS_STRICT_REG
 #define MODBUS_MAX_FRAME   256
 //#define MODBUS_STATIC_FRAME
 #define MODBUS_MAX_WORDS 0x007D
@@ -63,7 +65,7 @@ If defined regisers count will be limited.
 #define MODBUSIP_MAX_READMS 100
 #define MODBUSIP_FULL
 
-#define MODBUSRTU_DEBUG
+//#define MODBUSRTU_DEBUG
 #define MODBUSRTU_BROADCAST 0
 #define MB_RESERVE 248
 #define MB_SERIAL_BUFFER 128

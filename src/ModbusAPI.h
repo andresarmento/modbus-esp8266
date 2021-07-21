@@ -2,7 +2,7 @@
     Modbus Library for Arduino
 	Modbus public API implementation
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 #include "Modbus.h"

@@ -2,7 +2,7 @@
     Modbus Library for Arduino
     Core functions
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 #include "ModbusSettings.h"
@@ -169,8 +169,8 @@ class Modbus {
         void cbDisable();
 
     private:
-	    bool readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
-	    bool readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
+	    ResultCode readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
+	    ResultCode readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
         
         bool setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
         bool setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numoutputs);

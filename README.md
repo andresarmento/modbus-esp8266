@@ -99,14 +99,16 @@ For more information about Modbus see:
 - Test: Frame accuracy to specefication
 - Documentation: Update
 - Examples: Revising
-- Remove unneeded register count check in private functions
-- Check startreg + numreg < 65535
++ Remove unneeded register count check in private functions
++ Check startreg + numreg < 65535
 + ModbusRTU: ESP32 SoftwareSerial support
 + ModbusRTU: Fix transaction callback remains assigned after request end
 + ModbusTCP: Free server connection in destructor
 + Declare global registers and callbacks as static members
 - Free global registers and callbacks on remove last Modbus instance
 + ModbusRTU: Refactor .task() for more relaibe processing of incoming data
+- ModbusRTU: Static buffer allocation.
+- Buffer/packet size limitation support
 + API: Declare all callbacks as std::function (for STL)
 - API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
 // 4.1.0
