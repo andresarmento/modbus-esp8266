@@ -21,14 +21,14 @@ bool resCallback(Modbus::ResultCode event, uint16_t, void*) {
   err = event;
 }
 
-Modbus::ResultCode readSync(uint16_t Address, uint16_t start, uint16_t num, uint16_t* buf) {
+Modbus::ResultCode readSync(uint8_t address, uint16_t start, uint16_t num, uint16_t* buf) {
   xSemaphoreTake(xMutex, portMAX_DELAY);
   if (mb.slave()){
     xSemaphoreGive(xMutex);
     return Modbus::EX_GENERAL_FAILURE;
   }
-  Serial.printf("SlaveID: %d Hreg %d\n", Address, start);
-  mb.readHreg(Address, start, buf, num, resCallback);
+  Serial.printf("SlaveID: %d Hreg %d\n", address, start);
+  mb.readHreg(address, start, buf, num, resCallback);
   while (mb.slave()) {
     vTaskDelay(1);
     mb.task();

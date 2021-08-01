@@ -1,6 +1,6 @@
-## [Concurent thread-safe access to Modbus object](ESP32-Concurent)
-
 This example is introduces how to use the library for ModbusRTU (typicaly over RS-485) to act as [master](master) or [slave](slave). Additionally thre is [example of master](WSP32-Concurent) device for multithread usage with ESP32.
+
+## [Concurent thread-safe access to Modbus object](ESP32-Concurent)
 
 ## [Simple ModbusRTU master](master)
 
@@ -33,8 +33,10 @@ void setBaudrte(uint32 baud);
 Set or override Serial baudrate. Must be called after .begin() for Non-ESP devices.
 
 ```c
-void master();
-void slave(uint8_t slaveId);
+void client();
+void server(uint8_t slaveId);
+void slave(); // Depricated
+void master(uint8_t slaveId); // Depricated
 ```
 
 - `slaveId` Modbus slave id to associate to.
@@ -42,7 +44,8 @@ void slave(uint8_t slaveId);
 Select and initialize master or slave mode to work. Switching between modes is not supported. Call is not returning error in this case but behaviour is unpredictible.
 
 ```c
-uint8_t slave();
+uint8_t client();
+uint8_t slave(); // Depricated
 ```
 
 - Slave mode: Returns configured slave id.

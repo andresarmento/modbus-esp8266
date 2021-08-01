@@ -68,10 +68,7 @@ For more information about Modbus see:
 + ModbusTLS: ESP8266 Client/Server
 + Test: TLS ESP8266 Client/Server
 + Examples: TLS added
-- Examples: TLS Certificate test Role extension and Alt-Name
-- Examples: TLS Add example explanation
 + ModbusTLS: ESP32 Client
-- Test: TLS ESP32 Client
 + Build with no STL dependency
 + Test: No-STL mode
 + ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
@@ -85,18 +82,13 @@ For more information about Modbus see:
 + Test: 0x14
 + 0x15 - Write File Records function
 + Test: 0x15
-- Examples: Basic file operations
-- Examples: FW update
++ Examples: FW update
+- Test: FW update
 + 0x16 - Write Mask Register function
 - Test: 0x16
 + 0x17 - Read/Write Registers function
 - Test: 0x17
 + API: Access control callback for individual Modbus function
-- Slave/Server: slavePDU use early exit by return where possible
-- Master/Client: Check frame size against header data where possible
-- Master/Client: Additional responce data validation
-- Test: push/pull functions
-- Test: Frame accuracy to specefication
 - Documentation: Update
 - Examples: Revising
 + Remove unneeded register count check in private functions
@@ -105,15 +97,24 @@ For more information about Modbus see:
 + ModbusRTU: Fix transaction callback remains assigned after request end
 + ModbusTCP: Free server connection in destructor
 + Declare global registers and callbacks as static members
-- Free global registers and callbacks on remove last Modbus instance
 + ModbusRTU: Refactor .task() for more relaibe processing of incoming data
-- ModbusRTU: Static buffer allocation.
-- Buffer/packet size limitation support
 + API: Declare all callbacks as std::function (for STL)
 - API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
+- Test: TLS ESP32 Client
+- Examples: TLS Certificate test Role extension and Alt-Name
+- Examples: TLS Add example explanation
+- ModbusRTU: Static buffer allocation.
+- Buffer/packet size limitation support
+- Test: Frame accuracy to specefication
+- Slave/Server: slavePDU use early exit by return where possible
+- Master/Client: Check frame size against header data where possible
+- Master/Client: Additional responce data validation
+- Free global registers and callbacks on remove last Modbus instance
+- Test: push/pull functions
+- Examples: Basic file operations
 ```
 
 ## Contributions

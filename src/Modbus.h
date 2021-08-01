@@ -109,10 +109,10 @@ class Modbus {
             FC_DIAGNOSTICS      = 0x08, // Not implemented. Diagnostics (Serial Line only)
             FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
             FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
-            FC_READ_FILE_REC    = 0x14, // Not implemented. Read File Record
-            FC_WRITE_FILE_REC   = 0x15, // Not implemented. Write File Record
-            FC_MASKWRITE_REG    = 0x16, // Not implemented. Mask Write Register
-            FC_READWRITE_REGS   = 0x17  // Not implemented. Read/Write Multiple registers
+            FC_READ_FILE_REC    = 0x14, // Read File Record
+            FC_WRITE_FILE_REC   = 0x15, // Write File Record
+            FC_MASKWRITE_REG    = 0x16, // Mask Write Register
+            FC_READWRITE_REGS   = 0x17  // Read/Write Multiple registers
         };
         //Exception Codes
         //Custom result codes used internally and for callbacks but never used for Modbus responce

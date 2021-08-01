@@ -69,7 +69,7 @@ void dropTransactions();
 
 Cancel all active transactions. Callback with result code `Modbus::EX_CANCEL` will be called for each transaction (if assigned).
 
-## [Server]](server.ino)
+## [Server](server.ino)
 
 ### Add local register
 ```c
