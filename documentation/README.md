@@ -4,11 +4,11 @@
 
 ## Where to get documentation for the library?
 
-[API](API.md)
-- [ModbusTCP](https://github.com/emelianov/modbus-esp8266/blob/master/examples/ESP-TCP)
-- [ModbusRTU](https://github.com/emelianov/modbus-esp8266/blob/master/examples/RTU/#Modbus-RTU-Specific-API
-- [Callbacks](https://github.com/emelianov/modbus-esp8266/blob/master/examples/Callback)
-- [Modbus Security](https://github.com/emelianov/modbus-esp8266/blob/master/examples/TLS)
+- [API](API.md)
+- [ModbusTCP](https://github.com/emelianov/modbus-esp8266/tree/master/examples/TCP-ESP#API)
+- [ModbusRTU](https://github.com/emelianov/modbus-esp8266/tree/master/examples/RTU#Modbus-RTU-Specific-API)
+- [Callbacks](https://github.com/emelianov/modbus-esp8266/tree/master/examples/Callback/#Callback-API)
+- [Modbus Security](https://github.com/emelianov/modbus-esp8266/tree/master/examples/TLS)
 
 ---
 
