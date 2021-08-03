@@ -38,3 +38,10 @@ void server(uint16_t port, const char* server_cert = nullptr, const char* server
 - `const char* ca_cert` Certificate of CA.
 
 All certificates must be in PEM format and can be stored in PROGMEM.
+
+# Modbus Library for Arduino
+### ModbusRTU, ModbusTCP and ModbusTCP Security
+
+(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+
+The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.

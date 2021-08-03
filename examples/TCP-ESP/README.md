@@ -1,9 +1,12 @@
-# Modbus Library for Arduino
-### ModbusRTU, ModbusTCP and ModbusTCP Security
-
 # ESP8266/ESP32 TCP Examples
 
 ## [Basic client](client.ino)
+
+## [Client with blocking read operation](clientSync.ino)
+
+## [Server](server.ino)
+
+### API
 
 ```c
 void client();
@@ -45,8 +48,6 @@ Sends corresponding Modbus read request to Modbus server at `ip`. Connection wit
 Returns transaction `id` or `0` on failure. Failure maens that client unable to send the request bacause of no connection to the Modbus server is established or other internal error.
 Note: read/write functions just sending requests to remote Modbus server. The functions returns immediate after request sent and doesn't waiting for result. That is `value` contains no result data on the function exit. `value` will be filled as responce arrive and processed by .task() function.
 
-## [Client with blocking read operation](clientSync.ino)
-
 ```c
 bool isTransaction(uint16_t id);
 ```
@@ -68,8 +69,6 @@ void dropTransactions();
 ```
 
 Cancel all active transactions. Callback with result code `Modbus::EX_CANCEL` will be called for each transaction (if assigned).
-
-## [Server](server.ino)
 
 ### Add local register
 ```c
@@ -128,3 +127,10 @@ bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 
 Function trying to remove `numregs` registers starting from `offset`. If some of registers within the range are not exists removal continues execution.
 Returns `true` if atleast one register in the range was removed.
+
+# Modbus Library for Arduino
+### ModbusRTU, ModbusTCP and ModbusTCP Security
+
+(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+
+The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.

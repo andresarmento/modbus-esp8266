@@ -12,7 +12,7 @@ The library is under active development. Visit [Releases](https://github.com/eme
 This library allows your Arduino board to communicate via Modbus protocol. The Modbus is a protocol
 used in industrial automation and also can be used in other areas, such as home automation.
 
-The Modbus generally uses serial RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP).
+The Modbus generally uses serial RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP and Modbus TCP Security).
 
 ## Features
 
@@ -20,8 +20,8 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
 * Operates in any combination of multiple instances of
   * [Modbus RTU server](examples/RTU)
   * [Modbus RTU client](examples/RTU)
-  * Modbus TCP server for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
-  * Modbus TCP client for [ESP8266/ESP32](examples/TCP) and [Ethernet library](examples/TCP-Ethernet)
+  * Modbus TCP server for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
+  * Modbus TCP client for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
   * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
   * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
 * Reply exception messages for all supported functions
@@ -38,7 +38,7 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
   * 0x15 - Write File Record
   * 0x16 - Mask Write Register
   * 0x17 - Read/Write multiple registers
-* [Callbacks](examples/callback) for
+* [Callbacks](examples/Callback) for
   * Client connect (Modbus TCP)
   * Server/Client disconnect (Modbus TCP)
   * Read specific Register
@@ -49,7 +49,7 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
 ## Notes
 
 1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-2. For API refer [API.md](https://github.com/emelianov/modbus-esp8266/blob/master/API.md)
+2. For API refer [documentation](documentation)
 3. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
 
 For more information about Modbus see:

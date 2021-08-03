@@ -2,6 +2,16 @@
 
 ## [Register read/write callback](onSet/onSet.ino)
 
+## [Use one callback function for multiple registers](onGetShared/onGetShared.ino)
+
+## [Incoming request callback (applicable to server/slave)](Request/Request.ino)
+
+## [Modbus TCP/TLS Incoming connection callback](onSet/onSet.ino)
+
+## [Modbus TCP/TLS Transaction result](Transactional/Transactional.ino)
+
+### Callback API
+
 ```c
 bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool onSetHreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -46,10 +56,6 @@ bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 
 
 Disconnect specific callback function or all callbacks of the type if cb=NULL.
 
-## [Use one callback function for multiple registers](onGetShared/onGetShared.ino)
-
-## [Incoming request callback (applicable to server/slave)](Request/Request.ino)
-
 ```c
 typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode fc, const Modbus::RequestData data);
 bool onRequest(cbRequest cb = _onRequestDefault);
@@ -74,8 +80,6 @@ union Modbus::RequestData {
 
 Callback function receives Modbus function code, structure `Modbus::RequestData` containing register type and offset (`TAddress` structure) and count of registers requested. The function should return [result code](#Result codes *Modbus::ResultCode*) `Modbus::EX_SUCCESS` to allow request processing or Modbus error code to block processing. This code will be returned to client/master.
 
-## [Modbus TCP/TLS Incoming connection callback](onSet/onSet.ino)
-
 ```c
 void onConnect(cbModbusConnect cb);
 void onDisonnect(cbModbusConnect cb);
@@ -88,8 +92,6 @@ typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
 - `ip` Client's address of incomig connection source. `INADDR_NONE` for on disconnect callback.
-
-## [Modbus TCP/TLS Transaction result](Transactional/Transactional.ino)
 
 ## Result codes *Modbus::ResultCode*
 
@@ -114,3 +116,7 @@ typedef bool (*cbModbusConnect)(IPAddress ip);
 
 # Modbus Library for Arduino
 ### ModbusRTU, ModbusTCP and ModbusTCP Security
+
+(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+
+The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.

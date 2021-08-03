@@ -25,30 +25,17 @@ ModbusRTU mb;
 xSemaphoreHandle xMutex;
 Modbus::ResultCode err;
 
-<<<<<<< HEAD
-bool resCallback(Modbus::ResultCode event, uint16_t, void*) {
-  err = event;
-}
-
 Modbus::ResultCode readSync(uint8_t address, uint16_t start, uint16_t num, uint16_t* buf) {
-=======
-Modbus::ResultCode readSync(uint16_t Address, uint16_t start, uint16_t num, uint16_t* buf) {
->>>>>>> ecd31675d9e3352382b7ce29a95c96ddcb571475
   xSemaphoreTake(xMutex, portMAX_DELAY);
-  if (mb.slave()){
+  if (mb.slave()) {
     xSemaphoreGive(xMutex);
     return Modbus::EX_GENERAL_FAILURE;
   }
-<<<<<<< HEAD
-  Serial.printf("SlaveID: %d Hreg %d\n", address, start);
-  mb.readHreg(address, start, buf, num, resCallback);
-=======
-  Serial.printf("SlaveID: %d Hreg %d\r\n", Address, start);
+  Serial.printf("SlaveID: %d Hreg %d\r\n", address, start);
   mb.readIreg(Address, start, buf, num, [](Modbus::ResultCode event, uint16_t, void*) {
     err = event;
     return true;
   });
->>>>>>> ecd31675d9e3352382b7ce29a95c96ddcb571475
   while (mb.slave()) {
     vTaskDelay(1);
     mb.task();
