@@ -75,3 +75,14 @@ If defined regisers count will be limited.
 
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL
+
+#if defined(ARDUINO_UNO) || defined(ARDUINO_LEONARDO)
+#undef MODBUS_MAX_REGS
+#undef MODBUSIP_MAX_TRANSACTIONS
+#undef MODBUS_MAX_WORDS
+#undef MODBUS_MAX_BITS
+#define MODBUS_MAX_REGS     32
+#define MODBUSIP_MAX_TRANSACTIONS 4
+#define MODBUS_MAX_WORDS 0x0020
+#define MODBUS_MAX_BITS 0x0200
+#endif

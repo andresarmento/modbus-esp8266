@@ -76,16 +76,19 @@ isIreg	KEYWORD2
 begin   KEYWORD2
 setBaudrate KEYWORD2
 readFileRec KEYWORD2
-writeFileRec KEYWORD2
-maskHreg KEYWORD2
-readWriteHreg KEYWORD2
-onFile KEYWORD2
-onRequest KEYWORD2
-onRequestSuccess KEYWORD2
-onSet KEYWORD2
-onGet KEYWORD2
+writeFileRec    KEYWORD2
+maskHreg    KEYWORD2
+readWriteHreg   KEYWORD2
+onFile  KEYWORD2
+onRequest   KEYWORD2
+onRequestSuccess    KEYWORD2
+onSet   KEYWORD2
+onGet   KEYWORD2
 removeOnSet KEYWORD2
 removeOnGet KEYWORD2
+Reg KEYWORD2
+addReg  KEYWORD2
+removeReg   KEYWORD2
 
 # Constants and Macros (LITERAL1)
 BIT_VAL	LITERAL1

@@ -4,15 +4,7 @@
 |If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
 |---|---|
 
-
-The library is under active development. Visit [Releases](https://github.com/emelianov/modbus-esp8266/releases) page for stable one.
-
----
-
-This library allows your Arduino board to communicate via Modbus protocol. The Modbus is a protocol
-used in industrial automation and also can be used in other areas, such as home automation.
-
-The Modbus generally uses serial RS-485 as physical layer (then called Modbus Serial) and TCP/IP via Ethernet or WiFi (Modbus TCP and Modbus TCP Security).
+For detailes on the library usage visit [documentation](documentation) section.
 
 ## Features
 
@@ -49,8 +41,7 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
 ## Notes
 
 1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-2. For API refer [documentation](documentation)
-3. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
+2. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
 
 For more information about Modbus see:
 
@@ -73,7 +64,6 @@ For more information about Modbus see:
 + Test: No-STL mode
 + ModbusTCP: ModbusEthernet - W5x00 Ethernet library support
 + Test: W5x00 support
-- Test: W5x00 with Ethernet library v1
 + API: Implementation code merge
 + API: Access ModbusTCP server by name
 + API: Set local multiple registers from an array
@@ -85,12 +75,11 @@ For more information about Modbus see:
 + Examples: FW update
 - Test: FW update
 + 0x16 - Write Mask Register function
-- Test: 0x16
++ Test: 0x16
 + 0x17 - Read/Write Registers function
-- Test: 0x17
++ Test: 0x17
 + API: Access control callback for individual Modbus function
-- Documentation: Update
-- Examples: Revising
++ Documentation: Update
 + Remove unneeded register count check in private functions
 + Check startreg + numreg < 65535
 + ModbusRTU: ESP32 SoftwareSerial support
@@ -99,7 +88,7 @@ For more information about Modbus see:
 + Declare global registers and callbacks as static members
 + ModbusRTU: Refactor .task() for more relaibe processing of incoming data
 + API: Declare all callbacks as std::function (for STL)
-- API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
++ API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
 // 4.1.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
@@ -108,13 +97,15 @@ For more information about Modbus see:
 - Examples: TLS Add example explanation
 - ModbusRTU: Static buffer allocation.
 - Buffer/packet size limitation support
-- Test: Frame accuracy to specefication
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation
 - Free global registers and callbacks on remove last Modbus instance
+- Test: Frame accuracy to specefication
 - Test: push/pull functions
+- Test: W5x00 with Ethernet library v1
 - Examples: Basic file operations
+- Examples: Revising
 ```
 
 ## Contributions

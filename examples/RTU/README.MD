@@ -8,9 +8,7 @@ This example is introduces how to use the library for ModbusRTU (typicaly over R
 
 ## [Sync ModbusRTU master](masterSync)
 
-
-
-### Modbus RTU Specific API
+## Modbus RTU Specific API
 
 ```c
 bool begin(SoftwareSerial* port, int16_t txPin=-1, bool direct=true);

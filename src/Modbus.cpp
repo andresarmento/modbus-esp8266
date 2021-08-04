@@ -380,28 +380,26 @@ void Modbus::slavePDU(uint8_t* frame) {
         break;
     #endif
         case FC_MASKWRITE_REG:
-            //field1 = reg, field2 = AND mask
+            //field1 = reg, field2 = AND mask, field3 = OR mask
             // Result = (Current Contents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
-            ex = _onRequest(fcode, {HREG(field1), field2});
+            field3 = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
+            ex = _onRequest(fcode, {HREG(field1), field2, field3});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
-            {
-                uint16_t orMask = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
-                uint16_t val = Reg(HREG(field1));
-                val = (val & field2) | (orMask & !field2);
-                if (!Reg(HREG(field1), val)) { //Check Address and execute (reg exists?)
-                    exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
-                    return;
-                }
-                if (Reg(HREG(field1)) != val) { //Check for failure
-                    exceptionResponse(fcode, EX_SLAVE_FAILURE);
-                    return;
-                }
+            field4 = Reg(HREG(field1));
+            field4 = (field4 & field2) | (field3 & ~field2);
+            if (!Reg(HREG(field1), field4)) { //Check Address and execute (reg exists?)
+                exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+                return;
+            }
+            if (Reg(HREG(field1)) != field4) { //Check for failure
+                exceptionResponse(fcode, EX_SLAVE_FAILURE);
+                return;
             }
             _reply = REPLY_ECHO;
-            _onRequestSuccess(fcode, {HREG(field1), field2});
+            _onRequestSuccess(fcode, {HREG(field1), field2, field3});
         break;
         case FC_READWRITE_REGS:
             //field1 = readreg, field2 = read count, frame[9] = data lenght, header len = 10
@@ -420,11 +418,11 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
-            if (!setMultipleWords((uint16_t*)(frame + 10), HREG(field1), field2)) {
+            if (!setMultipleWords((uint16_t*)(frame + 10), HREG(field3), field4)) {
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
-            ex = readWords(HREG(field3), field4, fcode);
+            ex = readWords(HREG(field1), field2, fcode);
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;

@@ -8,7 +8,7 @@
 
 #pragma once
 #include <ModbusRTU.h>
-#define HW_SERIAL
+//#define HW_SERIAL
 
 #define BSIZE 1024
 

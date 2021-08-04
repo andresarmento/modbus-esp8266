@@ -1,3 +1,11 @@
+/*
+    Modbus Library for ESP8266/ESP32
+    Functional tests
+    Copyright (C) 2019 Alexander Emelianov (a.m.emelianov@gmail.com)
+	https://github.com/emelianov/modbus-esp8266
+	This code is licensed under the BSD New License. See LICENSE.txt for more info.
+*/
+
 #include <ModbusRTU.h>
 #include <StreamBuf.h>
 #include "common.h"
@@ -19,14 +27,14 @@ uint16_t readHreg = 0;
 void setup() {
   Serial.begin(115200);
   Serial.println("ModbusRTU API test");
-#if defiend(HW_SERIAL)
+#if defined(HW_SERIAL)
   Serial1.begin(115200, SERIAL_8N1, 18, 19);
   Serial2.begin(115200, SERIAL_8N1, 22, 23);
 #endif
   delay(100);
-  master.begin(&P1);
+  master.begin((Stream*)&P1);
   master.master();
-  slave.begin(&P2);
+  slave.begin((Stream*)&P2);
   slave.slave(SLAVE_ID);
   slave.addHreg(HREG_ID);
 
@@ -41,13 +49,45 @@ readMultiple(SLAVE_ID, COIL(HREG_ID), 10);
 readMultiple(SLAVE_ID, IREG(HREG_ID), 10);
 readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
 
+// Read-Write Hreg
 {
+  Serial.print("Read-Write Hreg: ");
+  #define RD 0x10
+  #define WR 0x20
+  #define RW_COUNT 10
   uint16_t rd[10];
   uint16_t wr[10];
-  slave.addHreg(110, 10);
-  slave.addHreg(120, 20);
-  master.readWriteHreg(SLAVE_ID, 110, rd, 10, 120, wr, 10, cbWrite);
+  for (uint8_t i = 0; i < RW_COUNT; i++)
+    wr[i] = WR;
+  slave.addHreg(110, RD, RW_COUNT);
+  slave.addHreg(120, !WR, RW_COUNT);
+  master.readWriteHreg(SLAVE_ID, 110, rd, RW_COUNT, 120, wr, RW_COUNT, cbWrite);
   wait();
+  uint8_t i,j;
+  for (i = 0; i < RW_COUNT; i++)
+    if (rd[i] != RD)
+      break;
+  for (j = 0; j < RW_COUNT; j++)
+    if (slave.Hreg(120 + j) != WR)
+      break;
+  if (i < RW_COUNT || j < RW_COUNT)
+    Serial.println(" FAILED");
+  else
+    Serial.println(" PASSED");
+}
+// Mask Hreg
+{
+  Serial.print("Mask Hreg: ");
+  slave.addReg(HREG(130), 0xF0F0);
+  slave.addReg(HREG(131), 0x1212);
+  master.maskHreg(SLAVE_ID, 130, 0xF0F0, 0x0000, cbWrite);
+  wait();
+  master.maskHreg(SLAVE_ID, 131, 0xF2F2, 0x2525, cbWrite);
+  wait();
+  if (slave.Reg(HREG(130)) != 0xF0F0 || slave.Reg(HREG(131)) != 0x1717)
+    Serial.println(" FAILED");
+  else
+    Serial.println(" PASSED");
 }
 // Garbage read
   {

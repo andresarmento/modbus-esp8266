@@ -358,7 +358,7 @@ uint16_t ModbusAPI<T>::maskHreg(TYPEID slaveId, uint16_t offset, uint16_t andMas
 	this->_frame[4] = andMask & 0x00FF;
 	this->_frame[5] = orMask >> 8;
 	this->_frame[6] = orMask & 0x00FF;
-	return this->send(slaveId, HREG(offset), cb, unit, nullptr, cb);	
+	return this->send(slaveId, HREG(offset), cb, unit);	
 };
 
 template <class T> \

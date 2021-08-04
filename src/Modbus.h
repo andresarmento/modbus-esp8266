@@ -146,7 +146,9 @@ class Modbus {
                 uint16_t regWriteCount;
             };
             struct {
-                uint16_t fileNum;
+                TAddress regMask;
+                uint16_t andMask;
+                uint16_t orMask;
             };
             RequestData(TAddress r1, uint16_t c1) {
                 reg = r1;
@@ -158,8 +160,10 @@ class Modbus {
                 regWrite = r2;
                 regWriteCount = c2;
             };
-            RequestData(uint16_t f) {
-                fileNum = f;
+            RequestData(TAddress r1, uint16_t m1, uint16_t m2) {
+                regMask = r1;
+                andMask = m1;
+                orMask = m2;
             };
         };
 
@@ -311,7 +315,11 @@ typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, 
 //typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode func, TRegister* reg, uint16_t regCount); // Callback function Type
 #if defined(MODBUS_FILES)
 // Callback skeleton for file read/write
+#if defined(MODBUS_USE_STL)
+typedef std::function<Modbus::ResultCode(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> cbModbusFileOp;
+#else
 typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame);
+#endif
 #endif
 
 #if defined(ARDUINO_SAM_DUE_STL)

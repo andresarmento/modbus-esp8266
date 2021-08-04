@@ -46,8 +46,8 @@ class ModbusRTUTemplate : public Modbus {
 		inline void master() {client();}
 		void server(uint8_t serverId) {_slaveId = serverId;};
 		inline void slave(uint8_t slaveId) {server(slaveId);}
-		
-		uint8_t slave() { return _slaveId; }
+		uint8_t server() { return _slaveId; }
+		inline uint8_t slave() { return server(); }
 		uint32_t eventSource() override {return _slaveId;}
 };
 
