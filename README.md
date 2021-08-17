@@ -16,7 +16,6 @@ For detailes on the library usage visit [documentation](documentation) section.
   * Modbus TCP client for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
   * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
   * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
-* Reply exception messages for all supported functions
 * Modbus functions supported:
   * 0x01 - Read Coils
   * 0x02 - Read Input Status (Read Discrete Inputs)
@@ -30,13 +29,7 @@ For detailes on the library usage visit [documentation](documentation) section.
   * 0x15 - Write File Record
   * 0x16 - Mask Write Register
   * 0x17 - Read/Write multiple registers
-* [Callbacks](examples/Callback) for
-  * Client connect (Modbus TCP)
-  * Server/Client disconnect (Modbus TCP)
-  * Read specific Register
-  * Write specific Register
-  * Transaction result (Client side)
-  * Transaction start/end (Server side)
+* [Callbacks](examples/Callback) driven design
 
 ## Notes
 
@@ -54,7 +47,7 @@ For more information about Modbus see:
 ## Last Changes
 
 ```diff
-// 4.0.0-DEV
+// 4.0.0
 + ModbusTLS: Modbus TCP Security Client/Server
 + ModbusTLS: ESP8266 Client/Server
 + Test: TLS ESP8266 Client/Server
@@ -73,7 +66,7 @@ For more information about Modbus see:
 + 0x15 - Write File Records function
 + Test: 0x15
 + Examples: FW update
-- Test: FW update
++ Test: FW update
 + 0x16 - Write Mask Register function
 + Test: 0x16
 + 0x17 - Read/Write Registers function
@@ -89,12 +82,13 @@ For more information about Modbus see:
 + ModbusRTU: Refactor .task() for more relaibe processing of incoming data
 + API: Declare all callbacks as std::function (for STL)
 + API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
-// 4.1.0
+// 4.1.0-DEV
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
 - Test: TLS ESP32 Client
 - Examples: TLS Certificate test Role extension and Alt-Name
 - Examples: TLS Add example explanation
+- ModbusRTU: Add direction control pin for Stream
 - ModbusRTU: Static buffer allocation.
 - Buffer/packet size limitation support
 - Slave/Server: slavePDU use early exit by return where possible

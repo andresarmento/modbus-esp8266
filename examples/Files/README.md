@@ -4,6 +4,14 @@
 
 ModbusRTU client that pushes firmware to server node.
 
+How to use:
+* Connect to target node
+* Prapare binary image (Sketch - Export compiled binary)
+* Open http://<ESP-address>/ in browser
+* Choose firmware file
+* Press **Update firmware**
+* Debug information on update pregress is available in debug console 
+
 ## [Firmware update over ModbusRTU - Update target node](FW-Update-Source/FW-Update-Source.ino)
 
 ModbusRTU server that receives and flashes new firmware.
