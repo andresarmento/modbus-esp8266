@@ -38,8 +38,9 @@ void setup() {
   mb.client();
 }
 
+uint16_t res = 0;
+
 void loop() {
-  uint16_t res = 0;
   if (mb.isConnected(remote)) {   // Check if connection to Modbus Slave is established
     uint16_t trans = mb.readHreg(remote, REG, &res);  // Initiate Read Hreg from Modbus Server
     while(mb.isTransaction(trans)) {  // Check if transaction is active

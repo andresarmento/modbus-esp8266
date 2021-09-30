@@ -138,7 +138,7 @@ void updateUploadHandle() {
 void setup() {
     Serial.begin(115200);
     
-    WiFi.begin("E2", "fOlissio92");
+    WiFi.begin("SSID", "PASSWORD");
     while (WiFi.status() != WL_CONNECTED) {
       delay(1000);
       Serial.print(".");

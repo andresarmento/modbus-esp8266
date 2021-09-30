@@ -23,9 +23,6 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
 		uint16_t maxRegs = 0x007D;
-		#if defined(ESP32)
-		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-		#endif
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
