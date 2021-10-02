@@ -109,7 +109,7 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
 
 void ModbusRTUTemplate::task() {
 #if defined(ESP32)
-	vTaskDelay(0)
+	vTaskDelay(0);
 #endif
     if (_port->available() > _len) {
         _len = _port->available();
