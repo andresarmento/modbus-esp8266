@@ -189,19 +189,19 @@ IMPLEMENT_PULL(pullIreg, IREG, FC_READ_INPUT_REGS, 0x007D)
 IMPLEMENT_PULL(pullHregToIreg, IREG, FC_READ_REGS, 0x007D)
 IMPLEMENT_PULL(pullCoilToIsts, ISTS, FC_READ_COILS, 0x07D0)
 
-#define IMPLEMENT_PUSH(FNAME, REG, FUNC, MAXNUM) \
+#define IMPLEMENT_PUSH(FNAME, REG, FUNC, MAXNUM, FINT) \
 template <class T> \
 template <typename TYPEID> \
 uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t to, uint16_t from, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
 	if (!this->searchRegister(REG(from))) return false; \
-	this->writeSlaveWords(REG(from), to, numregs, Modbus::FUNC); \
+	this->FINT(REG(from), to, numregs, Modbus::FUNC); \
 	return this->send(ip, REG(from), cb, unit); \
 }
-IMPLEMENT_PUSH(pushCoil, COIL, FC_WRITE_COILS, 0x7D0)
-IMPLEMENT_PUSH(pushHreg, HREG, FC_WRITE_REGS, 0x007D)
-IMPLEMENT_PUSH(pushIregToHreg, IREG, FC_WRITE_REGS, 0x007D)
-IMPLEMENT_PUSH(pushIstsToCoil, ISTS, FC_WRITE_COILS, 0x07D0)
+IMPLEMENT_PUSH(pushCoil, COIL, FC_WRITE_COILS, 0x7D0, writeSlaveBits)
+IMPLEMENT_PUSH(pushHreg, HREG, FC_WRITE_REGS, 0x007D, writeSlaveWords)
+IMPLEMENT_PUSH(pushIregToHreg, IREG, FC_WRITE_REGS, 0x007D, writeSlaveWords)
+IMPLEMENT_PUSH(pushIstsToCoil, ISTS, FC_WRITE_COILS, 0x07D0, writeSlaveBits)
 
 template <class T> \
 bool ModbusAPI<T>::addHreg(uint16_t offset, uint16_t value, uint16_t numregs) {
