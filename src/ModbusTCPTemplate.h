@@ -205,9 +205,15 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		// WiFiServer.available() == Ethernet.accept() and should wrapped to get code to be compatible with Ethernet library (See ModbusTCP.h code).
 		// WiFiServer.available() != Ethernet.available() internally
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->accept())) {
+#if defined(MODBUSIP_DEBUG)
+			Serial.println("IP: Accepted");
+#endif
 			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())
 				continue;
+#if defined(MODBUSRTU_DEBUG)
+			Serial.println("IP: Connected");
+#endif
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#if defined(MODBUSIP_UNIQUE_CLIENTS)
 				// Disconnect previous connection from same IP if present
@@ -222,6 +228,10 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				if (n > -1) {
 					tcpclient[n] = currentClient;
 					BIT_SET(tcpServerConnection, n);
+#if defined(MODBUSIP_DEBUG)
+					Serial.print("IP: Conn ");
+					Serial.println(n);
+#endif
 					continue; // while
 				}
 			}
@@ -233,6 +243,11 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		if (!tcpclient[n]) continue;
 		if (!tcpclient[n]->connected()) continue;
 		while (millis() - taskStart < MODBUSIP_MAX_READMS &&  (size_t)tcpclient[n]->available() > sizeof(_MBAP)) {
+#if defined(MODBUSIP_DEBUG)
+			Serial.print(n);
+			Serial.print(": Bytes available ");
+			Serial.println(tcpclient[n]->available());
+#endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.

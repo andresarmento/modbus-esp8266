@@ -102,6 +102,15 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 	}
 	Serial.println();
 #endif
+#if defined(MODBUSRTU_REDE)
+	if (_txPin >= 0 || _rxPin >= 0) {
+    	if (_txPin >= 0)
+        	digitalWrite(_txPin, _direct?HIGH:LOW);
+		if (_rxPin >= 0)
+        	digitalWrite(_rxPin, _direct?HIGH:LOW);
+        delayMicroseconds(1000);
+	}
+#else
     if (_txPin >= 0) {
         digitalWrite(_txPin, _direct?HIGH:LOW);
 #if !defined(ESP32)
@@ -116,6 +125,15 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     _port->write(newCrc >> 8);	//Send CRC
     _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
+#if defined(MODBUSRTU_REDE)
+	if (_txPin >= 0 || _rxPin >= 0) {
+    	if (_txPin >= 0)
+        	digitalWrite(_txPin, _direct?LOW:HIGH);
+		if (_rxPin >= 0)
+        	digitalWrite(_rxPin, _direct?LOW:HIGH);
+        delayMicroseconds(1000);
+	}
+#else
     if (_txPin >= 0)
         digitalWrite(_txPin, _direct?LOW:HIGH);
     //delay(_t);
