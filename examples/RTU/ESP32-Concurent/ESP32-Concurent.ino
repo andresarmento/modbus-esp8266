@@ -32,7 +32,7 @@ Modbus::ResultCode readSync(uint8_t address, uint16_t start, uint16_t num, uint1
     return Modbus::EX_GENERAL_FAILURE;
   }
   Serial.printf("SlaveID: %d Hreg %d\r\n", address, start);
-  mb.readIreg(Address, start, buf, num, [](Modbus::ResultCode event, uint16_t, void*) {
+  mb.readIreg(address, start, buf, num, [](Modbus::ResultCode event, uint16_t, void*) {
     err = event;
     return true;
   });
