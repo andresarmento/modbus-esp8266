@@ -43,6 +43,32 @@ uint16_t ModbusRTUTemplate::crc16(uint8_t address, uint8_t* frame, uint8_t pduLe
     return (CRCHi << 8) | CRCLo;
 }
 
+uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits) {
+	// baud = baudrate of the serial port
+	// char_bits = size of 1 modbus character (defined a 11 bits in modbus specificacion)
+	// Returns: The minimum time between frames (defined as 3.5 characters time in modbus specification)
+	
+	// According to standard, the Modbus frame is always 11 bits long:
+	// 1 start + 8 data + 1 parity + 1 stop
+	// 1 start + 8 data + 2 stops
+	// And the minimum time between frames is defined as 3.5 characters time in modbus specification.
+	// This means the time between frames (in microseconds) should be calculated as follows:
+	// _t = 3.5 x 11 x 1000000 / baudrate = 38500000 / baudrate
+
+	// Eg: For 9600 baudrate _t = 38500000 / 9600 = 4010 us
+	// For baudrates grater than 19200 the _t should be fixed at 1750 us.
+	
+	// If the used modbus frame length is 10 bits (out of standard - 1 start + 8 data + 1 stop), then 
+	// it can be set using char_bits = 10.
+    
+	if (baud > 19200) {
+        return 1750UL;
+    } else {
+		return (3.5 * (uint32_t)char_bits * 1000000UL) / baud;
+    }
+}
+
+// Kept for backward compatibility
 void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
     if (baud > 19200) {
         _t = 2;
@@ -51,9 +77,19 @@ void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
     }
 }
 
+void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
+	// This function sets the inter frame time. This time is the time that task() waits before considering that the frame being transmitted on the RS485 bus has finished.
+	// If the interframe calculated by calculateMinimumInterFrameTime() is not enough, you can set the interframe time manually with this function. 
+	// The time must be set in micro seconds. 
+	// This is useful when you are receiving data as a slave and you notice that the slave is dividing a frame in two or more pieces (and obviously the CRC is failing on all pieces).
+	// This is because it is detecting an interframe time inbetween bytes of the frame and thus it interprets one single frame as two or more frames.
+	// In that case it is useful to be able to set a more "permissive" interframe time.
+    _t = t_us;
+}
+
 bool ModbusRTUTemplate::begin(Stream* port) {
     _port = port;
-    _t = 2;
+    _t = 1750UL;
     return true;
 }
 
@@ -92,7 +128,7 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
 		rawSend(slaveId, _frame, _len);
 		if (waitResponse && slaveId) {
         	_slaveId = slaveId;
-			_timestamp = millis();
+			_timestamp = micros();
 			_cb = cb;
 			_data = data;
 			_sentFrame = _frame;
@@ -113,25 +149,25 @@ void ModbusRTUTemplate::task() {
 #endif
     if (_port->available() > _len) {
         _len = _port->available();
-        t = millis();
+        t = micros();
     }
 	if (_len == 0) {
 		if (isMaster) cleanup();
 		return;
 	}
 	if (isMaster) {
-		if (millis() - t < _t) {
+		if (micros() - t < _t) {
 			return;
 		}
 	}
 	else {	// For slave wait for whole message to come (unless MODBUSRTU_MAX_READMS reached)
-		uint32_t taskStart = millis();
-    	while (millis() - t < _t) { // Wait data whitespace
+		uint32_t taskStart = micros();
+    	while (micros() - t < _t) { // Wait data whitespace
     		if (_port->available() > _len) {
         		_len = _port->available();
-        		t = millis();
+        		t = micros();
 			}
-			if (millis() - taskStart > MODBUSRTU_MAX_READMS) { // Prevent from task() executed too long
+			if (micros() - taskStart > MODBUSRTU_MAX_READ_US) { // Prevent from task() executed too long
 				return;
 			}
 		}
@@ -211,7 +247,7 @@ void ModbusRTUTemplate::task() {
 
 bool ModbusRTUTemplate::cleanup() {
 	// Remove timeouted request and forced event
-	if (_slaveId && (millis() - _timestamp > MODBUSRTU_TIMEOUT)) {
+	if (_slaveId && (micros() - _timestamp > MODBUSRTU_TIMEOUT_US)) {
 		if (_cb) {
 			_cb(Modbus::EX_TIMEOUT, 0, nullptr);
 			_cb = nullptr;
