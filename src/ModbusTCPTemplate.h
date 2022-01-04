@@ -77,6 +77,7 @@ class ModbusTCPTemplate : public Modbus {
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
+	public:
 	uint16_t send(String host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
@@ -164,7 +165,11 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::connect(IPAddress ip, uint16_t port) {
 		return false;
 	tcpclient[p] = new CLIENT();
 	BIT_CLEAR(tcpServerConnection, p);
+#if defined(ESP32) && defined(MODBUSIP_CONNECT_TIMEOUT)
+	if (!tcpclient[p]->connect(ip, port?port:defaultPort, MODBUSIP_CONNECT_TIMEOUT)) {
+#else
 	if (!tcpclient[p]->connect(ip, port?port:defaultPort)) {
+#endif
 		delete(tcpclient[p]);
 		tcpclient[p] = nullptr;
 		return false;
@@ -205,9 +210,15 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		// WiFiServer.available() == Ethernet.accept() and should wrapped to get code to be compatible with Ethernet library (See ModbusTCP.h code).
 		// WiFiServer.available() != Ethernet.available() internally
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->accept())) {
+#if defined(MODBUSIP_DEBUG)
+			Serial.println("IP: Accepted");
+#endif
 			CLIENT* currentClient = new CLIENT(c);
 			if (!currentClient || !currentClient->connected())
 				continue;
+#if defined(MODBUSRTU_DEBUG)
+			Serial.println("IP: Connected");
+#endif
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#if defined(MODBUSIP_UNIQUE_CLIENTS)
 				// Disconnect previous connection from same IP if present
@@ -222,6 +233,10 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				if (n > -1) {
 					tcpclient[n] = currentClient;
 					BIT_SET(tcpServerConnection, n);
+#if defined(MODBUSIP_DEBUG)
+					Serial.print("IP: Conn ");
+					Serial.println(n);
+#endif
 					continue; // while
 				}
 			}
@@ -233,6 +248,11 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		if (!tcpclient[n]) continue;
 		if (!tcpclient[n]->connected()) continue;
 		while (millis() - taskStart < MODBUSIP_MAX_READMS &&  (size_t)tcpclient[n]->available() > sizeof(_MBAP)) {
+#if defined(MODBUSIP_DEBUG)
+			Serial.print(n);
+			Serial.print(": Bytes available ");
+			Serial.println(tcpclient[n]->available());
+#endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.
@@ -247,32 +267,44 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				_len--;	// Subtract for read byte
 				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of packet
 					tcpclient[n]->read();
-			} else {
+			}
+			else {
 				free(_frame);
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
 					exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
 					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop packet
 						tcpclient[n]->read();
-				} else {
+				}
+				else {
 					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
 						exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
 						//while (tcpclient[n]->available())	// Drop all incoming (if any)
 						//	tcpclient[n]->read();
-					} else {
-						//if (tcpclient[n]->localPort() == serverPort) {
+					}
+					else {
+						_reply = EX_PASSTHROUGH;
+						// Note on _reply usage
+						// it's used and set as ReplyCode by slavePDU and as exceptionCode by masterPDU
+						if (_cbRaw) {
+							frame_arg_t transData = { _MBAP.unitId, tcpclient[n]->remoteIP(), __swap_16(_MBAP.transactionId), BIT_CHECK(tcpServerConnection, n) };
+							_reply = _cbRaw(_frame, _len, &transData);
+						}
 						if (BIT_CHECK(tcpServerConnection, n)) {
-							// Process incoming frame as slave
-							slavePDU(_frame);
-						} else {
+							if (_reply == EX_PASSTHROUGH)
+								slavePDU(_frame); // Process incoming frame as slave
+							else
+								_reply = REPLY_OFF;
+						}
+						else {
 							// Process reply to master request
-							_reply = EX_SUCCESS;
 							TTransaction* trans = searchTransaction(__swap_16(_MBAP.transactionId));
 							if (trans) { // if valid transaction id
 								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
-									// Procass incoming frame as master
-									masterPDU(_frame, trans->_frame, trans->startreg, trans->data);
-								} else {
+									if (_reply == EX_PASSTHROUGH)
+										masterPDU(_frame, trans->_frame, trans->startreg, trans->data);	// Procass incoming frame as master
+								}
+								else {
 									_reply = EX_UNEXPECTED_RESPONSE;
 								}
 								if (trans->cb) {
@@ -293,7 +325,6 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 					}
 				}
 			}
-			//if (tcpclient[n]->localPort() != serverPort) _reply = REPLY_OFF;	// No replay if it was responce to master
 			if (!BIT_CHECK(tcpServerConnection, n)) _reply = REPLY_OFF;	// No replay if it was responce to master
 			if (_reply != REPLY_OFF) {
 				_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP					

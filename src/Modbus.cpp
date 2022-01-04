@@ -898,6 +898,10 @@ Modbus::ResultCode Modbus::fileOp(Modbus::FunctionCode fc, uint16_t fileNum, uin
     }
     #endif
 
+bool Modbus::onRaw(cbRaw cb) {
+    _cbRaw = cb;
+    return true;
+}
 Modbus::ResultCode Modbus::_onRequestDefault(Modbus::FunctionCode fc, const RequestData data) {
     return EX_SUCCESS;
 }

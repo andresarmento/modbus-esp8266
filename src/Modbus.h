@@ -132,7 +132,8 @@ class Modbus {
             EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transaction
             EX_TIMEOUT              = 0xE4, // Custom. Operation not finished within reasonable time
             EX_CONNECTION_LOST      = 0xE5, // Custom. Connection with device lost
-            EX_CANCEL               = 0xE6  // Custom. Transaction/request canceled
+            EX_CANCEL               = 0xE6, // Custom. Transaction/request canceled
+            EX_PASSTHROUGH          = 0xE7  // Custom. Indicate to continue processing on callback exit
         };
         union RequestData {
             struct {
@@ -166,6 +167,28 @@ class Modbus {
                 orMask = m2;
             };
         };
+
+	    struct frame_arg_t {
+            bool to_server;
+            union {
+		        uint8_t slaveId;
+		        struct {
+			        uint8_t unitId;
+			        uint32_t ipaddr;
+			        uint16_t transactionId;
+		        };
+            };
+            frame_arg_t(uint8_t s, bool m = false) {
+                slaveId = s;
+                to_server = m;
+            };
+            frame_arg_t(uint8_t u, uint32_t a, uint16_t t, bool m = false) {
+                unitId = u;
+                ipaddr = a;
+                transactionId = t;
+                to_server = m;
+            };
+	    };
 
         ~Modbus();
 
@@ -264,14 +287,18 @@ class Modbus {
         virtual uint32_t eventSource() {return 0;}
         #if defined(MODBUS_USE_STL)
         typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest; // Callback function Type
+        typedef std::function<ResultCode(uint8_t*, uint8_t, void*)> cbRaw; // Callback function Type
         #else
         typedef ResultCode (*cbRequest)(FunctionCode fc, const RequestData data); // Callback function Type
+        typedef ResultCode (*cbRaw)(uint8_t*, uint8_t, void*); // Callback function Type
         #endif
 
     protected:
+        cbRaw _cbRaw = nullptr;
         static ResultCode _onRequestDefault(FunctionCode fc, const RequestData data);
         cbRequest _onRequest = _onRequestDefault;
     public:
+        bool onRaw(cbRaw cb = nullptr);
         bool onRequest(cbRequest cb = _onRequestDefault);
     #if defined (MODBUSAPI_OPTIONAL)
     protected:
