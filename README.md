@@ -68,6 +68,14 @@ For more information about Modbus see:
 - Test: W5x00 with Ethernet library v1
 - Examples: Basic file operations
 - Examples: Revising
++ Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
++ Settings: Set MODBUSIP_MAX_CLIENTS = 8 for ESP32
++ API: Raw Modbus frame processing functionality
++ Examples: True ModbusRTU to ModbusTCP Server bridge
+- ModbusTCP: ModbusAsyncTCP
+- Refactor connect by dns name (using native implementation for ESP32 etc)
+- ESP32: Fix dns resolver conflict when using Ethernet.h and WiFi.h together
+=======
 // 4.0.0
 + Support of all Arduino boards
 + ModbusTLS: ESP8266 Client/Server and ESP32 Client

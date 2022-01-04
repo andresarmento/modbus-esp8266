@@ -57,10 +57,24 @@ If defined regisers count will be limited.
 #define MODBUSTCP_PORT 	  502
 #define MODBUSTLS_PORT 	  802
 #define MODBUSIP_MAXFRAME 200
+
+/*
+ModbusTCP and ModbusTLS timeouts
 #define MODBUSIP_TIMEOUT 1000
+Outgoing request timeout
+#define MODBUSIP_CONNECT_TIMEOUT 1000
+ESP32 only. Outgoing connection attempt timeout
+*/
+#define MODBUSIP_TIMEOUT 1000
+//#define MODBUSIP_CONNECT_TIMEOUT 1000
+
 #define MODBUSIP_UNIT	  255
 #define MODBUSIP_MAX_TRANSACTIONS 16
-#define MODBUSIP_MAX_CLIENTS	  4
+#if defined(ESP32)
+#define MODBUSIP_MAX_CLIENTS    8
+#else
+#define MODBUSIP_MAX_CLIENTS    4
+#endif
 #define MODBUSIP_UNIQUE_CLIENTS
 #define MODBUSIP_MAX_READMS 100
 #define MODBUSIP_FULL
