@@ -42,7 +42,28 @@ uint16_t ModbusRTUTemplate::crc16(uint8_t address, uint8_t* frame, uint8_t pduLe
     }
     return (CRCHi << 8) | CRCLo;
 }
-
+/*
+uint16_t ModbusRTUTemplate::crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen) {
+  uint16_t temp, temp2, flag;
+  temp = 0xFFFF ^ address;
+  for (uint8_t i = 0; i < pduLen; i++)
+  {
+    temp = temp ^ frame[i];
+    for (uint8_t j = 1; j <= 8; j++)
+    {
+      flag = temp & 0x0001;
+      temp >>= 1;
+      if (flag)
+        temp ^= 0xA001;
+    }
+  }
+  // Reverse byte order. 
+  temp2 = temp >> 8;
+  temp = (temp << 8) | temp2;
+  temp &= 0xFFFF;
+  return temp;
+}
+*/
 uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits) {
 	// baud = baudrate of the serial port
 	// char_bits = size of 1 modbus character (defined a 11 bits in modbus specificacion)
@@ -70,11 +91,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 
 // Kept for backward compatibility
 void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
-    if (baud > 19200) {
-        _t = 2;
-    } else {
-        _t = (35000/baud) + 1;
-    }
+    setInterFrameTime(calculateMinimumInterFrameTime(baud));
 }
 
 void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
@@ -87,9 +104,15 @@ void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
     _t = t_us;
 }
 
-bool ModbusRTUTemplate::begin(Stream* port) {
+bool ModbusRTUTemplate::begin(Stream* port, int16_t txPin, bool direct) {
     _port = port;
     _t = 1750UL;
+    if (txPin >= 0) {
+	    _txPin = txPin;
+		_direct = direct;
+        pinMode(_txPin, OUTPUT);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
+    }
     return true;
 }
 
@@ -108,7 +131,9 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
         	digitalWrite(_txPin, _direct?HIGH:LOW);
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?HIGH:LOW);
+#if !defined(ESP32)
         delayMicroseconds(1000);
+#endif
 	}
 #else
     if (_txPin >= 0) {
@@ -116,7 +141,8 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 #if !defined(ESP32)
         delayMicroseconds(1000);
 #endif
-    }
+	}
+#endif
 #if defined(ESP32)
 	vTaskDelay(0);
 #endif
@@ -131,11 +157,11 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
         	digitalWrite(_txPin, _direct?LOW:HIGH);
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?LOW:HIGH);
-        delayMicroseconds(1000);
 	}
 #else
     if (_txPin >= 0)
         digitalWrite(_txPin, _direct?LOW:HIGH);
+#endif
     //delay(_t);
     return true;
 }

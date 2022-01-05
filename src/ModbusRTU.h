@@ -36,6 +36,7 @@ class ModbusRTUTemplate : public Modbus {
 		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
 		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
+		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
     public:
 		void setBaudrate(uint32_t baud = -1);
 		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
@@ -46,7 +47,7 @@ class ModbusRTUTemplate : public Modbus {
 		template <class T>
 		bool begin(T* port, int16_t txPin, int16_t rxPin, bool direct);
 #endif
-		bool begin(Stream* port);
+		bool begin(Stream* port, int16_t txPin = -1, bool direct = true);
         void task();
 		void client() { isMaster = true; };
 		inline void master() {client();}

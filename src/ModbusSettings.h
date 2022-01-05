@@ -44,8 +44,12 @@ If defined C STL will be used.
 /*
 #define MODBUS_MAX_REGS     32
 If defined regisers count will be limited.
-*/ 
-//#define MODBUS_MAX_REGS     32
+*/
+// Add limitation for specific STL implementation
+#if defined(MODBUS_USE_STL) && (defined(ESP8266) || defined(ESP32))
+#undef MODBUS_MAX_REGS
+#define MODBUS_MAX_REGS     4000
+#endif
 
 #define MODBUS_ADD_REG
 //#define MODBUS_STRICT_REG
@@ -90,7 +94,7 @@ ESP32 only. Outgoing connection attempt timeout
 #define MODBUSRTU_REDE
 Enable using separate pins for RE DE
 */
-#define MODBUSRTU_REDE
+//#define MODBUSRTU_REDE
 
 // Define for internal use. Do not change.
 #define MODBUSRTU_TIMEOUT_US 1000UL * MODBUSRTU_TIMEOUT

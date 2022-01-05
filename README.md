@@ -30,6 +30,9 @@ For detailes on the library usage visit [documentation](documentation) section.
   * 0x16 - Mask Write Register
   * 0x17 - Read/Write multiple registers
 * [Callbacks](examples/Callback) driven design
+* Real life complex examples:
+  * [ESP8266/ESP32 firmware over Modbus](examples/Files)
+  * [ModbusRTU to ModbusTCP bridge](examples/bridge)
 
 ## Notes
 
@@ -49,33 +52,37 @@ For more information about Modbus see:
 ```diff
 // 4.1.0-DEV
 + ModbusRTU: Add separate RE/DE pins control
-- ModbusRTU: Add direction control pin for Stream
-- ModbusRTU: Static buffer allocation.
-- API: Extend API to allow custom Modbus commands
-- STL: Add Reg count limitation to vector limit of 4000 for ESP (re-check first) 
-- ModbusTLS: ESP32 Server
-- Test: TLS ESP32 Server
-- Test: TLS ESP32 Client
-- Examples: TLS Certificate test Role extension and Alt-Name
-- Examples: TLS Add example explanation
++ ModbusRTU: Add direction control pin for Stream
++ STL: Add Reg count limitation to vector limit of 4000 for ESP
++ Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
++ Settings: Set MODBUSIP_MAX_CLIENTS = 8 for ESP32
++ API: Raw Modbus frame processing functionality
+- API: Alternative CRC calulation (reduced memory footprint)
++ Examples: True ModbusRTU to ModbusTCP Server bridge
+- ModbusTCP: Refactor connect by dns name (using native implementation for ESP32 etc)
+- ESP32: Fix dns resolver conflict when using Ethernet.h and WiFi.h together
++ ModbusRTU: Precise inter-frame interval control
++ API: Drop support of Ethernet library v1
++ Examples: Teknic ClearCore ArduinoWrapper examples added
+// 4.2.0-DEV
+- ModbusRTU: Static buffer allocation
+- Test: Frame accuracy to specefication
 - Buffer/packet size limitation support
 - Slave/Server: slavePDU use early exit by return where possible
 - Master/Client: Check frame size against header data where possible
 - Master/Client: Additional responce data validation
 - Free global registers and callbacks on remove last Modbus instance
-- Test: Frame accuracy to specefication
 - Test: push/pull functions
-- Test: W5x00 with Ethernet library v1
+// 4.3.0-DEV
+- ModbusTLS: ESP32 Server
+- Test: TLS ESP32 Server
+- Test: TLS ESP32 Client
+- Examples: TLS Certificate test Role extension and Alt-Name
+- Examples: TLS Add example explanation
+- ModbusTCP: ModbusAsyncTCP
+- API: Extend API to allow custom Modbus commands
 - Examples: Basic file operations
 - Examples: Revising
-+ Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
-+ Settings: Set MODBUSIP_MAX_CLIENTS = 8 for ESP32
-+ API: Raw Modbus frame processing functionality
-+ Examples: True ModbusRTU to ModbusTCP Server bridge
-- ModbusTCP: ModbusAsyncTCP
-- Refactor connect by dns name (using native implementation for ESP32 etc)
-- ESP32: Fix dns resolver conflict when using Ethernet.h and WiFi.h together
-=======
 // 4.0.0
 + Support of all Arduino boards
 + ModbusTLS: ESP8266 Client/Server and ESP32 Client
