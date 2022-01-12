@@ -4,11 +4,11 @@
 
 ModbusRTU master and slave examples
 
-## [TCP ESP8266/ESP32](TCP-ESP)
+## [TCP ESP8266/ESP32](TCP_ESP)
 
 ModbusTCP for ESP8266/ESP32 client and server examples
 
-## [TCP Ethernet W5x00](TCP-Ethernet)
+## [TCP Ethernet W5x00](TCP_Ethernet)
 
 ModbusTCP for W5x00 Ethernet library client and server examples (for all Arduino).
 

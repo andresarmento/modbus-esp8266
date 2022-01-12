@@ -21,7 +21,7 @@ MODBUSAPI_  Settings for API
 If defined Modbus registers will be shared across all Modbus* instances.
 If not defined each Modbus object will have own registers set.
 */
-#define MODBUS_GLOBAL_REGS
+//#define MODBUS_GLOBAL_REGS
 //#define MODBUS_FREE_REGS
 
 /*
