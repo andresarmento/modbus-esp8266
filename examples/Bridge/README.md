@@ -8,6 +8,10 @@ Basic 'Bridge'. Indeed this sample pulling data from Modbus Server and stores it
 
 Fullfunctional ModbusRTU to ModbusTCP bridge.
 
+## MultipeServerID
+
+Respond for multiple ModbusRTU IDs from single device
+
 ```c
 uint16_t rawRequest(id_ip, uint8_t* data, uint16_t len, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 uint16_t rawResponce(id_ip, uint8_t* data, uint16_t len, uint8_t unit = MODBUSIP_UNIT);
@@ -44,5 +48,6 @@ bool onRaw(cbRaw cb = nullptr);
 - `data` Pointer to frame_arg_t filled with frame header information
 *Returns:*
 - If a special error code `Modbus::EX_PASSTHROU` returned frame will be processed normally
+- If a special error code `Modbus::EX_FORCE_PROCESS` returned frame will be processed even if addressed to another Modbus unit
 - Any other return code disables normal frame processing. Only transactional callback will be executed (if any and transaction data is correct)
 The callback is executed only on Modbus frame with valid header and CRC.

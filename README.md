@@ -1,9 +1,6 @@
 # Modbus Library for Arduino
 ### ModbusRTU, ModbusTCP and ModbusTCP Security
 
-|If the library is helpful for your projects you can support it by a glass of beer|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z38SLGAKGM93S&source=url)|
-|---|---|
-
 For detailes on the library usage visit [documentation](documentation) section.
 
 ## Features
@@ -54,6 +51,7 @@ For more information about Modbus see:
 + API: Raw Modbus frame processing functionality
 + ModbusRTU: Precise inter-frame interval control
 + Examples: True ModbusRTU to ModbusTCP Server bridge
++ Examples: ModbusRTU respond to multiple ID from single device
 + ModbusRTU: Add direction control pin for Stream
 + STL: Add Reg count limitation to vector limit of 4000 (for ESP8266 and ESP32)
 + Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
