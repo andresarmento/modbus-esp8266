@@ -9,8 +9,8 @@ For detailes on the library usage visit [documentation](documentation) section.
 * Operates in any combination of multiple instances of
   * [Modbus RTU server](examples/RTU)
   * [Modbus RTU client](examples/RTU)
-  * Modbus TCP server for [ESP8266/ESP32](examples/TCP_ESP) and [Ethernet library](examples/TCP_Ethernet)
-  * Modbus TCP client for [ESP8266/ESP32](examples/TCP_ESP) and [Ethernet library](examples/TCP_Ethernet)
+  * Modbus TCP server for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
+  * Modbus TCP client for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
   * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
   * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
 * Modbus functions supported:
