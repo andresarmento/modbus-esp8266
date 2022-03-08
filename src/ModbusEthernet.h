@@ -1,11 +1,13 @@
 /*
     Modbus Library for Arduino
     ModbusTCP for W5x00 Ethernet
-    Copyright (C) 2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 
 #pragma once
+#if defined(MODBUSIP_USE_DNS)
 #include <Dns.h>
+#endif
 #include "ModbusAPI.h"
 #include "ModbusTCPTemplate.h"
 
@@ -21,6 +23,7 @@ class EthernetServerWrapper : public EthernetServer {
 };
 
 class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServerWrapper, EthernetClient>> {
+#if defined(MODBUSIP_USE_DNS)
     private:
     static IPAddress resolver (const char* host) {
         DNSClient dns;
@@ -36,4 +39,5 @@ class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServerWrapper,
     ModbusEthernet() : ModbusAPI() {
         resolve = resolver;
     }
+#endif
 };

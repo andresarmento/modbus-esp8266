@@ -44,16 +44,20 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
         #endif
         return p;
     }
+#if defined(MODBUSIP_USE_DNS)
     static IPAddress resolver (const char* host) {
         IPAddress remote_addr;
         if (WiFi.hostByName(host, remote_addr))
                 return remote_addr;
         return IPADDR_NONE;
     }
+#endif
     public:
     ModbusTLS() : ModbusAPI() {
         defaultPort = MODBUSTLS_PORT;
+#if defined(MODBUSIP_USE_DNS)
         resolve = resolver;
+#endif
     }
     #if defined(ESP8266)
 	void server(uint16_t port, const char* server_cert = nullptr, const char* server_private_key = nullptr, const char* ca_cert = nullptr) {
@@ -80,12 +84,14 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
     }
 
     #endif
+#if defined(MODBUSIP_USE_DNS)
     bool connect(String host, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         return connect(resolver(host.c_str()), port, client_cert, client_private_key, ca_cert);
     }
     bool connect(const char* host, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         return connect(resolver(host), port, client_cert, client_private_key, ca_cert);
     }
+#endif
     bool connect(IPAddress ip, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         if (!ip)
             return false;

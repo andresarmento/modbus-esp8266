@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
 	ModbusRTU
-    Copyright (C) 2019-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2019-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
@@ -17,6 +17,9 @@ class ModbusRTUTemplate : public Modbus {
 #endif
 		bool _direct = true;	// Transmit control logic (true=direct, false=inverse)
 		uint32_t _t;	// inter-frame delay in uS
+#if defined(MODBUSRTU_FLUSH_DELAY)
+		uint32_t _t1;	// char send time
+#endif
 		uint32_t t = 0;		// time sience last data byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
@@ -26,6 +29,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
 		uint16_t maxRegs = 0x007D;
+		uint8_t address = 0;
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
@@ -41,6 +45,7 @@ class ModbusRTUTemplate : public Modbus {
 		void setBaudrate(uint32_t baud = -1);
 		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
 		void setInterFrameTime(uint32_t t_us);
+		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
 		bool begin(T* port, int16_t txPin = -1, bool direct = true);
 #if defined(MODBUSRTU_REDE)
@@ -55,7 +60,7 @@ class ModbusRTUTemplate : public Modbus {
 		inline void slave(uint8_t slaveId) {server(slaveId);}
 		uint8_t server() { return _slaveId; }
 		inline uint8_t slave() { return server(); }
-		uint32_t eventSource() override {return _slaveId;}
+		uint32_t eventSource() override {return address;}
 };
 
 template <class T>
@@ -67,6 +72,9 @@ bool ModbusRTUTemplate::begin(T* port, int16_t txPin, bool direct) {
     baud = 9600;
     #endif
 	setInterFrameTime(calculateMinimumInterFrameTime(baud));
+#if defined(MODBUSRTU_FLUSH_DELAY)
+	_t1 = charSendTime(baud);
+#endif
     _port = port;
     if (txPin >= 0) {
 	    _txPin = txPin;

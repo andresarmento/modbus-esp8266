@@ -2,7 +2,7 @@
 /*
     Modbus Library for Arduino
     
-    Copyright (C) 2019-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2019-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
     
@@ -21,7 +21,7 @@ MODBUSAPI_  Settings for API
 If defined Modbus registers will be shared across all Modbus* instances.
 If not defined each Modbus object will have own registers set.
 */
-//#define MODBUS_GLOBAL_REGS
+#define MODBUS_GLOBAL_REGS
 //#define MODBUS_FREE_REGS
 
 /*
@@ -83,6 +83,12 @@ ESP32 only. Outgoing connection attempt timeout
 #define MODBUSIP_MAX_READMS 100
 #define MODBUSIP_FULL
 #define MODBUSIP_DEBUG
+/*
+Allows to use DNS names as target
+Otherwise IP addresses only must be used
+#define MODBUS_IP_USE_DNS
+*/
+//#define MODBUS_IP_USE_DNS
 
 //#define MODBUSRTU_DEBUG
 #define MODBUSRTU_BROADCAST 0
@@ -99,6 +105,15 @@ Enable using separate pins for RE DE
 // Define for internal use. Do not change.
 #define MODBUSRTU_TIMEOUT_US 1000UL * MODBUSRTU_TIMEOUT
 #define MODBUSRTU_MAX_READ_US 1000UL * MODBUSRTU_MAX_READMS
+
+/*
+#defone MODBUSRTU_FLUSH_DELAY 1
+Set extraa delay after serial buffer flush before changing RE/DE pin state.
+Specified in chars. That is 1 is means to add delay enough to send 1 char at current port baudrate
+*/
+//#define MODBUSRTU_FLUSH_DELAY 1
+
+#define MODBUSRTU_REDE_SWITCH_US 1000
 
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL

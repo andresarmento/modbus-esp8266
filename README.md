@@ -50,21 +50,21 @@ For more information about Modbus see:
 ## Last Changes
 
 ```diff
-// 4.1.0-DEV
-+ ModbusRTU: Add separate RE/DE pins control
+// 4.1.0-RC1
++ API: Raw Modbus frame processing functionality
++ ModbusRTU: Precise inter-frame interval control
++ Examples: True ModbusRTU to ModbusTCP Server bridge
 + ModbusRTU: Add direction control pin for Stream
-+ STL: Add Reg count limitation to vector limit of 4000 for ESP
++ STL: Add Reg count limitation to vector limit of 4000 (for ESP8266 and ESP32)
 + Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
 + Settings: Set MODBUSIP_MAX_CLIENTS = 8 for ESP32
-+ API: Raw Modbus frame processing functionality
-- API: Alternative CRC calulation (reduced memory footprint)
-+ Examples: True ModbusRTU to ModbusTCP Server bridge
-- ModbusTCP: Refactor connect by dns name (using native implementation for ESP32 etc)
-- ESP32: Fix dns resolver conflict when using Ethernet.h and WiFi.h together
-+ ModbusRTU: Precise inter-frame interval control
++ ModbusTCP: Make using DNS names optional feature
++ ModbusRTU: Add separate RE/DE pins control optional feature
 + API: Drop support of Ethernet library v1
 + Examples: Teknic ClearCore ArduinoWrapper examples added
++ ModbusRTU: Flush extra delay optional feature
 // 4.2.0-DEV
+- API: Alternative CRC calulation (reduced memory footprint)
 - ModbusRTU: Static buffer allocation
 - Test: Frame accuracy to specefication
 - Buffer/packet size limitation support
@@ -73,6 +73,7 @@ For more information about Modbus see:
 - Master/Client: Additional responce data validation
 - Free global registers and callbacks on remove last Modbus instance
 - Test: push/pull functions
+- ModbusTCP: Refactor connect by dns name (using native implementation for ESP32 etc)
 // 4.3.0-DEV
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server

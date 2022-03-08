@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
     ModbusRTU implementation
-    Copyright (C) 2019-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Copyright (C) 2019-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 	https://github.com/emelianov/modbus-esp8266
 	This code is licensed under the BSD New License. See LICENSE.txt for more info.
 */
@@ -64,6 +64,11 @@ uint16_t ModbusRTUTemplate::crc16_alt(uint8_t address, uint8_t* frame, uint8_t p
   return temp;
 }
 */
+
+uint32_t ModbusRTUTemplate::charSendTime(uint32_t baud, uint8_t char_bits) {
+	return (uint32_t)char_bits * 1000000UL / baud;
+}
+
 uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits) {
 	// baud = baudrate of the serial port
 	// char_bits = size of 1 modbus character (defined a 11 bits in modbus specificacion)
@@ -85,7 +90,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 	if (baud > 19200) {
         return 1750UL;
     } else {
-		return (3.5 * (uint32_t)char_bits * 1000000UL) / baud;
+		return 3.5 * charSendTime(baud, char_bits);
     }
 }
 
@@ -107,6 +112,9 @@ void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
 bool ModbusRTUTemplate::begin(Stream* port, int16_t txPin, bool direct) {
     _port = port;
     _t = 1750UL;
+#if defined(MODBUSRTU_FLUSH_DELAY)
+	_t1 = charSendTime(0);
+#endif
     if (txPin >= 0) {
 	    _txPin = txPin;
 		_direct = direct;
@@ -132,14 +140,14 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?HIGH:LOW);
 #if !defined(ESP32)
-        delayMicroseconds(1000);
+        delayMicroseconds(MODBUSRTU_REDE_SWITCH_US);
 #endif
 	}
 #else
     if (_txPin >= 0) {
         digitalWrite(_txPin, _direct?HIGH:LOW);
 #if !defined(ESP32)
-        delayMicroseconds(1000);
+        delayMicroseconds(MODBUSRTU_REDE_SWITCH_US);
 #endif
 	}
 #endif
@@ -153,16 +161,22 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     _port->flush();
 #if defined(MODBUSRTU_REDE)
 	if (_txPin >= 0 || _rxPin >= 0) {
+#if defined(MODBUSRTU_FLUSH_DELAY)
+		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
+#endif
     	if (_txPin >= 0)
         	digitalWrite(_txPin, _direct?LOW:HIGH);
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?LOW:HIGH);
 	}
 #else
-    if (_txPin >= 0)
-        digitalWrite(_txPin, _direct?LOW:HIGH);
+    if (_txPin >= 0) {
+#if defined(MODBUSRTU_FLUSH_DELAY)
+		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
 #endif
-    //delay(_t);
+        digitalWrite(_txPin, _direct?LOW:HIGH);
+	}
+#endif
     return true;
 }
 
@@ -219,7 +233,7 @@ void ModbusRTUTemplate::task() {
 	}
 
 	bool valid_frame = true;
-    uint8_t address = _port->read(); //first byte of frame = address
+    address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
     if (isMaster && _slaveId == 0) {    // Check if slaveId is set
 		valid_frame = false;
@@ -256,24 +270,20 @@ void ModbusRTUTemplate::task() {
     uint16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
-        free(_frame);
-        _frame = nullptr;
-		_len = 0;
-		if (isMaster) cleanup();
-        return;
+		goto cleanup;
     }
 	_reply = EX_PASSTHROUGH;
 	if (_cbRaw) {
 		frame_arg_t header_data = { address, !isMaster };
 		_reply = _cbRaw(_frame, _len, (void*)&header_data);
 	}
-	if (!valid_frame) {
+	if (!valid_frame && _reply != EX_FORCE_PROCESS) {
 		goto cleanup;
 	}
     if (isMaster) {
         if ((_frame[0] & 0x7F) == _sentFrame[0]) { // Check if function code the same as requested
 			// Procass incoming frame as master
-			if (_reply == EX_PASSTHROUGH)
+			if (_reply == EX_PASSTHROUGH || _reply == EX_FORCE_PROCESS)
 				masterPDU(_frame, _sentFrame, _sentReg, _data);
             if (_cb) {
 			    _cb((ResultCode)_reply, 0, nullptr);
@@ -286,12 +296,12 @@ void ModbusRTUTemplate::task() {
 		}
         _reply = Modbus::REPLY_OFF;    // No reply if master
     } else {
-		if (_reply == EX_PASSTHROUGH) {
+		if (_reply == EX_PASSTHROUGH || _reply == EX_FORCE_PROCESS) {
         	slavePDU(_frame);
         	if (address == MODBUSRTU_BROADCAST)
 				_reply = Modbus::REPLY_OFF;    // No reply for Broadcasts
     		if (_reply != Modbus::REPLY_OFF)
-				rawSend(_slaveId, _frame, _len);
+				rawSend(address, _frame, _len);
 		}
     }
     // Cleanup

@@ -2,7 +2,7 @@
     Modbus Library for Arduino
     Core functions
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
 #include "ModbusSettings.h"
@@ -133,7 +133,8 @@ class Modbus {
             EX_TIMEOUT              = 0xE4, // Custom. Operation not finished within reasonable time
             EX_CONNECTION_LOST      = 0xE5, // Custom. Connection with device lost
             EX_CANCEL               = 0xE6, // Custom. Transaction/request canceled
-            EX_PASSTHROUGH          = 0xE7  // Custom. Indicate to continue processing on callback exit
+            EX_PASSTHROUGH          = 0xE7, // Custom. Raw callback. Indicate to normal processing on callback exit
+            EX_FORCE_PROCESS        = 0xE8  // Custom. Raw callback. Indicate to force processing on callback exit
         };
         union RequestData {
             struct {

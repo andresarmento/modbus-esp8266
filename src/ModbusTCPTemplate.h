@@ -91,14 +91,16 @@ class ModbusTCPTemplate : public Modbus {
 	ModbusTCPTemplate();
 	~ModbusTCPTemplate();
 	bool isTransaction(uint16_t id);
+#if defined(MODBUSIP_USE_DNS)
 	bool isConnected(String host);
 	bool isConnected(const char* host);
-	bool isConnected(IPAddress ip);
 	bool connect(String host, uint16_t port = 0);
 	bool connect(const char* host, uint16_t port = 0);
-	bool connect(IPAddress ip, uint16_t port = 0);
 	bool disconnect(String host);
 	bool disconnect(const char* host);
+#endif
+	bool isConnected(IPAddress ip);
+	bool connect(IPAddress ip, uint16_t port = 0);
 	bool disconnect(IPAddress ip);
 	// ModbusTCP
 	void server(uint16_t port = 0);
@@ -143,6 +145,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::server(uint16_t port) {
 	tcpserver->begin();
 }
 
+#if defined(MODBUSIP_USE_DNS)
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::connect(String host, uint16_t port) {
     return connect(resolve(host.c_str()), port);
@@ -152,6 +155,7 @@ template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::connect(const char* host, uint16_t port) {
     return connect(resolve(host), port);
 }
+#endif
 
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::connect(IPAddress ip, uint16_t port) {
@@ -491,7 +495,7 @@ template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::isTransaction(uint16_t id) {
 	return searchTransaction(id) != nullptr;
 }
-
+#if defined(MODBUSIP_USE_DNS)
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::isConnected(String host) {
 	return isConnected(resolve(host.c_str()));
@@ -501,6 +505,7 @@ template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::isConnected(const char* host) {
 	return isConnected(resolve(host));
 }
+#endif
 
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::isConnected(IPAddress ip) {
@@ -515,6 +520,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::autoConnect(bool enabled) {
 	autoConnectMode = enabled;
 }
 
+#if defined(MODBUSIP_USE_DNS)
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(String host) {
 	return disconnect(resolve(host.c_str()));
@@ -524,6 +530,7 @@ template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(const char* host) {
 	return disconnect(resolve(host));
 }
+#endif
 
 template <class SERVER, class CLIENT>
 bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(IPAddress ip) {
