@@ -118,6 +118,12 @@ Specified in chars. That is 1 is means to add delay enough to send 1 char at cur
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL
 
+// Workaround for RP2040 flush() bug
+#if defined(ARDUINO_ARCH_RP2040)
+#define MODBUSRTU_FLUSH_DELAY 1
+#endif
+
+// Limit resources usage for entry level boards
 #if defined(ARDUINO_UNO) || defined(ARDUINO_LEONARDO)
 #undef MODBUS_MAX_REGS
 #undef MODBUSIP_MAX_TRANSACTIONS
