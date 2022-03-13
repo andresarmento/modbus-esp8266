@@ -262,7 +262,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.
 				while (tcpclient[n]->available())	// Drop all incoming if wrong packet
 					tcpclient[n]->read();
-					continue;
+				continue;
 			}
 			_len = __swap_16(_MBAP.length);
 			_len--; // Do not count with last byte from MBAP
