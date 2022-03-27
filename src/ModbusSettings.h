@@ -82,7 +82,7 @@ ESP32 only. Outgoing connection attempt timeout
 #define MODBUSIP_UNIQUE_CLIENTS
 #define MODBUSIP_MAX_READMS 100
 #define MODBUSIP_FULL
-#define MODBUSIP_DEBUG
+//#define MODBUSIP_DEBUG
 /*
 Allows to use DNS names as target
 Otherwise IP addresses only must be used

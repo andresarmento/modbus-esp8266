@@ -64,7 +64,7 @@ class ModbusTCPTemplate : public Modbus {
 	#else
 	DArray<TTransaction, 2, 2> _trans;
 	#endif
-	int16_t		transactionId = 0;  // Last started transaction. Increments on unsuccessful transaction start too.
+	int16_t		transactionId = 1;  // Last started transaction. Increments on unsuccessful transaction start too.
 	int8_t n = -1;
 	bool autoConnectMode = false;
 	uint16_t serverPort = 0;
@@ -115,6 +115,7 @@ class ModbusTCPTemplate : public Modbus {
 	uint32_t eventSource() override;
 	void autoConnect(bool enabled = true);
 	void dropTransactions();
+	uint16_t setTransactionId(uint16_t);
 	#if defined(MODBUS_USE_STL)
 	static IPAddress defaultResolver(const char*) {return IPADDR_NONE;}
 	#else
@@ -371,19 +372,24 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 #endif
 	if (!ip)
 		return 0;
-	p = getSlave(ip);
+	if (tcpserver) {
+		p = getMaster(ip);
+	} else {
+		p = getSlave(ip);
+	}
 	if (p == -1 || !tcpclient[p]->connected()) {
 		if (!autoConnectMode)
 			goto cleanup;
 		if (!connect(ip))
 			goto cleanup;
 	}
-	transactionId++;
-	if (!transactionId) transactionId = 1;
 	_MBAP.transactionId	= __swap_16(transactionId);
 	_MBAP.protocolId	= __swap_16(0);
 	_MBAP.length		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
+	transactionId++;
+	if (!transactionId)
+		transactionId = 1;
 	bool writeResult;
 	{	// for sbuf isolation
 		size_t send_len = _len + sizeof(_MBAP.raw);
@@ -569,3 +575,12 @@ ModbusTCPTemplate<SERVER, CLIENT>::~ModbusTCPTemplate() {
 		tcpclient[i] = nullptr;
 	}
 }
+
+template <class SERVER, class CLIENT>
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::setTransactionId(uint16_t t) {
+	transactionId = t;
+	if (!transactionId)
+		transactionId = 1;
+	return transactionId;
+}
+
