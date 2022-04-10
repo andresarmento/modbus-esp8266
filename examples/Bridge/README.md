@@ -1,16 +1,20 @@
 # Bridge functions
 
-## Basic
+## [Basic](basic/basic.ino)
 
 Basic 'Bridge'. Indeed this sample pulling data from Modbus Server and stores it to local registers. Local registers can be accessed via Modbus Client instance that running aside.
 
-## True
+## [ModbusRTU to ModbusTCP bridge](true/true.ino)
 
 Fullfunctional ModbusRTU to ModbusTCP bridge.
 
-## MultipeServerID
+## [Multiple Server ID](MultipeServerID/MultipeServerID.ino)
 
 Respond for multiple ModbusRTU IDs from single device
+
+## [ModbusTCP to Modbus RTU Simulator](TCP-to-RTU-Simulator/TCP-to-RTU-Simulator.ino)
+
+Fullfunctional ModbusTCP to ModbusRTU bridge with on-device ModbusRTU simulator
 
 ```c
 uint16_t rawRequest(id_ip, uint8_t* data, uint16_t len, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
@@ -22,7 +26,12 @@ uint16_t errorResponce(id_ip, Modbus::FunctionCode fn, Modbus::ResultCode excode
 - `len` Byte count to send
 - `unit` UnitId (ModbusTCP/TLS only)
 - `fn` function code in responce
-- `excode` Exceprion code in responce
+- `excode` Exception code in responce
+
+```c
+uint16_t setTransactionId(uint16_t id);
+```
+- `id` Value to replace transaction id sequence (ModbusTCP/TLS only)
 
 ```c
 union frame_arg_t {

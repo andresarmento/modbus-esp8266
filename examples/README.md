@@ -24,7 +24,7 @@ Examples of using callback functions.
 
 Modbus file operations examples.
 
-## [Modbus RTU to Modbus TCP bridge](bridge)
+## [ModbusRTU to ModbusTCP bridge and related functions](bridge)
 
 Very basic example of accessing ModbusRTU slave device connected to ESP8266/ESP32 via ModbusTCP server.
 
