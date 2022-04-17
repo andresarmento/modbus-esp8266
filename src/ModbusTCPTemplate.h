@@ -387,9 +387,6 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 	_MBAP.protocolId	= __swap_16(0);
 	_MBAP.length		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
-	transactionId++;
-	if (!transactionId)
-		transactionId = 1;
 	bool writeResult;
 	{	// for sbuf isolation
 		size_t send_len = _len + sizeof(_MBAP.raw);
@@ -413,6 +410,9 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 		_frame = nullptr;
 	}
 	result = transactionId;
+	transactionId++;
+	if (!transactionId)
+		transactionId = 1;
 	cleanup:
 	free(_frame);
 	_frame = nullptr;

@@ -8,7 +8,7 @@ Basic 'Bridge'. Indeed this sample pulling data from Modbus Server and stores it
 
 Fullfunctional ModbusRTU to ModbusTCP bridge.
 
-## [Multiple Server ID](MultipeServerID/MultipeServerID.ino)
+## [Multiple Server ID](MultipleServerID/MultipleServerID.ino)
 
 Respond for multiple ModbusRTU IDs from single device
 
