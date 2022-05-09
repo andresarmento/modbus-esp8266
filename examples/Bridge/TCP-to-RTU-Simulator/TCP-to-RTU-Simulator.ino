@@ -58,24 +58,24 @@ Modbus::ResultCode cbTcpRaw(uint8_t* data, uint8_t len, void* custom) {
 
   if (transRunning) { // Note that we can't process new requests from TCP-side while waiting for responce from RTU-side.
     tcp.setTransactionId(transRunning); // Set transaction id as per incoming request
-    tcp.errorResponce(src->ipaddr, (Modbus::FunctionCode)data[0], Modbus::EX_SLAVE_DEVICE_BUSY);
+    tcp.errorResponce(IPAddress((src->ipaddr), (Modbus::FunctionCode)data[0], Modbus::EX_SLAVE_DEVICE_BUSY);
     return Modbus::EX_SLAVE_DEVICE_BUSY;
   }
 
-  rtu.rawRequest(slaveRunning, data, len, cbRtuTrans);
+  rtu.rawRequest(src->unitId, data, len, cbRtuTrans);
   
   if (src->unitId) {
     tcp.setTransactionId(transRunning); // Set transaction id as per incoming request
 
     //uint16_t succeed = tcp.rawResponce(src->ipaddr, data, len, slaveRunning);
 
-    tcp.errorResponce(src->ipaddr, (Modbus::FunctionCode)data[0], Modbus::EX_ACKNOWLEDGE);
+    tcp.errorResponce(IPAddress(src->ipaddr), (Modbus::FunctionCode)data[0], Modbus::EX_ACKNOWLEDGE);
     return Modbus::EX_ACKNOWLEDGE;
   }
   
-  srcIp = src->ipaddr;
+  srcIp = IPAddress(src->ipaddr);
   
-  slaveRunning = src->slaveId;
+  slaveRunning = src->unitId;
   
   transRunning = src->transactionId;
   

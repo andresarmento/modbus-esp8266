@@ -193,8 +193,8 @@ class Modbus {
 
         ~Modbus();
 
-        void cbEnable(bool state = true);
-        void cbDisable();
+        bool cbEnable(const bool state = true);
+        bool cbDisable();
 
     private:
 	    ResultCode readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);

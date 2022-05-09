@@ -824,11 +824,13 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
     }
 }
 
-void Modbus::cbEnable(bool state) {
+bool Modbus::cbEnable(const bool state) {
+    const bool old_state = state;
     cbEnabled = state;
+    return old_state;
 }
-void Modbus::cbDisable() {
-    cbEnable(false);
+bool Modbus::cbDisable() {
+    return cbEnable(false);
 }
 Modbus::~Modbus() {
     free(_frame);

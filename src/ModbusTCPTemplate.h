@@ -219,8 +219,10 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			Serial.println("IP: Accepted");
 #endif
 			CLIENT* currentClient = new CLIENT(c);
-			if (!currentClient || !currentClient->connected())
+			if (!currentClient || !currentClient->connected()) {
+				delete currentClient;
 				continue;
+			}
 #if defined(MODBUSRTU_DEBUG)
 			Serial.println("IP: Connected");
 #endif
@@ -544,7 +546,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(IPAddress ip) {
 		return false;
 	int8_t p = getSlave(ip);
 	if (p != -1) {
-		tcpclient[p]->stop();
+		//tcpclient[p]->stop();
 		delete tcpclient[p];
 		tcpclient[p] = nullptr;
 		return true;
@@ -565,6 +567,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::dropTransactions() {
 template <class SERVER, class CLIENT>
 ModbusTCPTemplate<SERVER, CLIENT>::~ModbusTCPTemplate() {
 	free(_frame);
+	_frame = nullptr;
 	dropTransactions();
 	cleanupConnections();
 	cleanupTransactions();

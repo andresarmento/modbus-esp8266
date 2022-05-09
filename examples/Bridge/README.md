@@ -42,9 +42,9 @@ struct frame_arg_t {
 		uint8_t slaveId;
         // For ModbusTCP/TLS
 		struct { 
-			uint8_t unitId; // UnitId as passed in Modbus header
+			uint8_t unitId; // UnitId as passed in MBAP header
 			uint32_t ipaddr; // IP address from which frame is received
-			uint16_t transactionId; // TransactionId as passed im Modbus header
+			uint16_t transactionId; // TransactionId as passed in MBAP header
 		};
     };
 };
@@ -52,11 +52,12 @@ typedef std::function<ResultCode(uint8_t*, uint8_t, void*)> cbRaw; // Callback f
 typedef ResultCode (*cbRaw)(uint8_t* frame, uint8 len, void* data); // Callback function Type
 bool onRaw(cbRaw cb = nullptr);
 ```
-- `frame` Modbus payload frame with stripped MBAP, slaveid and crc
+- `frame` Modbus payload frame with stripped MBAP/slaveid and crc
 - `len` frame size in bytes
 - `data` Pointer to frame_arg_t filled with frame header information
+
 *Returns:*
-- If a special error code `Modbus::EX_PASSTHROU` returned frame will be processed normally
+- If a special error code `Modbus::EX_PASSTHROUGH` returned frame will be processed normally
 - If a special error code `Modbus::EX_FORCE_PROCESS` returned frame will be processed even if addressed to another Modbus unit
 - Any other return code disables normal frame processing. Only transactional callback will be executed (if any and transaction data is correct)
 The callback is executed only on Modbus frame with valid header and CRC.
