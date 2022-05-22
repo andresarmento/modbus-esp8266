@@ -260,6 +260,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			Serial.print(": Bytes available ");
 			Serial.println(tcpclient[n]->available());
 #endif
+#endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.
@@ -309,7 +310,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 							if (trans) { // if valid transaction id
 								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
 									if (_reply == EX_PASSTHROUGH)
-										masterPDU(_frame, trans->_frame, trans->startreg, trans->data);	// Procass incoming frame as master
+										masterPDU(_frame, trans->_frame, trans->startreg, trans->data);	// Process incoming frame as master
 								}
 								else {
 									_reply = EX_UNEXPECTED_RESPONSE;

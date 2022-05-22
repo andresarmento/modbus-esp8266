@@ -28,7 +28,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t* _data = nullptr;
 		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
-		uint16_t maxRegs = 0x007D;
+		uint16_t maxRegs = MODBUS_MAX_WORDS;
 		uint8_t address = 0;
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);

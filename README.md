@@ -47,6 +47,11 @@ For more information about Modbus see:
 ## Last Changes
 
 ```diff
+// 4.1.1
++ ModbusTCP: Fix potential memory leak
++ API: cbEnable/cbDisable functionality extended
++ ESP-IDF: CMakeList.txt added
++ Examples: TCP-to-RTU fixed
 // 4.1.0
 + API: Raw Modbus frame processing functionality
 + ModbusRTU: Precise inter-frame interval control
