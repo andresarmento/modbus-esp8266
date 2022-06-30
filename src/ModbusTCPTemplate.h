@@ -260,7 +260,6 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			Serial.print(": Bytes available ");
 			Serial.println(tcpclient[n]->available());
 #endif
-#endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.

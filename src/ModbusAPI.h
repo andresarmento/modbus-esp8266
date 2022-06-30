@@ -256,6 +256,8 @@ uint16_t ModbusAPI<T>::write(TYPEID id, TAddress reg, bool value, cbTransaction 
 		return 0;
 	}
 }
+template <class T>
+template <typename TYPEID>
 uint16_t ModbusAPI<T>::write(TYPEID id, TAddress reg, uint16_t* value, uint16_t numregs, cbTransaction cb, uint8_t unit) {
 	switch (reg.type) {
 	case TAddress::COIL:
