@@ -52,24 +52,24 @@ bool cbRtuTrans(Modbus::ResultCode event, uint16_t transactionId, void* data) {
 Modbus::ResultCode cbTcpRaw(uint8_t* data, uint8_t len, void* custom) {
   auto src = (Modbus::frame_arg_t*) custom;
   
-  Serial.print("TCP IP: ");
+  Serial.print("TCP IP in - ");
   Serial.print(IPAddress(src->ipaddr));
   Serial.printf(" Fn: %02X, len: %d \n\r", data[0], len);
 
   if (transRunning) { // Note that we can't process new requests from TCP-side while waiting for responce from RTU-side.
-    tcp.setTransactionId(transRunning); // Set transaction id as per incoming request
+    tcp.setTransactionId(src->transactionId); // Set transaction id as per incoming request
     tcp.errorResponce(IPAddress((src->ipaddr), (Modbus::FunctionCode)data[0], Modbus::EX_SLAVE_DEVICE_BUSY);
     return Modbus::EX_SLAVE_DEVICE_BUSY;
   }
 
   rtu.rawRequest(src->unitId, data, len, cbRtuTrans);
   
-  if (src->unitId) {
-    tcp.setTransactionId(transRunning); // Set transaction id as per incoming request
-
-    //uint16_t succeed = tcp.rawResponce(src->ipaddr, data, len, slaveRunning);
-
+  if (!src->unitId) { // If broadcast request (no responce from slave is expected)
+    tcp.setTransactionId(src->transactionId); // Set transaction id as per incoming request
     tcp.errorResponce(IPAddress(src->ipaddr), (Modbus::FunctionCode)data[0], Modbus::EX_ACKNOWLEDGE);
+
+    transRunning = 0;
+    slaveRunning = 0;
     return Modbus::EX_ACKNOWLEDGE;
   }
   
@@ -87,10 +87,12 @@ Modbus::ResultCode cbTcpRaw(uint8_t* data, uint8_t len, void* custom) {
 // Callback receives raw data from ModbusTCP and sends it on behalf of slave (slaveRunning) to master
 Modbus::ResultCode cbRtuRaw(uint8_t* data, uint8_t len, void* custom) {
   auto src = (Modbus::frame_arg_t*) custom;
+  if (!transRunning) // Unexpected incoming data
+      return Modbus::EX_PASSTHROUGH;
   tcp.setTransactionId(transRunning); // Set transaction id as per incoming request
   uint16_t succeed = tcp.rawResponce(srcIp, data, len, slaveRunning);
   if (!succeed){
-    Serial.print("fail");
+    Serial.print("TCP IP out - failed");
   }
   Serial.printf("RTU Slave: %d, Fn: %02X, len: %d, ", src->slaveId, data[0], len);
   Serial.print("Response TCP IP: ");
