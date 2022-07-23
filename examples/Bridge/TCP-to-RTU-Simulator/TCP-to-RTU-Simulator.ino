@@ -37,6 +37,8 @@ bool cbTcpTrans(Modbus::ResultCode event, uint16_t transactionId, void* data) { 
     Serial.printf("Modbus result: %02X, Mem: %d\n", event, ESP.getFreeHeap());  // Display Modbus error code (222527)
   if (event == Modbus::EX_TIMEOUT) {    // If Transaction timeout took place
     tcp.disconnect(tcp.eventSource());          // Close connection
+    transRunning = 0;
+    slaveRunning = 0;
   }
   return true;
 }
