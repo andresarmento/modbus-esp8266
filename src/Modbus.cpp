@@ -2,7 +2,7 @@
     Modbus Library for Arduino
     Core functions
     Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+                  2017-2023 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
 
@@ -489,7 +489,7 @@ void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numre
 
 Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     if (numregs < 0x0001 || numregs > MODBUS_MAX_BITS || (0xFFFF - startreg.address) < numregs)
-        return EX_ILLEGAL_VALUE;
+        return EX_ILLEGAL_ADDRESS;
     //Check Address
     //Check only startreg. Is this correct?
     //When I check all registers in range I got errors in ScadaBR
@@ -498,11 +498,11 @@ Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, Functio
 #if defined(MODBUS_STRICT_REG)
     for (k = 0; k < numregs; k++) { //Check Address (startreg...startreg + numregs)
         if (!searchRegister(startreg + k))
-            return EX_ILLEGAL_VALUE;
+            return EX_ILLEGAL_ADDRESS;
     }
 #else
     if (!searchRegister(startreg))
-        return EX_ILLEGAL_VALUE;
+        return EX_ILLEGAL_ADDRESS;
 #endif
     free(_frame);
     //Determine the message length = function type, byte count and
@@ -523,11 +523,11 @@ Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, Functio
 Modbus::ResultCode Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     //Check value (numregs)
     if (numregs < 0x0001 || numregs > MODBUS_MAX_WORDS || 0xFFFF - startreg.address < numregs)
-        return EX_ILLEGAL_VALUE;
+        return EX_ILLEGAL_ADDRESS;
 #if defined(MODBUS_STRICT_REG)
     for (k = 0; k < numregs; k++) { //Check Address (startreg...startreg + numregs)
         if (!searchRegister(startreg + k))
-            return EX_ILLEGAL_VALUE;
+            return EX_ILLEGAL_ADDRESS;
     }
 #else
     if (!searchRegister(startreg))
