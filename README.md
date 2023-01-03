@@ -29,7 +29,7 @@ For detailes on the library usage visit [documentation](documentation) section.
 * [Callbacks](examples/Callback) driven design
 * Real life complex examples:
   * [ESP8266/ESP32 firmware update over Modbus](examples/Files)
-  * [ModbusRTU to ModbusTCP bridge](examples/bridge)
+  * [ModbusRTU to ModbusTCP bridge](examples/Bridge)
 
 ## Notes
 
@@ -48,6 +48,7 @@ For more information about Modbus see:
 
 ```diff
 // 4.1.1
++ Protocol: Fix wrong error code responce on non-existent register
 + ModbusTCP: Fix potential memory leak
 + API: cbEnable/cbDisable functionality extended
 + ESP-IDF: CMakeList.txt added
@@ -87,7 +88,7 @@ For more information about Modbus see:
 ## Roadmap
 
 ```diff
-// 4.2.0-DEV
+// 4.2.0
 - API: Alternative CRC calulation (reduced memory footprint)
 - ModbusRTU: Static buffer allocation
 - Test: Frame accuracy to specefication
@@ -98,7 +99,7 @@ For more information about Modbus see:
 - Free global registers and callbacks on remove last Modbus instance
 - Test: push/pull functions
 - ModbusTCP: Refactor connect by dns name (using native implementation for ESP32 etc)
-// 4.3.0-DEV
+// 4.3.0
 - ModbusTLS: ESP32 Server
 - Test: TLS ESP32 Server
 - Test: TLS ESP32 Client
