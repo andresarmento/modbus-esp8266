@@ -109,17 +109,17 @@ void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
     _t = t_us;
 }
 
-bool ModbusRTUTemplate::begin(Stream* port, int16_t txPin, bool direct) {
+bool ModbusRTUTemplate::begin(Stream* port, int16_t txEnablePin, bool txEnableDirect) {
     _port = port;
     _t = 1750UL;
 #if defined(MODBUSRTU_FLUSH_DELAY)
 	_t1 = charSendTime(0);
 #endif
-    if (txPin >= 0) {
-	    _txPin = txPin;
-		_direct = direct;
-        pinMode(_txPin, OUTPUT);
-        digitalWrite(_txPin, _direct?LOW:HIGH);
+    if (txEnablePin >= 0) {
+	    _txEnablePin = txEnablePin;
+		_direct = txEnableDirect;
+        pinMode(_txEnablePin, OUTPUT);
+        digitalWrite(_txEnablePin, _direct?LOW:HIGH);
     }
     return true;
 }
@@ -134,9 +134,9 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 	Serial.println();
 #endif
 #if defined(MODBUSRTU_REDE)
-	if (_txPin >= 0 || _rxPin >= 0) {
-    	if (_txPin >= 0)
-        	digitalWrite(_txPin, _direct?HIGH:LOW);
+	if (_txEnablePin >= 0 || _rxPin >= 0) {
+    	if (_txEnablePin >= 0)
+        	digitalWrite(_txEnablePin, _direct?HIGH:LOW);
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?HIGH:LOW);
 #if !defined(ESP32)
@@ -144,8 +144,8 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 #endif
 	}
 #else
-    if (_txPin >= 0) {
-        digitalWrite(_txPin, _direct?HIGH:LOW);
+    if (_txEnablePin >= 0) {
+        digitalWrite(_txEnablePin, _direct?HIGH:LOW);
 #if !defined(ESP32)
         delayMicroseconds(MODBUSRTU_REDE_SWITCH_US);
 #endif
@@ -160,21 +160,21 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
 #if defined(MODBUSRTU_REDE)
-	if (_txPin >= 0 || _rxPin >= 0) {
+	if (_txEnablePin >= 0 || _rxPin >= 0) {
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
 #endif
-    	if (_txPin >= 0)
-        	digitalWrite(_txPin, _direct?LOW:HIGH);
+    	if (_txEnablePin >= 0)
+        	digitalWrite(_txEnablePin, _direct?LOW:HIGH);
 		if (_rxPin >= 0)
         	digitalWrite(_rxPin, _direct?LOW:HIGH);
 	}
 #else
-    if (_txPin >= 0) {
+    if (_txEnablePin >= 0) {
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
 #endif
-        digitalWrite(_txPin, _direct?LOW:HIGH);
+        digitalWrite(_txEnablePin, _direct?LOW:HIGH);
 	}
 #endif
     return true;

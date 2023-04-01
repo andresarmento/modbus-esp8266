@@ -11,11 +11,11 @@
 class ModbusRTUTemplate : public Modbus {
     protected:
         Stream* _port;
-        int16_t   _txPin = -1;
+        int16_t   _txEnablePin = -1;
 #if defined(MODBUSRTU_REDE)
         int16_t   _rxPin = -1;
 #endif
-		bool _direct = true;	// Transmit control logic (true=direct, false=inverse)
+		bool _direct = true;	// Transmit control logic (true=txEnableDirect, false=inverse)
 		uint32_t _t;	// inter-frame delay in uS
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		uint32_t _t1;	// char send time
@@ -47,12 +47,12 @@ class ModbusRTUTemplate : public Modbus {
 		void setInterFrameTime(uint32_t t_us);
 		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
-		bool begin(T* port, int16_t txPin = -1, bool direct = true);
+		bool begin(T* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
 #if defined(MODBUSRTU_REDE)
 		template <class T>
-		bool begin(T* port, int16_t txPin, int16_t rxPin, bool direct);
+		bool begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect);
 #endif
-		bool begin(Stream* port, int16_t txPin = -1, bool direct = true);
+		bool begin(Stream* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
         void task();
 		void client() { isMaster = true; };
 		inline void master() {client();}
@@ -64,7 +64,7 @@ class ModbusRTUTemplate : public Modbus {
 };
 
 template <class T>
-bool ModbusRTUTemplate::begin(T* port, int16_t txPin, bool direct) {
+bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, bool txEnableDirect) {
     uint32_t baud = 0;
     #if defined(ESP32) || defined(ESP8266) // baudRate() only available with ESP32+ESP8266
     baud = port->baudRate();
@@ -76,20 +76,20 @@ bool ModbusRTUTemplate::begin(T* port, int16_t txPin, bool direct) {
 	_t1 = charSendTime(baud);
 #endif
     _port = port;
-    if (txPin >= 0) {
-	    _txPin = txPin;
-		_direct = direct;
-        pinMode(_txPin, OUTPUT);
-        digitalWrite(_txPin, _direct?LOW:HIGH);
+    if (txEnablePin >= 0) {
+	    _txEnablePin = txEnablePin;
+		_direct = txEnableDirect;
+        pinMode(_txEnablePin, OUTPUT);
+        digitalWrite(_txEnablePin, _direct?LOW:HIGH);
     }
     return true;
 }
 #if defined(MODBUSRTU_REDE)
 template <class T>
-bool ModbusRTUTemplate::begin(T* port, int16_t txPin, int16_t rxPin, bool direct) {
-	begin(port, txPin, direct);
-	if (rxPin > 0) {
-		_rxPin = rxPin;
+bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect) {
+	begin(port, txEnablePin, txEnableDirect);
+	if (rxEnablePin > 0) {
+		_rxPin = rxEnablePin;
         pinMode(_rxPin, OUTPUT);
         digitalWrite(_rxPin, _direct?LOW:HIGH);
 	}
