@@ -61,6 +61,7 @@ If defined regisers count will be limited.
 #define MODBUS_MAX_FILES 0x270F
 #define MODBUSTCP_PORT 	  502
 #define MODBUSTLS_PORT 	  802
+#define MODBUSIP_MINFRAME 2
 #define MODBUSIP_MAXFRAME 200
 
 /*
@@ -82,6 +83,14 @@ ESP32 only. Outgoing connection attempt timeout
 #endif
 #define MODBUSIP_UNIQUE_CLIENTS
 #define MODBUSIP_MAX_READMS 100
+
+/*
+Use available() instead of accept() to get TCP client
+#define MODBUSIP_USE_AVAILABLE
+Used to wrap variation in Ethernet/WiFi client API implementations
+*/
+//#define MODBUSIP_USE_AVAILABLE
+
 #define MODBUSIP_FULL
 //#define MODBUSIP_DEBUG
 /*
