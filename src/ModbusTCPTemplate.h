@@ -254,7 +254,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	for (n = 0; n < MODBUSIP_MAX_CLIENTS; n++) {
 		if (!tcpclient[n]) continue;
 		if (!tcpclient[n]->connected()) continue;
-		while (millis() - taskStart < MODBUSIP_MAX_READMS &&  (size_t)tcpclient[n]->available() > sizeof(_MBAP)) {
+		while ((size_t)tcpclient[n]->available() > sizeof(_MBAP) && millis() - taskStart < MODBUSIP_MAX_READMS) {
 #if defined(MODBUSIP_DEBUG)
 			Serial.print(n);
 			Serial.print(": Bytes available ");
@@ -268,20 +268,28 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				continue;
 			}
 			_len = __swap_16(_MBAP.length);
+			if (_len < MODBUSIP_MINFRAME) {	// Length is over MODBUSIP_MAXFRAME
+				while (tcpclient[n]->available())	// Drop rest of the packet
+					tcpclient[n]->read();
+				exceptionResponse(fc, EX_ILLEGAL_VALUE);
+			}
 			_len--; // Do not count with last byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
-				exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
+			    Modbus::FunctionCode fc = tcpclient[n]->read();
 				_len--;	// Subtract for read byte
-				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of packet
+				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the packet
 					tcpclient[n]->read();
+				exceptionResponse(fc, EX_SLAVE_FAILURE);
 			}
 			else {
 				free(_frame);
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
-					exceptionResponse((FunctionCode)tcpclient[n]->read(), EX_SLAVE_FAILURE);
-					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop packet
+			    	Modbus::FunctionCode fc = tcpclient[n]->read();
+					_len--;	// Subtract for read byte
+					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the packet
 						tcpclient[n]->read();
+					exceptionResponse(fc, EX_SLAVE_FAILURE);
 				}
 				else {
 					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
