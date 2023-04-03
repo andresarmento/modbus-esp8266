@@ -454,7 +454,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupConnections() {
 	for (uint8_t i = 0; i < MODBUSIP_MAX_CLIENTS; i++) {
 		if (tcpclient[i] && !tcpclient[i]->connected()) {
 			//IPAddress ip = tcpclient[i]->remoteIP();
-			//tcpclient[i]->stop();
+			tcpclient[i]->stop();
 			delete tcpclient[i];
 			tcpclient[i] = nullptr;
 			if (cbDisconnect && cbEnabled) 
@@ -563,7 +563,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(IPAddress ip) {
 		return false;
 	int8_t p = getSlave(ip);
 	if (p != -1) {
-		//tcpclient[p]->stop();
+		tcpclient[p]->stop();
 		delete tcpclient[p];
 		tcpclient[p] = nullptr;
 		return true;
